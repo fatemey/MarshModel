@@ -13,10 +13,10 @@ clear
 clf
 tic
 
-% C_o_ = [10*10^-3 20*10^-3 100*10^-3]; leg = {'10 g/m^3','20 g/m^3','100 g/m^3'}; tit = 'Ocean Concentration';
+C_o_ = [10*10^-3 20*10^-3 100*10^-3]; leg = {'10 g/m^3','20 g/m^3','100 g/m^3'}; tit = 'Ocean Concentration';
 % C_f_ = [10*10^-3 20*10^-3 100*10^-3]; leg = {'0 g/m^3','15 g/m^3','100 g/m^3'}; tit = 'River Concentration';
 % Q_f_ = [0 20 1000]; leg = {'0 m^3/s','20 m^3/s','1000 m^3/s'}; tit = 'River Discharge';
-tau_c_ = [.1 .3 .4 ]; leg = {'0.1 PA','0.3 PA','0.4 PA'}; tit = 'Critical Shear Stress';
+% tau_c_ = [.1 .3 .4 ]; leg = {'0.1 PA','0.3 PA','0.4 PA'}; tit = 'Critical Shear Stress';
 % E_0_ = [10^-5 10^-4 10^-3]; leg = {'10^{-5} kg/m^2/s','10^{-4} kg/m^2/s','10^{-3} kg/m^2/s'}; tit = 'Bed Erosion Coefficient';
 % k_e_ = [0.1/365/24/60/60 0.16/365/24/60/60 0.2/365/24/60/60]; leg = {'0.1 m^2/yr/W','0.16 m^2/yr/W','0.2 m^2/yr/W'}; tit = 'Margin Erodibility Coefficient';
 % v_w_ = [0 6 10]; leg = {'0 m/s','6 m/s','10 m/s'}; tit = 'Wind Velocity';
@@ -37,8 +37,8 @@ dt = 12*60*60; % time step in (s)
 tspan = 0:dt:ts;
 
 %-------------- Sediment input constants
-C_o = 20 *10^-3;    % ocean concertation (kg/m3)
-% C_o = C_o_(i);
+% C_o = 20 *10^-3;    % ocean concertation (kg/m3)
+C_o = C_o_(i);
 
 C_f = 15 *10^-3;    % river concentration (kg/m3)
 % C_f = C_f_(i);
@@ -49,13 +49,13 @@ Q_f = 20;         % river water discharge (m3/s)
 %-------------- Erosion constants
 k_0 = 1 *10^-3; % roughness (m)
 
-% tau_c = 0.3;  % critical shear stress (Pa)
-tau_c = tau_c_(i);
+tau_c = 0.3;  % critical shear stress (Pa)
+% tau_c = tau_c_(i);
 
 E_0 = 10^-4;    % bed erosion coefficient (kg/m2/s)
 % E_0 = E_0_(i);
 
-k_e =  .16 /365/24/60/60;  % margin erodibility coefficient (m2/s/W)
+k_e =  0.16 /365/24/60/60;  % margin erodibility coefficient (m2/s/W)
 % k_e = k_e_(i);
 
 v_w = 6;        % reference wind speed (m/s)
@@ -115,9 +115,9 @@ end
 
 %-------------- Plot Results
 plot_results_BoxModel_SA(t,ydata,leg,tit)
-print(tit,'-dtiff','-r400')
-movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\9 - TF accretion corrected - 1000 yr')
-close all
+% print(tit,'-dtiff','-r400')
+% movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\9 - TF accretion corrected - 1000 yr')
+% close all
 
 timespent_min = toc/60
 
@@ -147,6 +147,8 @@ timespent_min = toc/60
         %----------------------------- Marsh width changes equation ------------------------------
         
         %-------------- Compute margin erosion (m/s)
+        h = (y(2)+max(0,y(2)-2*H))/2;   % reference water depth
+        
         if  chi<=0 || v_w==0 % condition for no bed and margin erosion in case of a filled mudflat or no wind
             
             tau = 0;
@@ -154,7 +156,6 @@ timespent_min = toc/60
             
         else
             
-            h = (y(2)+max(0,y(2)-2*H))/2;   % reference water depth
             [ H_w, T_w ] = WaveProps ( h, v_w, chi, g );   % compute significant height and peak period
             [ tau, k_w ] = ShearStress ( h, k_0, H_w, T_w, g );     % compute bed shear stress
             % c_g = sqrt(g*h);        % wave group velocity (shallow water)
@@ -192,8 +193,9 @@ timespent_min = toc/60
         TF_erosion = max(0,t_e*E_0/rho_s*(tau-tau_c)/tau_c);
         
         %-------------- Compute the rate of sediment accretion (m/s)
-        TF_accretion = min(t_e*C_r*omega_s/rho_s ,C_r*y(2)/T_T/rho_s);
+        TF_accretion = min(t_e*C_r*omega_s/rho_s ,C_r*h/T_T/rho_s);
 %         TF_accretion = t_e*C_r*omega_s/rho_s;
+%         TF_accretion = min(t_e*C_r*omega_s/rho_s ,t_e*C_r*y(2)/T_T/rho_s);
 
         %-------------- Describe the equation for d_f (m)
         dy(2,1) = TF_erosion - TF_accretion + R;
@@ -228,9 +230,10 @@ timespent_min = toc/60
         
         %-------------- Compute deposition on tidal flat and marsh bed (kg/s)
 %         TF_deposition = t_e*C_r*local*omega_s*L_E;
-        TF_deposition = min(t_e*C_r*local*omega_s*L_E, C_r*local*y(2)*L_E/T_T);
+        TF_deposition = min(t_e*C_r*local*omega_s*L_E, C_r*local*h*L_E/T_T);
         M_deposition = C_r*b_m*y(3)*L_E/T_T;
-        
+%                 TF_deposition = min(t_e*C_r*local*omega_s*L_E, t_e*C_r*local*y(2)*L_E/T_T);
+
         %-------------- Compute export sediment to the ocean (kg/s)
         export = C_r*local*min(y(2),2*H)*L_E/T_T;
        

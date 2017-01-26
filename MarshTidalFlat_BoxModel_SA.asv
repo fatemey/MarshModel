@@ -13,7 +13,7 @@ clear
 clf
 tic
 
-C_o_ = [10*10^-3 20*10^-3 100*10^-3]; leg = {'10 g/m^3','20 g/m^3','100 g/m^3'}; tit = 'Ocean Concentration';
+% C_o_ = [10*10^-3 20*10^-3 100*10^-3]; leg = {'10 g/m^3','20 g/m^3','100 g/m^3'}; tit = 'Ocean Concentration';
 % C_f_ = [10*10^-3 20*10^-3 100*10^-3]; leg = {'0 g/m^3','15 g/m^3','100 g/m^3'}; tit = 'River Concentration';
 % Q_f_ = [0 20 1000]; leg = {'0 m^3/s','20 m^3/s','1000 m^3/s'}; tit = 'River Discharge';
 % tau_c_ = [.1 .3 .4 ]; leg = {'0.1 PA','0.3 PA','0.4 PA'}; tit = 'Critical Shear Stress';
@@ -25,7 +25,7 @@ C_o_ = [10*10^-3 20*10^-3 100*10^-3]; leg = {'10 g/m^3','20 g/m^3','100 g/m^3'};
 % R_ = [0 2*10^-3/365/24/60/60 10*10^-3/365/24/60/60]; leg = {'0 mm/yr','2 mm/yr','10 mm/yr'}; tit = 'Rate of Sea Level Rise';
 % b_fm_ = [10^3 5*10^3 10*10^3];  leg = {'0.5 km','2.5 km','5 km'}; tit = 'Basin Width';
 % L_E_ = [.15*10^3 15*10^3 150*10^3]; leg = {'0.15 km','15 km','150 km'}; tit = 'Estuary Length';
-% b_f_0 = [1*10^3  5*10^3  9*10^3]/4; leg = {'0.25 km (0.1 L)','1.25 km (0.5 L)','2.25 km (0.9 L)'}; tit = 'Initial Tidal Flat Width';
+b_f_0 = [1*10^3  5*10^3  9*10^3]/4; leg = {'0.25 km (0.1 L)','1.25 km (0.5 L)','2.25 km (0.9 L)'}; tit = 'Initial Tidal Flat Width';
 % H_ = [1 1.4 2.4]/2; leg = {'1 m','1.4 m','2.4 m'}; tit = 'Tidal Range';
 
 for i = 1 : length(leg)
@@ -37,7 +37,7 @@ dt = 12*60*60; % time step in (s)
 tspan = 0:dt:ts;
 
 %-------------- Sediment input constants
-% C_o = 20 *10^-3;    % ocean concertation (kg/m3)
+C_o = 20 *10^-3;    % ocean concertation (kg/m3)
 % C_o = C_o_(i);
 
 C_f = 15 *10^-3;    % river concentration (kg/m3)
@@ -55,7 +55,7 @@ tau_c = 0.3;  % critical shear stress (Pa)
 E_0 = 10^-4;    % bed erosion coefficient (kg/m2/s)
 % E_0 = E_0_(i);
 
-k_e =  .16 /365/24/60/60;  % margin erodibility coefficient (m2/s/W)
+k_e =  0.16 /365/24/60/60;  % margin erodibility coefficient (m2/s/W)
 % k_e = k_e_(i);
 
 v_w = 0;        % reference wind speed (m/s)
@@ -78,8 +78,8 @@ b_fm = 5 *10^3; % total basin width (both sides of the channel) (m)
 L_E = 15 *10^3; % basin length (m)
 % L_E = L_E_(i);
 
-% R = 2 *10^-3/365/24/60/60;   % sea level rise (m/s)
-R = R_(i);
+R = 2 *10^-3/365/24/60/60;   % sea level rise (m/s)
+% R = R_(i);
 
 %-------------- Tide Characteristics
 T_T = 12 *60*60;   % tidal period (s) (= 12 hours)
@@ -99,8 +99,8 @@ Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal 
 b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
 
 %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u(=C_r*(b_f*d_f+b_m*d_m))]
-y0(1) = b_fm/2;   % tidal flat width (m)
-% y0(1) = b_f_0(i);
+% y0(1) = b_fm/2;   % tidal flat width (m)
+y0(1) = b_f_0(i);
 
 y0(2) = 1.0;         % tidal flat depth (m)
 y0(3) = 0.4;         % marsh depth (m)
@@ -192,7 +192,7 @@ timespent_min = toc/60
         TF_erosion = max(0,t_e*E_0/rho_s*(tau-tau_c)/tau_c);
         
         %-------------- Compute the rate of sediment accretion (m/s)
-        TF_accretion = min(t_e*C_r*omega_s/rho_s ,C_r*y(2)/T_T/rho_s);
+        TF_accretion = min(t_e*C_r*omega_s/rho_s ,t_e*C_r*y(2)/T_T/rho_s);
 %         TF_accretion = t_e*C_r*omega_s/rho_s;
 
         %-------------- Describe the equation for d_f (m)
@@ -228,7 +228,7 @@ timespent_min = toc/60
         
         %-------------- Compute deposition on tidal flat and marsh bed (kg/s)
 %         TF_deposition = t_e*C_r*local*omega_s*L_E;
-        TF_deposition = min(t_e*C_r*local*omega_s*L_E, C_r*local*y(2)*L_E/T_T);
+        TF_deposition = min(t_e*C_r*local*omega_s*L_E, t_e*C_r*local*y(2)*L_E/T_T);
         M_deposition = C_r*b_m*y(3)*L_E/T_T;
         
         %-------------- Compute export sediment to the ocean (kg/s)
