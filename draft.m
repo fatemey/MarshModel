@@ -22,4 +22,3 @@ print(figure(4),['df-casen',num2str(casen)],'-dtiff','-r400')
 movefile(['df-casen',num2str(casen),'.tif'],'C:\Users\FY23\Fateme\ex\Work\Model\Results\res2')
 close all
 %---------------------------------------------------------------------
-%test from mac
