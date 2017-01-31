@@ -193,9 +193,17 @@ timespent_min = toc/60
         TF_erosion = max(0,t_e*E_0/rho_s*(tau-tau_c)/tau_c);
         
         %-------------- Compute the rate of sediment accretion (m/s)
-        TF_accretion = min(t_e*C_r*omega_s/rho_s ,C_r*h/T_T/rho_s);
 %         TF_accretion = t_e*C_r*omega_s/rho_s;
-%         TF_accretion = min(t_e*C_r*omega_s/rho_s ,t_e*C_r*y(2)/T_T/rho_s);
+        TF_accretion = min(t_e*C_r*omega_s/rho_s ,t_e*C_r*h/T_T/rho_s);
+%         if C_o == 10*10^-3 % condition to consider alpha based on D'Alpaos et al 2011 approach
+%             alpha = 4 *10^-3/365/24/60/60; % (m/s)
+%         elseif C_o == 20*10^-3
+%             alpha = 8 *10^-3/365/24/60/60;
+%         elseif C_o == 100*10^-3
+%             alpha = 38 *10^-3/365/24/60/60;
+%         end
+%         alpha = 0.38 * C_r;
+%         TF_accretion = alpha*dt*(y(2)/H); % based on D'Alpaos et al 2011 approach during one time step
 
         %-------------- Describe the equation for d_f (m)
         dy(2,1) = TF_erosion - TF_accretion + R;
@@ -230,9 +238,9 @@ timespent_min = toc/60
         
         %-------------- Compute deposition on tidal flat and marsh bed (kg/s)
 %         TF_deposition = t_e*C_r*local*omega_s*L_E;
-        TF_deposition = min(t_e*C_r*local*omega_s*L_E, C_r*local*h*L_E/T_T);
+        TF_deposition = min(t_e*C_r*local*omega_s*L_E, t_e*C_r*local*h*L_E/T_T);
+%         TF_deposition = alpha*dt*(y(2)/H)*local*L_E*rho_s; 
         M_deposition = C_r*b_m*y(3)*L_E/T_T;
-%                 TF_deposition = min(t_e*C_r*local*omega_s*L_E, t_e*C_r*local*y(2)*L_E/T_T);
 
         %-------------- Compute export sediment to the ocean (kg/s)
         export = C_r*local*min(y(2),2*H)*L_E/T_T;
