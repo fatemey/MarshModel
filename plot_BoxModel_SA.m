@@ -1,5 +1,6 @@
 function plot_BoxModel_SA(t,y,leg,tit)
-% Plot results vs time
+% Plots results vs time
+% The plot includes 4 graphs (C_r, b_f, d_f, d_m) for diffrenet sets of parameters.
 %
 %--------------------------------------------------------------------------
 C_r = squeeze(y(:,4,:)); b_f = squeeze(y(:,1,:))/1000; d_f = squeeze(y(:,2,:)); d_m = squeeze(y(:,3,:));

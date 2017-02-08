@@ -1,6 +1,11 @@
 function BoxModel_SA (parin)
 % BoxModel_SA: Modeling 0d marsh and tidal flat time
-% evolution using Matlab ode15s function for sensitivity analysis
+% evolution using Matlab ode15s function for sensitivity analysis for
+% diffrent sets of parameters.
+%
+% Input 
+%           parin : vector of numbers between 1 nad 14 or a char vactor to
+%           determine wich sets of parameters are of interest.
 %
 % Purpose: Determining marsh and tidal flat depths and widths changes with
 %          rising sea level. This model is solved using 4 equations and 4
@@ -57,7 +62,7 @@ for j = 1 : nj
             L_E_ = [0.15*10^3, 15*10^3, 150*10^3]; leg = {'0.15 km','15 km','150 km'}; tit = 'Estuary Length';
         case {'b_f_0' , 13}
             b_f_0 = [1*10^3,  5*10^3,  9*10^3]/4; leg = {'0.25 km (0.1 L)','1.25 km (0.5 L)','2.25 km (0.9 L)'}; tit = 'Initial Tidal Flat Width';
-%             b_f_0 = [.75*10^3,  .80*10^3,  .85*10^3]; leg = {'0.25 km (0.1 L)','1.25 km (0.5 L)','2.25 km (0.9 L)'}; tit = 'Initial Tidal Flat Width';
+%             b_f_0 = [.01, .1, .2, .3, .45, .5, .55, .6, .65,  .7,  .75, .8, .85]*10^3; leg = {'1','2','3','2','3','2','1','2','3','2','3','2','3'}; tit = 'Initial Tidal Flat Width';
         case {'H' , 14}
             H_ = [1, 1.4, 1.8]/2; leg = {'1 m','1.4 m','1.8 m'}; tit = 'Tidal Range';
     end
@@ -94,7 +99,7 @@ for j = 1 : nj
         b_fm = 5 *10^3; % total basin width (both sides of the channel) (m)
         L_E = 15 *10^3; % basin length (m)
         R = 2 *10^-3/365/24/60/60;   % sea level rise (m/s)
-        b_r = 50; % river width (m)
+        b_r = 0; % river width (m)
         
         %-------------- Tide Characteristics
         T_T = 12 *60*60;   % tidal period (s) (= 12 hours)
@@ -164,8 +169,8 @@ for j = 1 : nj
     end
     
     %-------------- Plot Results
-    %     figure
-    clf
+        figure
+%     clf
     plot_BoxModel_SA(t,ydata,leg,tit)
     %     print(tit,'-dtiff','-r400')
     %     movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\12 - TF conversion to M corrected')
