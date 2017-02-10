@@ -1,86 +1,104 @@
-function [t, y] = BoxModel
-% BoxModel: Modeling 0d marsh and tidal flat time
-% evolution using Matlab ode15s function (based on BoxModel_SA.mat as of 2/7/2017)
-%
-% Output
-%           t : vector of time data in s
-%           y : matrix of data. 1st vertical vector: tidal flat width (m),
-%           2nd vector: tidal flat depth (m), 3rd vector: marsh depth (m),
-%           and 4th vector: C_r (g/m3).
-%
-% Purpose: Determining marsh and tidal flat depths and widths changes with
-%               rising sea level. This model is solved using 4 equations and 4
-%               unknowns.
-%
+function test
+
 %--------------------------------------------------------------------------------------------------
 format compact
 format longG
-clear
 
-%-------------- Set the time span
-tyr = 1000;  % solve for time tyr (years)
-ts = tyr *365*24*60*60; % tyr in (s)
-dt = 12*60*60; % time step in (s)
-tspan = 0:dt:ts;
 
-%-------------- Sediment input constants
-C_o = 20 *10^-3;    % ocean concertation (kg/m3)
-C_f = 15 *10^-3;    % river concentration (kg/m3)
-Q_f = 20;         % river water discharge (m3/s)
+b_f_0 = 0:5:500;
 
-%-------------- Erosion constants
-k_0 = 1 *10^-3; % roughness (m)
-tau_c = 0.3;  % critical shear stress (Pa)
-E_0 = 10^-4;    % bed erosion coefficient (kg/m2/s)
-k_e =  0.16 /365/24/60/60;  % margin erodibility coefficient (m2/s/W)
-v_w = 6;        % reference wind speed (m/s)
+%-------------- Start the loop for each run
+for i = 1 : length(b_f_0)
+%     i
+    %-------------- Set the time span
+    tyr = 1;  % solve for time tyr (years)
+    ts = tyr *365*24*60*60; % tyr in (s)
+    dt = 12*60*60; % time step in (s)
+    tspan = 0:dt:ts;
+    
+    %-------------- Sediment input constants
+    C_o = 20 *10^-3;    % ocean concertation (kg/m3)
+    C_f = 15 *10^-3;    % river concentration (kg/m3)
+    Q_f = 20;         % river water discharge (m3/s)
+    
+    %-------------- Erosion constants
+    k_0 = 1 *10^-3; % roughness (m)
+    tau_c = 0.3;  % critical shear stress (Pa)
+    E_0 = 10^-4;    % bed erosion coefficient (kg/m2/s)
+    k_e =  0.16 /365/24/60/60;  % margin erodibility coefficient (m2/s/W)
+    v_w = 6;        % reference wind speed (m/s)
+    
+    % -------------- Accretion constants
+    k_a = 2;        % margin accretion coefficient
+    
+    %-------------- Vegetation properties
+    B_max = 1;      % maximum biomass density (kg/m2)
+    k_B = 2*10^-3 /365/24/60/60;    % vegetation characteristics (m3/s/kg)
+    
+    %-------------- Basin properties
+    b_fm = 5 *10^3; % total basin width (both sides of the channel) (m)
+    L_E = .5 *10^3; % basin length (m)
+    R = 2 *10^-3/365/24/60/60;   % sea level rise (m/s)
+    b_r = 0; % river width (m)
+    
+    %-------------- Tide Characteristics
+    T_T = 12 *60*60;   % tidal period (s) (= 12 hours)
+    H = 1.4 /2;          % tidal amplitude (range/2) (m)
+    
+    %-------------- Sediment properties
+    rho_s = 1000;   % sediment bulk density (kg/m3)
+    omega_s = 0.5 *10^-3;   % settling velocity (m/s)
+    
+    %-------------- Model constants
+    gamma = 9800;   % water specific weight (N/m3)
+    g = 9.81;       % gravitational acceleration (m/s2)
+    
+    %-------------- Parameter assignment
+    bf0 = b_f_0(i);
+    flag_bf0 = 1;
+    
+    %-------------- Model assumptions
+    Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
+    b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
+    
+    %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u(=C_r*(b_f*d_f+b_m*d_m))]
+    if flag_bf0 == 0 % condition for model run for every parameter except for b_f_0
+        y0(1) = b_fm/2;   % tidal flat width (m)
+    else
+        y0(1) = bf0;
+    end
+    y0(2) =1;         % tidal flat depth (m)
+    y0(3) = 0.4;         % marsh depth (m)
+    y0(4) = 0*10^-3*(y0(1)*(y0(2)+y0(3)));
+    
+    %-------------- Solve the system of differential equations
+    [t, y] = ode15s(@ode4marshtidalflat,tspan,y0); % or use ode15s/ode45/..23s
+    y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the formula used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
+    ydata(:,:,i) = y; % save the solution for each SA value (3 values for the factor of interest)
+    
+end
 
-% -------------- Accretion constants
-k_a = 2;        % margin accretion coefficient
-
-%-------------- Vegetation properties
-B_max = 1;      % maximum biomass density (kg/m2)
-k_B = 2*10^-3 /365/24/60/60;    % vegetation characteristics (m3/s/kg)
-
-%-------------- Basin properties
-b_fm = 5 *10^3; % total basin width (both sides of the channel) (m)
-L_E = 15 *10^3; % basin length (m)
-R = 2 *10^-3/365/24/60/60;   % sea level rise (m/s)
-b_r = 0; % river width (m)
-
-%-------------- Tide Characteristics
-T_T = 12 *60*60;   % tidal period (s) (= 12 hours)
-H = 1.4 /2;          % tidal amplitude (range/2) (m)
-
-%-------------- Sediment properties
-rho_s = 1000;   % sediment bulk density (kg/m3)
-omega_s = 0.5 *10^-3;   % settling velocity (m/s)
-
-%-------------- Model constants
-gamma = 9800;   % water specific weight (N/m3)
-g = 9.81;       % gravitational acceleration (m/s2)
-
-%-------------- Model assumptions
-Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
-b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
-
-%-------------- Initial conditions, y0=[ b_f, d_f, d_m,u(=C_r*(b_f*d_f+b_m*d_m))]
-y0(1) = b_fm/2;   % tidal flat width (m)
-y0(2) = 1.0;         % tidal flat depth (m)
-y0(3) = 0.4;         % marsh depth (m)
-y0(4) = 0*10^-3*(y0(1)*(y0(2)+y0(3)));
-
-%-------------- Solve the system of differential equations
-[t, y] = ode15s(@ode4marshtidalflat,tspan,y0); % or use ode15s/ode45/..23s
-y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the formula used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
-
+dsign = sign(ydata(end,1,:)-ydata(1,1,:));
+bb=squeeze(dsign);
+aa=diff(bb);
+sol=find(aa~=0);
+if isempty(sol)
+    nn=1;
+else
+    nn = sol(1);
+end
+solx=ydata(1,1,nn)
+solval=aa(nn)
 %-------------- Plot Results
-% figure
-plot_BoxModel(t,y)
-% tit = 'lowwind';
-    print(tit,'-dtiff','-r400')
-    movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\13 - Animation results')
-       close all
+%         figure
+% %     clf
+%     plot_test(t,ydata)
+%     print(tit,'-dtiff','-r400')
+%     movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\12 - TF conversion to M corrected')
+% %         close all
+
+%     timespent_min = toc/60
+
 
 %======================= Nested Function =========================
     function dy = ode4marshtidalflat (t,y) %  y1=b_f, y2=d_f, y3=d_m, y4=u (=C_r*(b_f*d_f+b_m*d_m, why solving u instead of C_r? u is the variable on the left hand side of mass conservation equation.)

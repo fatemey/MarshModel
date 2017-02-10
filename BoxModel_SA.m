@@ -61,8 +61,8 @@ for j = 1 : nj
         case {'L_E' , 12}
             L_E_ = [0.15*10^3, 15*10^3, 150*10^3]; leg = {'0.15 km','15 km','150 km'}; tit = 'Estuary Length';
         case {'b_f_0' , 13}
-            b_f_0 = [1*10^3,  5*10^3,  9*10^3]/4; leg = {'0.25 km (0.1 L)','1.25 km (0.5 L)','2.25 km (0.9 L)'}; tit = 'Initial Tidal Flat Width';
-%             b_f_0 = [.01, .1, .2, .3, .45, .5, .55, .6, .65,  .7,  .75, .8, .85]*10^3; leg = {'1','2','3','2','3','2','1','2','3','2','3','2','3'}; tit = 'Initial Tidal Flat Width';
+%             b_f_0 = [1*10^3,  5*10^3,  9*10^3]/4; leg = {'0.25 km (0.1 L)','1.25 km (0.5 L)','2.25 km (0.9 L)'}; tit = 'Initial Tidal Flat Width';
+            b_f_0 = [.01, .1, .2, .3, .45, .5, .55, .6, .65,  .7,  .75, .8, .85]*10^3; leg = {'1','2','3','2','3','2','1','2','3','2','3','2','3'}; tit = 'Initial Tidal Flat Width';
         case {'H' , 14}
             H_ = [1, 1.4, 1.8]/2; leg = {'1 m','1.4 m','1.8 m'}; tit = 'Tidal Range';
     end
@@ -71,7 +71,7 @@ for j = 1 : nj
     for i = 1 : length(leg)
         
         %-------------- Set the time span
-        tyr = 1000;  % solve for time tyr (years)
+        tyr = 10;  % solve for time tyr (years)
         ts = tyr *365*24*60*60; % tyr in (s)
         dt = 12*60*60; % time step in (s)
         tspan = 0:dt:ts;
