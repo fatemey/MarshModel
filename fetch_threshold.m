@@ -1,7 +1,7 @@
 function x = fetch_threshold
 % Function fetch_threshold looks for a fetch threshold value based on
-% diffrent values of a variable of interest. Funcytion fetch_threshold is
-% base don the function of Box_Model_SA as of 2/10/17.
+% diffrent values of a variable of interest. Functtion fetch_threshold is
+% based on the function of BoxModel_SA as of 2/10/17.
 
 %--------------------------------------------------------------------------------------------------
 format compact
@@ -57,10 +57,26 @@ Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal 
 b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
 
 %-------------- Start the loop for each run
-for j = 1 : 101
+% par_v = 0 *10^-3 : 1 *10^-3 : 200 *10^-3; % for C_o
+par_v = 0 *10^-3: 10 *10^-3 : 1000 *10^-3; % for C_f
+% par_v = 0 : 10  : 10000; % for Q_f
+% par_v = 1 *10^3 : 1 *10^3 : 100 *10^3; % for L_E
+% par_v = 1 *10^3 : 1 *10^3 : 100 *10^3; % for b_fm
+% par_v = 0 : 1 : 30; % for v_w
+% par_v = 0 : 1 *10^-3/365/24/60/60 : 50 *10^-3/365/24/60/60; % for R
+% % par_v = 0 : 1 *10^-3 : 200 *10^-3; % for 2H
+for j = 1 : length(par_v)
     
     j
-    par_v = 0 : 1 *10^-3 : 100 *10^-3; C_o = par_v(j);
+%     C_o = par_v(j);
+    C_f = par_v(j);
+%     Q_f = par_v(j)/2;
+%     L_E = par_v(j);
+%     b_fm = par_v(j)/2;
+%     v_w = par_v(j);
+%     R = par_v(j);
+% %     H2 = par_v(j);
+
     clear y ydata
     
     for i = 1 : length(TF_width)
@@ -69,7 +85,7 @@ for j = 1 : 101
         y0(1) = TF_width(i);
         y0(2) =1;         % tidal flat depth (m)
         y0(3) = 0.4;         % marsh depth (m)
-        y0(4) = 0*10^-3*(y0(1)*(y0(2)+y0(3)));
+        y0(4) = 0*10^-3*(y0(1)*(y0(2)+y0(3))); % u
         
         %-------------- Solve the system of differential equations
         [t, y] = ode15s(@ode4marshtidalflat,tspan,y0); % or use ode15s/ode45/..23s
@@ -87,6 +103,7 @@ for j = 1 : 101
     end
     
 end
+save x
 
 %======================= Nested Function =========================
     function dy = ode4marshtidalflat (t,y) %  y1=b_f, y2=d_f, y3=d_m, y4=u (=C_r*(b_f*d_f+b_m*d_m, why solving u instead of C_r? u is the variable on the left hand side of mass conservation equation.)

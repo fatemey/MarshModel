@@ -71,7 +71,7 @@ for j = 1 : nj
     for i = 1 : length(leg)
         
         %-------------- Set the time span
-        tyr = 10;  % solve for time tyr (years)
+        tyr = 1000;  % solve for time tyr (years)
         ts = tyr *365*24*60*60; % tyr in (s)
         dt = 12*60*60; % time step in (s)
         tspan = 0:dt:ts;

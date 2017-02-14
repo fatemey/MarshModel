@@ -16,6 +16,7 @@ function [t, y] = BoxModel
 format compact
 format longG
 clear
+clf
 
 %-------------- Set the time span
 tyr = 1000;  % solve for time tyr (years)
@@ -78,9 +79,9 @@ y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r
 % figure
 plot_BoxModel(t,y)
 % tit = 'lowwind';
-    print(tit,'-dtiff','-r400')
-    movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\13 - Animation results')
-       close all
+% print(tit,'-dtiff','-r400')
+% movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\13 - Animation results')
+% close all
 
 %======================= Nested Function =========================
     function dy = ode4marshtidalflat (t,y) %  y1=b_f, y2=d_f, y3=d_m, y4=u (=C_r*(b_f*d_f+b_m*d_m, why solving u instead of C_r? u is the variable on the left hand side of mass conservation equation.)
