@@ -51,7 +51,7 @@ omega_s = 0.5 *10^-3;   % settling velocity (m/s)
 %-------------- Model constants
 gamma = 9800;   % water specific weight (N/m3)
 g = 9.81;       % gravitational acceleration (m/s2)
- 
+
 %-------------- Model assumptions
 Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
 b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
