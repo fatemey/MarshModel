@@ -39,7 +39,7 @@ b_fm = 5 *10^3; % total basin width (both sides of the channel) (m)
 L_E = 15 *10^3; % basin length (m)
 R = 2 *10^-3/365/24/60/60;   % sea level rise (m/s)
 b_r = 0; % river width (m)
-TF_width = 1:1:b_fm/2; % vector of possible widths of tidal flat
+TF_width = 1:1/100:b_fm/2; % vector of possible widths of tidal flat
 
 %-------------- Tide Characteristics
 T_T = 12 *60*60;   % tidal period (s) (= 12 hours)
@@ -58,25 +58,25 @@ Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal 
 b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
 
 %-------------- Start the loop for each run
-par_v = 0 *10^-3 : 5 *10^-3 : 200 *10^-3; % for C_o
+% par_v = 0 *10^-3 : 1 *10^-3 : 200 *10^-3; % for C_o
 % par_v = 0 *10^-3: 10 *10^-3 : 1000 *10^-3; % for C_f
 % par_v = 0 : 10  : 1000; % for Q_f
 % par_v = 1 *10^3 : 1 *10^3 : 100 *10^3; % for L_E
 % par_v = 1 *10^3 : 1 *10^3 : 100 *10^3; % for b_fm
 % par_v = 0 : 1/2 : 20; % for v_w
-% par_v = 0 : 1 *10^-3/365/24/60/60 : 50 *10^-3/365/24/60/60; % for R
+par_v = 0 : 1 *10^-3/365/24/60/60 : 50 *10^-3/365/24/60/60; % for R
 % par_v = [1 : 1/2  : 15]/2; % for H
 
 for j = 1 : length(par_v)
     
     j
-            C_o = par_v(j);
+%             C_o = par_v(j);
 %         C_f = par_v(j);
 %             Q_f = par_v(j)/2;
 %         L_E = par_v(j);
 %         b_fm = par_v(j)/2;
 %         v_w = par_v(j);
-%         R = par_v(j);
+        R = par_v(j);
 %     H = par_v(j);
     
     clear y 
