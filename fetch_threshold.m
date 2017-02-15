@@ -2,7 +2,8 @@ function x = fetch_threshold
 % Function fetch_threshold looks for a fetch threshold value based on
 % diffrent values of a variable of interest. Functtion fetch_threshold is
 % based on the function of BoxModel_SA as of 2/10/17.
-
+% after each run for the parameter of interest, save the x in the excle
+% file, or save it as a mat file to plot later using the function plot_fetch.
 %--------------------------------------------------------------------------------------------------
 format compact
 format longG
@@ -38,7 +39,7 @@ b_fm = 5 *10^3; % total basin width (both sides of the channel) (m)
 L_E = 15 *10^3; % basin length (m)
 R = 2 *10^-3/365/24/60/60;   % sea level rise (m/s)
 b_r = 0; % river width (m)
-TF_width = 0:1:b_fm/2; % vector of possible widths of tidal flat
+TF_width = 1:1:b_fm/2; % vector of possible widths of tidal flat
 
 %-------------- Tide Characteristics
 T_T = 12 *60*60;   % tidal period (s) (= 12 hours)
@@ -57,46 +58,47 @@ Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal 
 b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
 
 %-------------- Start the loop for each run
-% par_v = 0 *10^-3 : 1 *10^-3 : 200 *10^-3; % for C_o
-par_v = 0 *10^-3: 10 *10^-3 : 1000 *10^-3; % for C_f
-% par_v = 0 : 10  : 10000; % for Q_f
+par_v = 0 *10^-3 : 5 *10^-3 : 200 *10^-3; % for C_o
+% par_v = 0 *10^-3: 10 *10^-3 : 1000 *10^-3; % for C_f
+% par_v = 0 : 10  : 1000; % for Q_f
 % par_v = 1 *10^3 : 1 *10^3 : 100 *10^3; % for L_E
 % par_v = 1 *10^3 : 1 *10^3 : 100 *10^3; % for b_fm
-% par_v = 0 : 1 : 30; % for v_w
+% par_v = 0 : 1/2 : 20; % for v_w
 % par_v = 0 : 1 *10^-3/365/24/60/60 : 50 *10^-3/365/24/60/60; % for R
-% % par_v = 0 : 1 *10^-3 : 200 *10^-3; % for 2H
+% par_v = [1 : 1/2  : 15]/2; % for H
+
 for j = 1 : length(par_v)
     
     j
-%     C_o = par_v(j);
-    C_f = par_v(j);
-%     Q_f = par_v(j)/2;
-%     L_E = par_v(j);
-%     b_fm = par_v(j)/2;
-%     v_w = par_v(j);
-%     R = par_v(j);
-% %     H2 = par_v(j);
-
-    clear y ydata
+            C_o = par_v(j);
+%         C_f = par_v(j);
+%             Q_f = par_v(j)/2;
+%         L_E = par_v(j);
+%         b_fm = par_v(j)/2;
+%         v_w = par_v(j);
+%         R = par_v(j);
+%     H = par_v(j);
+    
+    clear y 
+    sign_diff_bf = zeros(size(TF_width));
     
     for i = 1 : length(TF_width)
         
         %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u(=C_r*(b_f*d_f+b_m*d_m))]
         y0(1) = TF_width(i);
-        y0(2) =1;         % tidal flat depth (m)
-        y0(3) = 0.4;         % marsh depth (m)
+        y0(2) = H+0.3;         % tidal flat depth (m)
+        y0(3) = H-0.3;         % marsh depth (m)
         y0(4) = 0*10^-3*(y0(1)*(y0(2)+y0(3))); % u
         
         %-------------- Solve the system of differential equations
         [t, y] = ode15s(@ode4marshtidalflat,tspan,y0); % or use ode15s/ode45/..23s
-        y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the formula used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
-        ydata(:,:,i) = y; % save the solution for each SA value (3 values for the factor of interest)
+        %         y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the formula used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
         
-        sign_diff_bf = squeeze(sign(ydata(end,1,:)-ydata(1,1,:)));
+        sign_diff_bf(i) = sign(y(end,1)-y(1,1));
         n=length(unique(sign_diff_bf));
         
-        if n > 1
-            x(j) = y(1,1);
+        if n > 2
+            x(j,1) = y(1,1);
             break
         end
         

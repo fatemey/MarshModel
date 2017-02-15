@@ -22,3 +22,7 @@ print(figure(4),['df-casen',num2str(casen)],'-dtiff','-r400')
 movefile(['df-casen',num2str(casen),'.tif'],'C:\Users\FY23\Fateme\ex\Work\Model\Results\res2')
 close all
 %---------------------------------------------------------------------
+% set the number of axis ticks
+NumTicks = 6;
+L = get(gca,'XLim');
+set(gca,'XTick',linspace(L(1),L(2),NumTicks))
