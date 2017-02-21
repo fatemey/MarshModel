@@ -1,4 +1,4 @@
-function [ H_w, T_w ] = WaveProps ( h, v_w, chi, g )
+function [ H_w, T_w ] = WaveProps ( h, v_w, chi)
 % WaveProps : Computing significant wave height and peak wave period
 %
 % Input 
@@ -11,6 +11,7 @@ function [ H_w, T_w ] = WaveProps ( h, v_w, chi, g )
 %       T_w : peak wave period
 %
 %--------------------------------------------------------------------------
+g = 9.81;       % gravitational acceleration (m/s2)
 
 %-------------- Parameters
 A1 = .493*(g*h/v_w^2)^.75;

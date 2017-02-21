@@ -1,4 +1,4 @@
-function [ tau, k_w ] = ShearStress ( h, k_0, H_w, T_w, g )
+function [ tau, k_w ] = ShearStress ( h, k_0, H_w, T_w )
 % WaveProps : Computing bed shear stress by waves
 %
 % Input 
@@ -14,6 +14,7 @@ function [ tau, k_w ] = ShearStress ( h, k_0, H_w, T_w, g )
 
 %-------------- Constants
 rho_w = 1000;   % water density (kg/m3)
+g = 9.81;       % gravitational acceleration (m/s2)
 
 %-------------- Parameters
 % k_w_0 = 2*pi/T_w/sqrt(g*h);

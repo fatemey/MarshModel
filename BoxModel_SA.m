@@ -11,6 +11,7 @@ function BoxModel_SA (parin)
 %          rising sea level. This model is solved using 4 equations and 4
 %          unknowns.
 %
+% last edit : 2/17/17
 %--------------------------------------------------------------------------------------------------
 format compact
 format longG
@@ -157,24 +158,25 @@ for j = 1 : nj
         else
             y0(1) = bf0;
         end
-        y0(2) = 1.0;         % tidal flat depth (m)
-        y0(3) = 0.4;         % marsh depth (m)
+        y0(2) = H+0.3;        % tidal flat depth (m)
+        y0(3) = H-0.3;         % marsh depth (m)
         y0(4) = 0*10^-3*(y0(1)*(y0(2)+y0(3)));
         
         %-------------- Solve the system of differential equations
         [t, y] = ode15s(@ode4marshtidalflat,tspan,y0); % or use ode15s/ode45/..23s
+        t = t /365/24/60/60; % convert s to yr
         y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the formula used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
         ydata(:,:,i) = y; % save the solution for each SA value (3 values for the factor of interest)
         
     end
     
     %-------------- Plot Results
-        figure
-%     clf
+    figure
+    %     clf
     plot_BoxModel_SA(t,ydata,leg,tit)
     %     print(tit,'-dtiff','-r400')
     %     movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\12 - TF conversion to M corrected')
-    % %         close all
+    %     close all
     
     timespent_min = toc/60
     

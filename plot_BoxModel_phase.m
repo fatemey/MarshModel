@@ -1,13 +1,13 @@
 function plot_BoxModel_phase
 % plot_BoxModel_phase: makes an animation of marsh and tidal flat depth and
-% width changes in time
+% width changes in time. Data is from running the BoxModel.m function for different set of parameters
 %
 %--------------------------------------------------------------------------------------------------
 clear
 clf
 
 %-------------- Set data values
-% load data_base; tit = 'base data';
+% load data_base; tit = 'base data'; 
 % load data_highcfqf; tit = 'highcfqf';
 % load data_nowind; tit = 'no wind';
 load data_lowwind; tit = 'low wind';

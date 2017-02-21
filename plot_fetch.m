@@ -5,7 +5,7 @@ function plot_fetch
 
 %------------------------------------------------
 subplot(3,3,1)
-load x_co; a = dat(:,1); b = dat(:,2);
+load x_co_3; a = dat(:,1)*1000; b = dat(:,2);
 scatter(a,b,'k','.')
 xlabel('Ocean Concentration (mg/l)')
 ylabel('Threshold Width (m)')
@@ -29,7 +29,7 @@ box on
 
 %------------------------------------------------
 subplot(3,3,4)
-load x_le; a = dat(:,1); b = dat(:,2);
+load x_le; a = dat(:,1)/1000; b = dat(:,2);
 scatter(a,b,'k','.')
 xlabel('Estuary Length (km)')
 ylabel('Threshold Width (m)')
@@ -37,7 +37,7 @@ box on
 
 %------------------------------------------------
 subplot(3,3,5)
-load x_bfm; a = dat(:,1); b = dat(:,2);
+load x_bfm; a = dat(:,1)/1000; b = dat(:,2);
 scatter(a,b,'k','.')
 xlabel('Basin Width (km)')
 ylabel('Threshold Width (m)')
@@ -53,11 +53,12 @@ box on
 
 %------------------------------------------------
 subplot(3,3,7)
-load x_r; a = dat(:,1); b = dat(:,2);
+load x_r_3; a = dat(:,1); b = dat(:,2);
 scatter(a,b,'k','.')
 xlabel('Rate of Sea Level Rise (mm/yr)')
 ylabel('Threshold Width (m)')
 box on
+xlim([0 50])
 
 %------------------------------------------------
 subplot(3,3,8)

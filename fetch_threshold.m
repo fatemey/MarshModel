@@ -1,7 +1,7 @@
 function x = fetch_threshold
 % Function fetch_threshold looks for a fetch threshold value based on
 % diffrent values of a variable of interest. Functtion fetch_threshold is
-% based on the function of BoxModel_SA as of 2/10/17.
+% based on the function of BoxModel_SA as of 2/17/17.
 % after each run for the parameter of interest, save the x in the excle
 % file, or save it as a mat file to plot later using the function plot_fetch.
 %--------------------------------------------------------------------------------------------------
@@ -9,104 +9,161 @@ format compact
 format longG
 clear
 
-%-------------- Set the time span
-tyr = 1;  % solve for time tyr (years)
-ts = tyr *365*24*60*60; % tyr in (s)
-dt = 12*60*60; % time step in (s)
-tspan = 0:dt:ts;
+par_temp = 1:8;
 
-%-------------- Sediment input constants
-C_o = 20 *10^-3;    % ocean concertation (kg/m3)
-C_f = 15 *10^-3;    % river concentration (kg/m3)
-Q_f = 20;         % river water discharge (m3/s)
-
-%-------------- Erosion constants
-k_0 = 1 *10^-3; % roughness (m)
-tau_c = 0.3;  % critical shear stress (Pa)
-E_0 = 10^-4;    % bed erosion coefficient (kg/m2/s)
-k_e =  0.16 /365/24/60/60;  % margin erodibility coefficient (m2/s/W)
-v_w = 6;        % reference wind speed (m/s)
-
-% -------------- Accretion constants
-k_a = 2;        % margin accretion coefficient
-
-%-------------- Vegetation properties
-B_max = 1;      % maximum biomass density (kg/m2)
-k_B = 2*10^-3 /365/24/60/60;    % vegetation characteristics (m3/s/kg)
-
-%-------------- Basin properties
-b_fm = 5 *10^3; % total basin width (both sides of the channel) (m)
-L_E = 15 *10^3; % basin length (m)
-R = 2 *10^-3/365/24/60/60;   % sea level rise (m/s)
-b_r = 0; % river width (m)
-TF_width = 1:1/100:b_fm/2; % vector of possible widths of tidal flat
-
-%-------------- Tide Characteristics
-T_T = 12 *60*60;   % tidal period (s) (= 12 hours)
-H = 1.4 /2;          % tidal amplitude (range/2) (m)
-
-%-------------- Sediment properties
-rho_s = 1000;   % sediment bulk density (kg/m3)
-omega_s = 0.5 *10^-3;   % settling velocity (m/s)
-
-%-------------- Model constants
-gamma = 9800;   % water specific weight (N/m3)
-g = 9.81;       % gravitational acceleration (m/s2)
-
-%-------------- Model assumptions
-Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
-b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
-
-%-------------- Start the loop for each run
-% par_v = 0 *10^-3 : 1 *10^-3 : 200 *10^-3; % for C_o
-% par_v = 0 *10^-3: 10 *10^-3 : 1000 *10^-3; % for C_f
-% par_v = 0 : 10  : 1000; % for Q_f
-% par_v = 1 *10^3 : 1 *10^3 : 100 *10^3; % for L_E
-% par_v = 1 *10^3 : 1 *10^3 : 100 *10^3; % for b_fm
-% par_v = 0 : 1/2 : 20; % for v_w
-par_v = 0 : 1 *10^-3/365/24/60/60 : 50 *10^-3/365/24/60/60; % for R
-% par_v = [1 : 1/2  : 15]/2; % for H
-
-for j = 1 : length(par_v)
+for k = 1 : 1
     
-    j
-%             C_o = par_v(j);
-%         C_f = par_v(j);
-%             Q_f = par_v(j)/2;
-%         L_E = par_v(j);
-%         b_fm = par_v(j)/2;
-%         v_w = par_v(j);
-        R = par_v(j);
-%     H = par_v(j);
+    %-------------- Set the time span
+    tyr = 1000;  % solve for time tyr (years)
+    ts = tyr *365*24*60*60; % tyr in (s)
+    dt = 12*60*60; % time step in (s)
+    tspan = 0:dt:ts;
     
-    clear y 
-    sign_diff_bf = zeros(size(TF_width));
+    %-------------- Sediment input constants
+    C_o = 20 *10^-3;    % ocean concertation (kg/m3)
+    C_f = 15 *10^-3;    % river concentration (kg/m3)
+    Q_f = 20;         % river water discharge (m3/s)
     
-    for i = 1 : length(TF_width)
+    %-------------- Erosion constants
+    k_0 = 1 *10^-3; % roughness (m)
+    tau_c = 0.3;  % critical shear stress (Pa)
+    E_0 = 10^-4;    % bed erosion coefficient (kg/m2/s)
+    k_e =  0.16 /365/24/60/60;  % margin erodibility coefficient (m2/s/W)
+    v_w = 6;        % reference wind speed (m/s)
+    
+    % -------------- Accretion constants
+    k_a = 2;        % margin accretion coefficient
+    
+    %-------------- Vegetation properties
+    B_max = 1;      % maximum biomass density (kg/m2)
+    k_B = 2*10^-3 /365/24/60/60;    % vegetation characteristics (m3/s/kg)
+    
+    %-------------- Basin properties
+    b_fm = 5 *10^3; % total basin width (both sides of the channel) (m)
+    L_E = 15 *10^3; % basin length (m)
+    R = 2 *10^-3/365/24/60/60;   % sea level rise (m/s)
+    b_r = 0; % river width (m)
+    TF_width = 1:30:b_fm/2; % vector of possible widths of tidal flat
+    
+    %-------------- Tide Characteristics
+    T_T = 12 *60*60;   % tidal period (s) (= 12 hours)
+    H = 1.4 /2;          % tidal amplitude (range/2) (m)
+    
+    %-------------- Sediment properties
+    rho_s = 1000;   % sediment bulk density (kg/m3)
+    omega_s = 0.5 *10^-3;   % settling velocity (m/s)
+    
+    %-------------- Model constants
+    gamma = 9800;   % water specific weight (N/m3)
+    
+    %-------------- Model assumptions
+    Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
+    b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
+    
+    %-------------- Start the loop for each run
+    par = par_temp(k);
+    switch par
+        case 1
+            par_v = 0 *10^-3 : 20 *10^-3 : 200 *10^-3; % for C_o
+        case 2
+            par_v = 0 *10^-3: 100 *10^-3 : 1000 *10^-3; % for C_f
+        case 3
+            par_v = 0 : 100  : 1000; % for Q_f
+        case 4
+            par_v = 1 *10^3 : 5 *10^3 : 100 *10^3; % for L_E
+        case 5
+            par_v = 1 *10^3 : 5 *10^3 : 100 *10^3; % for b_fm
+        case 6
+            par_v = 0 : 1 : 20; % for v_w
+        case 7
+            par_v = 0 : 5 *10^-3/365/24/60/60 : 50 *10^-3/365/24/60/60; % for R
+%             TF_width = 1:1:b_fm;
+        case 8
+            par_v = [1 : 1 : 15]/2; % for H
+    end
+    
+    for j = 1 : length(par_v)
         
-        %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u(=C_r*(b_f*d_f+b_m*d_m))]
-        y0(1) = TF_width(i);
-        y0(2) = H+0.3;         % tidal flat depth (m)
-        y0(3) = H-0.3;         % marsh depth (m)
-        y0(4) = 0*10^-3*(y0(1)*(y0(2)+y0(3))); % u
+        j
+        switch par
+            case 1
+                C_o = par_v(j);
+            case 2
+                C_f = par_v(j);
+            case 3
+                Q_f = par_v(j)/2;
+            case 4
+                L_E = par_v(j);
+            case 5
+                b_fm = par_v(j)/2;
+            case 6
+                v_w = par_v(j);
+            case 7
+                R = par_v(j);
+            case 8
+                H = par_v(j);
+        end
         
-        %-------------- Solve the system of differential equations
-        [t, y] = ode15s(@ode4marshtidalflat,tspan,y0); % or use ode15s/ode45/..23s
-        %         y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the formula used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
+        clear y
+        sign_diff_bf = zeros(size(TF_width));
         
-        sign_diff_bf(i) = sign(y(end,1)-y(1,1));
-        n=length(unique(sign_diff_bf));
-        
-        if n > 2
-            x(j,1) = y(1,1);
-            break
+        for i = 1 : length(TF_width)
+            
+            %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u(=C_r*(b_f*d_f+b_m*d_m))]
+            y0(1) = TF_width(i);
+            y0(2) = H+0.3;         % tidal flat depth (m)
+            y0(3) = H-0.3;         % marsh depth (m)
+            y0(4) = 0*10^-3*(y0(1)*(y0(2)+y0(3))); % u
+            
+            %-------------- Solve the system of differential equations
+            [t, y] = ode15s(@ode4marshtidalflat,tspan,y0); % or use ode15s/ode45/..23s
+            %         y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the formula used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
+            
+            sign_diff_bf(i) = sign(y(end,1)-y(1,1));
+            n=length(unique(sign_diff_bf));
+            
+            if n > 2
+                if y(end,2)>H
+                    x(j,1) = y(1,1);
+                else
+                    x(j,1) = -10;
+                end
+                break
+            end
+            
         end
         
     end
     
+    x_new = x;
+    if length(par_v)>length(x)
+        x_new(length(x)+1:length(par_v)) = -1;
+    end
+    
+    dat = [par_v', x_new];
+    
+    switch par
+        case 1
+            save('x_co_4.mat','dat')
+        case 2
+            save('x_cf_2.mat','dat')
+        case 3
+            save('x_qf_2.mat','dat')
+        case 4
+            save('x_le_2.mat','dat')
+        case 5
+            save('x_bfm_2.mat','dat')
+        case 6
+            save('x_vw_2.mat','dat')
+        case 7
+            save('x_r_3.mat','dat')
+        case 8
+            save('x_2h_2.mat','dat')
+    end
+    
+    clear x dat x_new
+    
 end
-save x
-
 %======================= Nested Function =========================
     function dy = ode4marshtidalflat (t,y) %  y1=b_f, y2=d_f, y3=d_m, y4=u (=C_r*(b_f*d_f+b_m*d_m, why solving u instead of C_r? u is the variable on the left hand side of mass conservation equation.)
         % solves the ODE system of equations
@@ -158,8 +215,8 @@ save x
             tau = 0; % bed shear stress
             W = 0;   % wave power density
         else
-            [ H_w, T_w ] = WaveProps ( h, v_w, chi, g );   % compute significant height and peak period
-            [ tau, k_w ] = ShearStress ( h, k_0, H_w, T_w, g );     % compute bed shear stress
+            [ H_w, T_w ] = WaveProps ( h, v_w, chi);   % compute significant height and peak period
+            [ tau, k_w ] = ShearStress ( h, k_0, H_w, T_w);     % compute bed shear stress
             % c_g = sqrt(g*h);        % wave group velocity (shallow water)
             c_g = pi/k_w/T_w*(1+2*k_w*h/sinh(2*k_w*h)); % wave group velocity (general form)
             W = gamma*c_g*H_w^2/16; % wave power density (kg.m/s3)
