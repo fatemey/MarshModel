@@ -9,7 +9,7 @@ function [a, b] = BoxModel_parameters(t, y, x_par, y_par)
 %           x_par : char vector of the x axis parameter of interest. It can
 %                       be 't', 'd', 'h' or 'fetch'
 %           y_par : char vector of the y axis parameter of interest. It can
-%                       be 'tau', 'bed_e', 'mar_e' (for margin erosion rate),
+%                       be 'tau', 'bed_e', 'wave', 'mar_e' (for margin erosion rate),
 %                       'margin' (for margin accretion or erosion rate), 'ocean' (for ocean inout),
 %                       'ratio' (for ocean to river input ratio). if margin
 %                       is positive it is the result of erosion, otherwise,
@@ -18,7 +18,7 @@ function [a, b] = BoxModel_parameters(t, y, x_par, y_par)
 %--------------------------------------------------------------------------------------------------
 
 %-------------- Sediment input constants
-C_o = 20 *10^-3;    % ocean concertation (kg/m3)
+C_o = 60 *10^-3;    % ocean concertation (kg/m3)
 C_f = 15 *10^-3;    % river concentration (kg/m3)
 Q_f = 20;         % river water discharge (m3/s)
 
@@ -81,25 +81,26 @@ switch y_par
     case 'tau'
         h = (y(:,2)+max(0,y(:,2)-2*H))/2;
         chi = y(:,1)*2;
-        tau = zeros(size(h));
-        for i=1:length(h)
-            [ H_w, T_w] = WaveProps ( h(i), v_w, chi(i));   % compute significant height and peak period
-            [ tau(i), k_w ] = ShearStress ( h(i), k_0, H_w, T_w);
-        end
-        %         load tau
+        %         tau = zeros(size(h));
+        %         for i=1:length(h)
+        %             [ H_w, T_w] = WaveProps ( h(i), v_w, chi(i));   % compute significant height and peak period
+        %             [ tau(i), k_w ] = ShearStress ( h(i), k_0, H_w, T_w);
+        %         end
+        load tau_2
         b = tau;
+        b(y(:,2) > H) = 0;
         y_lab = 'Shear Stress (PA)';
         
         %-------------- Compute Tidal Flat Bed Erosion (kg/s)
     case 'bed_e'
         h = (y(:,2)+max(0,y(:,2)-2*H))/2;
         chi = y(:,1)*2;
-        tau = zeros(size(h));
-        for i=1:length(h)
-            [ H_w, T_w] = WaveProps ( h(i), v_w, chi(i));   % compute significant height and peak period
-            [ tau(i), k_w ] = ShearStress ( h(i), k_0, H_w, T_w);
-        end
-        %         load tau
+        %         tau = zeros(size(h));
+        %         for i=1:length(h)
+        %             [ H_w, T_w] = WaveProps ( h(i), v_w, chi(i));   % compute significant height and peak period
+        %             [ tau(i), k_w ] = ShearStress ( h(i), k_0, H_w, T_w);
+        %         end
+        load tau_2
         t_s = ones(size(y,1),1);
         t_s(y(:,2) < 2*H) = 1/2-1/pi*asin((H-y(:,2))/H);
         
@@ -107,7 +108,7 @@ switch y_par
         b(y(:,2) > H) = max(0,t_s*E_0.*(tau-tau_c)./tau_c.*y(:,1)*L_E);
         y_lab = 'Bed Erosion Rate (kg/s)';
         
-        %-------------- Compute Margin Erosion (kg/s)
+        %-------------- Compute Margin Erosion (m/s)
     case 'mar_e'
         b_m = b_fm-y(:,1); % marsh width
         h = (y(:,2)+max(0,y(:,2)-2*H))/2;
@@ -119,28 +120,44 @@ switch y_par
             c_g = pi/k_w/T_w*(1+2*k_w*h(i)/sinh(2*k_w*h(i))); % wave group velocity (general form)
             W(i) = gamma*c_g*H_w^2/16; % wave power density (kg.m/s3)
         end
+        %         W(y(:,2) <= H) = 0;
         
         b = zeros(size(y,1),1);
         b(y(:,2) > H) = k_e*W;
-        y_lab = 'Margin Erosion Rate (kg/s)';
+        y_lab = 'Margin Erosion Rate (m/s)';
+        
+        %-------------- Compute Wave Power Density (kg.m/s3)
+    case 'wave'
+        b_m = b_fm-y(:,1); % marsh width
+        h = (y(:,2)+max(0,y(:,2)-2*H))/2;
+        chi = y(:,1)*2;
+        %         W = zeros(size(h));
+        %         for i=1:length(h)
+        %             [ H_w, T_w] = WaveProps ( h(i), v_w, chi(i));   % compute significant height and peak period
+        %             [ tau, k_w ] = ShearStress ( h(i), k_0, H_w, T_w);
+        %             c_g = pi/k_w/T_w*(1+2*k_w*h(i)/sinh(2*k_w*h(i))); % wave group velocity (general form)
+        %             W(i) = gamma*c_g*H_w^2/16; % wave power density (kg.m/s3)
+        %         end
+        load W_2
+        W(y(:,2) <= H) = 0;
+        
+        b = W;
+        y_lab = 'Wave Power Density (kg.m/s^3)';
         
         %-------------- Compute Margin Erosion/Accretion (kg/s)
     case 'margin'
         b_m = b_fm-y(:,1); % marsh width
         h = (y(:,2)+max(0,y(:,2)-2*H))/2;
         chi = y(:,1)*2;
-        W = zeros(size(h));
-        for i=1:length(h)
-            [ H_w, T_w] = WaveProps ( h(i), v_w, chi(i));   % compute significant height and peak period
-            [ tau, k_w ] = ShearStress ( h(i), k_0, H_w, T_w);
-            c_g = pi/k_w/T_w*(1+2*k_w*h(i)/sinh(2*k_w*h(i))); % wave group velocity (general form)
-            W(i) = gamma*c_g*H_w^2/16; % wave power density (kg.m/s3)
-        end
-        %         load W
-        %         if  flag_f2m==1 || chi<=b_r || v_w==0 % condition for no bed and margin erosion in case of a filled mudflat or no wind
-        %             tau = 0; % bed shear stress
-        %             W = 0;   % wave power density
-        %         else
+        %         W = zeros(size(h));
+        %         for i=1:length(h)
+        %             [ H_w, T_w] = WaveProps ( h(i), v_w, chi(i));   % compute significant height and peak period
+        %             [ tau, k_w ] = ShearStress ( h(i), k_0, H_w, T_w);
+        %             c_g = pi/k_w/T_w*(1+2*k_w*h(i)/sinh(2*k_w*h(i))); % wave group velocity (general form)
+        %             W(i) = gamma*c_g*H_w^2/16; % wave power density (kg.m/s3)
+        %         end
+        load W_2
+        
         B_e = k_e*W;    % margin erosion
         C_r = y(:,4)./(y(:,1).*y(:,2)+b_m.*y(:,3)); % concentration (kg/m3)
         B_a = zeros(size(y,1),1);

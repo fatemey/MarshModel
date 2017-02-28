@@ -1,204 +1,205 @@
-function x = fetch_threshold
-% Function fetch_threshold looks for a fetch threshold value based on
-% diffrent values of a variable of interest. Functtion fetch_threshold is
-% based on the function of BoxModel as of 2/28/17.
-% after each run for the parameter of interest, save the x in the excle
-% file, or save it as a mat file to plot later using the function plot_fetch.
+function dat = fetch_threshold_O2Rratio
+% Function fetch_threshold_O2Rratio looks for a fetch threshold value for
+% diffrent ratios ocean to riverine input. Function fetch_threshold_O2Rratio is
+% based on the function of fetch_threshold as of 2/24/17.
 %--------------------------------------------------------------------------------------------------
 format compact
 format longG
 clear
 % clf
 
-par_temp = 1 : 8;
+load pars % some selective different values for diffrent parameters (see below)
 
-for k = 2 : 2
-    
-    %     k
-    %-------------- Set the time span
-    tyr = 500;  % solve for time tyr (years)
-    ts = tyr *365*24*60*60; % tyr in (s)
-    dt = 12*60*60; % time step in (s)
-    tspan = 0:dt:ts;
-    
-    %-------------- Sediment input constants
-    C_o = 20 *10^-3;    % ocean concertation (kg/m3)
-    C_f = 15 *10^-3;    % river concentration (kg/m3)
-    Q_f = 20;         % river water discharge (m3/s)
-    
-    %-------------- Erosion constants
-    k_0 = 1 *10^-3; % roughness (m)
-    tau_c = 0.3;  % critical shear stress (Pa)
-    E_0 = 10^-4;    % bed erosion coefficient (kg/m2/s)
-    k_e =  0.16 /365/24/60/60;  % margin erodibility coefficient (m2/s/W)
-    v_w = 6;        % reference wind speed (m/s)
-    
-    % -------------- Accretion constants
-    k_a = 2;        % margin accretion coefficient
-    
-    %-------------- Vegetation properties
-    B_max = 1;      % maximum biomass density (kg/m2)
-    k_B = 2*10^-3 /365/24/60/60;    % vegetation characteristics (m3/s/kg)
-    
-    %-------------- Basin properties
-    b_fm = 5 *10^3; % total basin width (both sides of the channel) (m)
-    L_E = 15 *10^3; % basin length (m)
-    R = 2 *10^-3/365/24/60/60;   % sea level rise (m/s)
-    b_r = 0; % river width (m)
-    
-    %-------------- Tide Characteristics
-    T_T = 12 *60*60;   % tidal period (s) (= 12 hours)
-    H = 1.4 /2;          % tidal amplitude (range/2) (m)
-    
-    %-------------- Sediment properties
-    rho_s = 1000;   % sediment bulk density (kg/m3)
-    omega_s = 0.5 *10^-3;   % settling velocity (m/s)
-    
-    %-------------- Model constants
-    gamma = 9800;   % water specific weight (N/m3)
-    
-    %-------------- Model assumptions
-    Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
-    b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
-    
-    %-------------- Start the loop for each run
-    par = par_temp(k);
-    switch par
-        case 1
-            par_v = 5 *10^-3 : 5 *10^-3 : 100 *10^-3; % for C_o
-            TF_width = 10 : 10 : b_fm-10;
-        case 2
-            par_v = 0 *10^-3: 50 *10^-3 : 500 *10^-3; % for C_f
-            TF_width = 10 : 10 : b_fm-10;
-        case 3
-            par_v = 0 : 100  : 1000; % for Q_f
-            TF_width = 5 : 5 : b_fm-5;
-        case 4
-            par_v = 1 *10^3 : 1 *10^3 : 30 *10^3; % for L_E
-            TF_width = 1 : 1 : b_fm-1;
-        case 5
-            par_v = 1 *10^3 : 1 *10^3 : 30 *10^3; % for b_fm
-            TF_width = 1 : 1 : b_fm-1;
-        case 6
-            par_v = 0 : 1 : 20; % for v_w
-            TF_width = 5 : 5 : b_fm-5;
-        case 7
-            par_v = 0 : 1 *10^-3/365/24/60/60 : 50 *10^-3/365/24/60/60; % for R
-            TF_width = 5 : 5 : b_fm-5;
-        case 8
-            par_v = [1, 2 : 2 : 20]/2; % for H
-            TF_width = b_fm-1 : -1 : 1;
-    end
-    
-    for j = 1 : length(par_v)
-        
-                j
-        switch par
-            case 1
-                C_o = par_v(j);
-            case 2
-                C_f = par_v(j);
-            case 3
-                Q_f = par_v(j)/2;
-            case 4
-                L_E = par_v(j);
-            case 5
-                b_fm = par_v(j)/2;
-            case 6
-                v_w = par_v(j);
-            case 7
-                R = par_v(j);
-            case 8
-                H = par_v(j);
-        end
-        
-        clear y t width_diff
-        %         width_diff = zeros(size(TF_width));
-        
-        for i = 1 : length(TF_width)
-            
-            i
-            %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u(=C_r*(b_f*d_f+b_m*d_m))]
-            y0(1) = TF_width(i);
-            y0(2) = H+0.3;         % tidal flat depth (m)
-            y0(3) = H-0.3;         % marsh depth (m)
-            y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
-            
-            %-------------- Solve the system of differential equations
-            [t, y] = ode15s(@ode4marshtidalflat,tspan,y0); % or use ode15s/ode23s/ode23tb
-            t = t /365/24/60/60; % convert time unit from s to yr for plotting purposes
-            y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the formula used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
+%-------------- Set the time span
+tyr = 500;  % solve for time tyr (years)
+ts = tyr *365*24*60*60; % tyr in (s)
+dt = 12*60*60; % time step in (s)
+tspan = 0:dt:ts;
 
-            ind = find(y(:,2)<=H); % remove data related to tidal flat to marsh conversion
-            if ~isnan(ind)
-                y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember in it is a new marsh now
-                t(ind(2):end,:)=[];
-            end
+%-------------- Sediment input constants
+C_o_ = mat(:,1) *10^-3;    % ocean concertation (kg/m3)
+C_f_ =  mat(:,2) *10^-3;    % river concentration (kg/m3)
+Q_f_ =  mat(:,3);         % river water discharge (m3/s)
+
+%-------------- Erosion constants
+k_0 = 1 *10^-3; % roughness (m)
+tau_c = 0.3;  % critical shear stress (Pa)
+E_0 = 10^-4;    % bed erosion coefficient (kg/m2/s)
+k_e =  0.16 /365/24/60/60;  % margin erodibility coefficient (m2/s/W)
+v_w = 6;        % reference wind speed (m/s)
+
+% -------------- Accretion constants
+k_a = 2;        % margin accretion coefficient
+
+%-------------- Vegetation properties
+B_max = 1;      % maximum biomass density (kg/m2)
+k_B = 2*10^-3 /365/24/60/60;    % vegetation characteristics (m3/s/kg)
+
+%-------------- Basin properties
+b_fm_ =  mat(:,4) *10^3; % total basin width (both sides of the channel) (m)
+L_E_ =  mat(:,5) *10^3; % basin length (m)
+R = 2 *10^-3/365/24/60/60;   % sea level rise (m/s)
+b_r = 0; % river width (m)
+
+%-------------- Tide Characteristics
+T_T = 12 *60*60;   % tidal period (s) (= 12 hours)
+H = 1.4 /2;          % tidal amplitude (range/2) (m)
+
+%-------------- Sediment properties
+rho_s = 1000;   % sediment bulk density (kg/m3)
+omega_s = 0.5 *10^-3;   % settling velocity (m/s)
+
+%-------------- Model constants
+gamma = 9800;   % water specific weight (N/m3)
+
+%-------------- Model assumptions
+Q_f_ = Q_f_/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
+b_fm_ = b_fm_/2;  % consider half of the basin only for one side of the tidal platform
+
+%-------------- Start the loop for each run
+mat_size = size(mat,1);
+n = 1;
+dat = zeros(size(mat,1)^size(mat,2),5);
+for i = 1 : mat_size % for C_O
+    C_o = C_o_(i);
+    
+    for j = 1 : mat_size % for C_f
+        C_f = C_f_(j);
+        
+        for k = 1 : mat_size % for Q_f
+            Q_f = Q_f_(k);
             
-            %             clf
-            %             plot_BoxModel(t,y)
-            
-            width = y(:,1); % tidal falt width solution
-            n = length(width);
-            
-            width_diff(i) = sign(width(n)-width(floor(n/2))); % - corresponds to TF contraction and + accounts for expansion
-            
-            if y(end,2) <= H % check whether if tidal flat has turned into a marsh
-                width_diff(i) = -1;
-            end
-            
-            if width(n) >= b_fm % check whether if tidal flat has reached to its boundary limits
-                width_diff(i) = 1;
-            elseif width(n) <= 0
-                width_diff(i) = -1;
-            end
-            
-            n_width_diff = length(unique(width_diff));
-            
-            if n_width_diff == 2
-                x(j,1) = width(1);
-                break
-            elseif i == length(TF_width) && unique(width_diff) == 1
-                x(j,1) = TF_width(1);
-                break
-            elseif i == length(TF_width) && unique(width_diff) == -1
-                x(j,1) = TF_width(end);
-                break
+            for l = 1 : mat_size % for b_fm
+                b_fm = b_fm_(l);
+                TF_width = 10 : 10 : b_fm-10;
+                
+                for o = 1 : mat_size % for L_E
+                    L_E = L_E_(o);
+                    
+                    clear y t width_diff
+                    for p = 1 : length(TF_width)
+                        
+                        p
+                        %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u(=C_r*(b_f*d_f+b_m*d_m))]
+                        y0(1) = TF_width(p);
+                        y0(2) = H+0.3;         % tidal flat depth (m)
+                        y0(3) = H-0.3;         % marsh depth (m)
+                        y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
+                        
+                        %-------------- Solve the system of differential equations
+                        [t, y] = ode15s(@ode4marshtidalflat,tspan,y0); % or use ode15s/ode45/..23s
+                        t = t /365/24/60/60; % convert time unit from s to yr for plotting purposes
+                        y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the formula used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
+                        
+                        ind = find(y(:,2)<=H); % remove data related to tidal flat to marsh conversion
+                        y(ind(2:end),:)=[]; % retain only one value afetr conversion to remember in it is a new marsh now
+                        t(ind(2:end))=[];
+                        
+                        clf
+                        plot_BoxModel(t,y)
+                        
+                        width = y(:,1); % tidal falt width solution
+                        n_w = length(width);
+                        
+                        width_diff(p) = sign(width(n_w)-width(floor(n_w/2))); % - corresponds to TF contraction and + accounts for expansion
+                        
+                        if y(end,2) <= H % check whether if tidal flat has turned into a marsh
+                            width_diff(p) = -1;
+                        end
+                        
+                        if width(n_w) >= b_fm % check whether if tidal flat has reached to its boundary limits
+                            width_diff(p) = 1;
+                        elseif width(n_w) <= 0
+                            width_diff(p) = -1;
+                        end
+                        
+                        n_width_diff = length(unique(width_diff));
+                        
+                        if n_width_diff == 2
+                            dat(n,1) = width(1); % critical fetch
+                            dat(n,2) = C_f*Q_f; % Cf*Qf
+                            dat(n,3) = C_o*(L_E*b_fm*H/T_T); % Co*QT
+                            dat(n,4) = Q_f; % Qf
+                            dat(n,5) = L_E*b_fm*H/T_T; % QT
+                            n = n+1;
+                            break
+                        elseif i == length(TF_width) && unique(width_diff) == 1
+                            dat(n,1) = TF_width(1);
+                            dat(n,2) = C_f*Q_f; % Cf*Qf
+                            dat(n,3) = C_o*(L_E*b_fm*H/T_T); % Co*QT
+                            dat(n,4) = Q_f; % Qf
+                            dat(n,5) = L_E*b_fm*H/T_T; % QT
+                            n = n+1;
+                            break
+                        elseif i == length(TF_width) && unique(width_diff) == -1
+                            dat(n,1) = TF_width(end);
+                            dat(n,2) = C_f*Q_f; % Cf*Qf
+                            dat(n,3) = C_o*(L_E*b_fm*H/T_T); % Co*QT
+                            dat(n,4) = Q_f; % Qf
+                            dat(n,5) = L_E*b_fm*H/T_T; % QT
+                            n = n+1;
+                            break
+                        end
+                        
+                    end
+                    
+                end
+                                              
             end
             
         end
         
     end
-    
-    x_new = x;
-    if length(par_v)>length(x)
-        x_new(length(x)+1:length(par_v)) = -1;
-    end
-    
-    dat = [par_v', x_new];
-    
-    switch par
-        case 1
-            save('co.mat','dat')
-        case 2
-            save('cf.mat','dat')
-        case 3
-            save('qf.mat','dat')
-        case 4
-            save('le.mat','dat')
-        case 5
-            save('bfm.mat','dat')
-        case 6
-            save('vw.mat','dat')
-        case 7
-            save('R.mat','dat')
-        case 8
-            save('H.mat','dat')
-    end
-    
-    clear x dat x_new
     
 end
+
+%-------------- Save and Plot Results
+save('dat_pars.mat','dat')
+% col(:,1) = ones(size(dat,1),1)/2;
+% col(:,3) = dat(:,1)/max(dat(:,1));
+% scatter(dat(:,2),dat(:,3),50,col,'o','filled')
+fetch_c = dat(:,1);
+n_clusters = 10;
+circle_siz = ones(size(dat,1),1);
+siz_step = linspace(0,max(fetch_c),n_clusters-1);
+for i = 1 : length(siz_step)-1
+circle_siz(fetch_c>siz_step(i)&fetch_c<=siz_step(i+1)) = 30*i;
+end
+figure(1)
+scatter(dat(:,2),dat(:,3),circle_siz,'k','o')
+xlabel('C_{f}.Q_{f} (kg/s)')
+ylabel('C_{o}.Q_{T} (kg/s)')
+box on
+set(findobj('type','axes'),'fontsize',15)
+h_fig=gcf;
+set(h_fig,'PaperOrientation','portrait')
+set(h_fig,'PaperPosition', [0 0 7.5 6]) % [... ... max_width=7.5 max_height=9]
+print('xc-cfqf-coqt','-dtiff','-r400')
+movefile('xc-cfqf-coqt.tif','C:\Users\fy23\Fateme\Projects\Marsh Model\Results\16 - Critical fetch for ratio')
+
+figure(2)
+scatter(dat(:,4),dat(:,5),circle_siz,'k','o')
+xlabel('Q_{f} (m^3/s)')
+ylabel('Q_{T} (m^3/s)')
+box on
+set(findobj('type','axes'),'fontsize',15)
+h_fig=gcf;
+set(h_fig,'PaperOrientation','portrait')
+set(h_fig,'PaperPosition', [0 0 7.5 6]) % [... ... max_width=7.5 max_height=9]
+print('xc-qf-qt','-dtiff','-r400')
+movefile('xc-qf-qt.tif','C:\Users\fy23\Fateme\Projects\Marsh Model\Results\16 - Critical fetch for ratio')
+
+figure(3)
+scatter(dat(:,3)./dat(:,2),dat(:,1),'k','o')
+xlabel('Ocean to Riverine Input Ratio')
+ylabel('Critical Fetch (m)')
+box on
+set(findobj('type','axes'),'fontsize',15)
+h_fig=gcf;
+set(h_fig,'PaperOrientation','portrait')
+set(h_fig,'PaperPosition', [0 0 7.5 6]) % [... ... max_width=7.5 max_height=9]
+print('xc-cfqf2coqt','-dtiff','-r400')
+movefile('xc-cfqf2coqt.tif','C:\Users\fy23\Fateme\Projects\Marsh Model\Results\16 - Critical fetch for ratio')
 
 %======================= Nested Function =========================
     function dy = ode4marshtidalflat (t,y) %  y1=b_f, y2=d_f, y3=d_m, y4=u (=C_r*(b_f*d_f+b_m*d_m, why solving u instead of C_r? u is the variable on the left hand side of mass conservation equation.)

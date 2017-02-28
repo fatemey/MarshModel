@@ -26,3 +26,6 @@ close all
 NumTicks = 6;
 L = get(gca,'XLim');
 set(gca,'XTick',linspace(L(1),L(2),NumTicks))
+%also
+set(gca,'YTick',[0, 5:10 :51]) %label specification
+set(gca,'YTickLabel','0.45|1|2|3|4|5')

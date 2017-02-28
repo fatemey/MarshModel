@@ -1,6 +1,7 @@
-function [t, y] = BoxModel
+% function [t, y] = BoxModel
+function BoxModel
 % BoxModel: Models 0d marsh and tidal flat time
-% evolution using Matlab ode15s function (based on BoxModel_SA.mat as of 2/17/2017)
+% evolution using Matlab ode23tb function (as of 2/28/2017)
 %
 % Output
 %           t : vector of time data in yr
@@ -16,7 +17,7 @@ function [t, y] = BoxModel
 format compact
 format longG
 clear
-clf
+% clf
 
 %-------------- Set the time span
 tyr = 1000;  % solve for time tyr (years)
@@ -25,8 +26,8 @@ dt = 12*60*60; % time step in (s)
 tspan = 0:dt:ts;
 
 %-------------- Sediment input constants
-C_o = 60 *10^-3;    % ocean concertation (kg/m3)
-C_f = 15 *10^-3;    % river concentration (kg/m3)
+C_o = 20 *10^-3;    % ocean concertation (kg/m3)
+C_f = 0 *10^-3;    % river concentration (kg/m3)
 Q_f = 20;         % river water discharge (m3/s)
 
 %-------------- Erosion constants
@@ -58,30 +59,47 @@ rho_s = 1000;   % sediment bulk density (kg/m3)
 omega_s = 0.5 *10^-3;   % settling velocity (m/s)
 
 %-------------- Model constants
-gamma = 9800;   % water specific weight (N/m3)
+gamma = 9800;   % water specific weight (N/m3 or kg/m2/s2)
 
 %-------------- Model assumptions
 Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
 b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
 
-%-------------- Initial conditions, y0=[ b_f, d_f, d_m,u(=C_r*(b_f*d_f+b_m*d_m))]
-y0(1) = 800;% b_fm/2;      % tidal flat width (m)
+%-------------- Initial conditions, y0=[ b_f, d_f, d_m,u (=C_r*(b_f*d_f+b_m*d_m))]
+y0(1) = 720;%b_fm/2;      % tidal flat width (m)
 y0(2) = H+0.3;        % tidal flat depth (m)
 y0(3) = H-0.3;         % marsh depth (m)
-y0(4) = C_o*(y0(1)*(y0(2)+y0(3)));
+y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
 
 %-------------- Solve the system of differential equations
-[t, y] = ode15s(@ode4marshtidalflat,tspan,y0); % or use ode15s/ode45/..23s
-t = t /365/24/60/60; % convert s to yr
+[t, y] = ode15s(@ode4marshtidalflat,tspan,y0); % or use ode15s/ode23s/ode23tb
+t = t /365/24/60/60; % convert time unit from s to yr for plotting purposes
 y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the formula used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
 
+% ind = find(y(:,2)<=H); % remove data related to tidal flat to marsh conversion
+% if ~isnan(ind)
+%     y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember in it is a new marsh now
+%     t(ind(2):end,:)=[];
+% end
+
+% fetch2depth = y(:,1)./y(:,2); % fetch to tidal flat depth ratio
+
 %-------------- Plot Results
-% figure
+figure(1)
+clf
 plot_BoxModel(t,y)
 % tit = 'co_60-bf0_800';
 % print(tit,'-dtiff','-r400')
 % movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\14 - Fetch threshold')
 % close all
+
+% figure(2)
+% clf
+% scatter(t,fetch2depth,'.','k')
+% xlabel('Year')
+% ylabel('Fetch to Depth Ratio')
+% box on
+% set(findobj('type','axes'),'fontsize',15)
 
 %======================= Nested Function =========================
     function dy = ode4marshtidalflat (t,y) %  y1=b_f, y2=d_f, y3=d_m, y4=u (=C_r*(b_f*d_f+b_m*d_m, why solving u instead of C_r? u is the variable on the left hand side of mass conservation equation.)

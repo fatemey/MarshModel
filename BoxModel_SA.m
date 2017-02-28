@@ -3,7 +3,7 @@ function BoxModel_SA (parin)
 % evolution using Matlab ode15s function for sensitivity analysis for
 % diffrent sets of parameters.
 %
-% Input 
+% Input
 %           parin : vector of numbers between 1 nad 14 or a char vactor to
 %           determine wich sets of parameters are of interest.
 %
@@ -11,7 +11,7 @@ function BoxModel_SA (parin)
 %          rising sea level. This model is solved using 4 equations and 4
 %          unknowns.
 %
-% last edit : 2/17/17
+% last edit : 2/21/17
 %--------------------------------------------------------------------------------------------------
 format compact
 format longG
@@ -62,7 +62,7 @@ for j = 1 : nj
         case {'L_E' , 12}
             L_E_ = [0.15*10^3, 15*10^3, 150*10^3]; leg = {'0.15 km','15 km','150 km'}; tit = 'Estuary Length';
         case {'b_f_0' , 13}
-%             b_f_0 = [1*10^3,  5*10^3,  9*10^3]/4; leg = {'0.25 km (0.1 L)','1.25 km (0.5 L)','2.25 km (0.9 L)'}; tit = 'Initial Tidal Flat Width';
+            %             b_f_0 = [1*10^3,  5*10^3,  9*10^3]/4; leg = {'0.25 km (0.1 L)','1.25 km (0.5 L)','2.25 km (0.9 L)'}; tit = 'Initial Tidal Flat Width';
             b_f_0 = [.01, .1, .2, .3, .45, .5, .55, .6, .65,  .7,  .75, .8, .85]*10^3; leg = {'1','2','3','2','3','2','1','2','3','2','3','2','3'}; tit = 'Initial Tidal Flat Width';
         case {'H' , 14}
             H_ = [1, 1.4, 1.8]/2; leg = {'1 m','1.4 m','1.8 m'}; tit = 'Tidal Range';
@@ -160,7 +160,7 @@ for j = 1 : nj
         end
         y0(2) = H+0.3;        % tidal flat depth (m)
         y0(3) = H-0.3;         % marsh depth (m)
-        y0(4) = 0*10^-3*(y0(1)*(y0(2)+y0(3)));
+        y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
         
         %-------------- Solve the system of differential equations
         [t, y] = ode15s(@ode4marshtidalflat,tspan,y0); % or use ode15s/ode45/..23s
@@ -233,8 +233,8 @@ end
             tau = 0; % bed shear stress
             W = 0;   % wave power density
         else
-            [ H_w, T_w ] = WaveProps ( h, v_w, chi, g );   % compute significant height and peak period
-            [ tau, k_w ] = ShearStress ( h, k_0, H_w, T_w, g );     % compute bed shear stress
+            [ H_w, T_w ] = WaveProps ( h, v_w, chi);   % compute significant height and peak period
+            [ tau, k_w ] = ShearStress ( h, k_0, H_w, T_w);     % compute bed shear stress
             % c_g = sqrt(g*h);        % wave group velocity (shallow water)
             c_g = pi/k_w/T_w*(1+2*k_w*h/sinh(2*k_w*h)); % wave group velocity (general form)
             W = gamma*c_g*H_w^2/16; % wave power density (kg.m/s3)
