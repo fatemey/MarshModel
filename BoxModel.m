@@ -27,7 +27,7 @@ tspan = 0:dt:ts;
 
 %-------------- Sediment input constants
 C_o = 20 *10^-3;    % ocean concertation (kg/m3)
-C_f = 0 *10^-3;    % river concentration (kg/m3)
+C_f = 450 *10^-3;    % river concentration (kg/m3)
 Q_f = 20;         % river water discharge (m3/s)
 
 %-------------- Erosion constants
@@ -66,7 +66,7 @@ Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal 
 b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
 
 %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u (=C_r*(b_f*d_f+b_m*d_m))]
-y0(1) = 720;%b_fm/2;      % tidal flat width (m)
+y0(1) = 775;%b_fm/2;      % tidal flat width (m)
 y0(2) = H+0.3;        % tidal flat depth (m)
 y0(3) = H-0.3;         % marsh depth (m)
 y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
@@ -76,16 +76,16 @@ y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
 t = t /365/24/60/60; % convert time unit from s to yr for plotting purposes
 y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the formula used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
 
-% ind = find(y(:,2)<=H); % remove data related to tidal flat to marsh conversion
-% if ~isnan(ind)
-%     y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember in it is a new marsh now
-%     t(ind(2):end,:)=[];
-% end
+ind = find(y(:,2)<=H); % remove data related to tidal flat to marsh conversion
+if ~isnan(ind)
+    y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember in it is a new marsh now
+    t(ind(2):end,:)=[];
+end
 
 % fetch2depth = y(:,1)./y(:,2); % fetch to tidal flat depth ratio
 
 %-------------- Plot Results
-figure(1)
+figure(2)
 clf
 plot_BoxModel(t,y)
 % tit = 'co_60-bf0_800';
@@ -102,7 +102,8 @@ plot_BoxModel(t,y)
 % set(findobj('type','axes'),'fontsize',15)
 
 %======================= Nested Function =========================
-    function dy = ode4marshtidalflat (t,y) %  y1=b_f, y2=d_f, y3=d_m, y4=u (=C_r*(b_f*d_f+b_m*d_m, why solving u instead of C_r? u is the variable on the left hand side of mass conservation equation.)
+    function dy = ode4marshtidalflat (t,y) 
+        %  y1=b_f, y2=d_f, y3=d_m, y4=u (=C_r*(b_f*d_f+b_m*d_m, why solving u instead of C_r? u is the variable on the left hand side of mass conservation equation.)
         % solves the ODE system of equations
         
         %-------------- Setting width boundary limits

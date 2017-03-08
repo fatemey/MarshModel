@@ -1,60 +1,101 @@
 function plot_fetch
 % Function plot_fetch plots fetch threshold values (computed from functin fetch_threshold) vs diffrent
-% parameters. 
+% parameters. The size of the circles are the results from the function
+% tidalflat_convertion.
+%
 %--------------------------------------------------------------------------------------------------
+format compact
+format longG
+clear
+% clf
 
 %------------------------------------------------
 subplot(3,3,1)
+hold on
 load co; a = dat(:,1)*1000; b = dat(:,2);
-scatter(a,b,'k','.')
+load co_conversion;
+col = [f, f, f];
+for i = 1 : length(a)
+    scatter(a(i),b(i),10,'MarkerEdgeColor','k', 'MarkerFaceColor',col(i,:))
+end
 xlabel('Ocean Concentration (mg/l)')
 ylabel('Critical Fetch (m)') 
 box on
 
 %------------------------------------------------
 subplot(3,3,2)
+hold on
 load cf; a = dat(:,1)*1000; b = dat(:,2);
-scatter(a,b,'k','.')
+load cf_conversion
+col = [f, f, f];
+for i = 1 : length(a)
+    scatter(a(i),b(i),10,'MarkerEdgeColor','k', 'MarkerFaceColor',col(i,:))
+end
 xlabel('River Concentration (mg/l)')
 ylabel('Critical Fetch (m)') 
 box on
 
 %------------------------------------------------
 subplot(3,3,3)
+hold on
 load qf; a = dat(:,1); b = dat(:,2);
-scatter(a,b,'k','.')
+load qf_conversion
+col = [f, f, f];
+for i = 1 : length(a)
+    scatter(a(i),b(i),10,'MarkerEdgeColor','k', 'MarkerFaceColor',col(i,:))
+end
 xlabel('River Discharge (m^3/s)')
 ylabel('Critical Fetch (m)') 
 box on
 
 %------------------------------------------------
 subplot(3,3,4)
+hold on
 load le; a = dat(:,1)/1000; b = dat(:,2);
-scatter(a,b,'k','.')
+load le_conversion
+col = [f, f, f];
+for i = 1 : length(a)
+    scatter(a(i),b(i),10,'MarkerEdgeColor','k', 'MarkerFaceColor',col(i,:))
+end
 xlabel('Estuary Length (km)')
 ylabel('Critical Fetch (m)') 
 box on
 
 %------------------------------------------------
 subplot(3,3,5)
+hold on
 load bfm; a = dat(:,1)/1000; b = dat(:,2);
-scatter(a,b,'k','.')
+load bfm_conversion
+col = [f, f, f];
+for i = 1 : length(a)
+    scatter(a(i),b(i),10,'MarkerEdgeColor','k', 'MarkerFaceColor',col(i,:))
+end
 xlabel('Basin Width (km)')
 ylabel('Critical Fetch (m)') 
 box on
 
 %------------------------------------------------
 subplot(3,3,6)
+hold on
 load vw; a = dat(:,1); b = dat(:,2);
-scatter(a,b,'k','.')
+load vw_conversion
+col = [f, f, f];
+for i = 1 : length(a)
+    scatter(a(i),b(i),10,'MarkerEdgeColor','k', 'MarkerFaceColor',col(i,:))
+end
 xlabel('Wind Speed (m/s)')
 ylabel('Critical Fetch (m)') 
 box on
 
 %------------------------------------------------
 subplot(3,3,7)
+hold on
 load R; a = dat(:,1)/10^-3*365*24*60*60; b = dat(:,2);
-scatter(a,b,'k','.')
+load R_conversion
+col = [f, f, f];
+for i = 1 : length(a)
+    scatter(a(i),b(i),10,'MarkerEdgeColor','k', 'MarkerFaceColor',col(i,:))
+end
 xlabel('Rate of Sea Level Rise (mm/yr)')
 ylabel('Critical Fetch (m)') 
 box on
@@ -62,8 +103,13 @@ xlim([0 50])
 
 %------------------------------------------------
 subplot(3,3,8)
+hold on
 load H; a = dat(:,1)*2; b = dat(:,2);
-scatter(a,b,'k','.')
+load H_conversion
+col = [f, f, f];
+for i = 1 : length(a)
+    scatter(a(i),b(i),10,'MarkerEdgeColor','k', 'MarkerFaceColor',col(i,:))
+end
 xlabel('Tidal Range (m)')
 ylabel('Critical Fetch (m)') 
 box on

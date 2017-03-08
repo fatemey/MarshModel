@@ -54,12 +54,12 @@ gamma = 9800;   % water specific weight (N/m3)
 
 %-------------- Model assumptions
 Q_f_ = Q_f_/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
-b_fm_ = b_fm_/2;  % consider half of the basin only for one side of the tidal platform
+% b_fm_ = b_fm_/2;  % consider half of the basin only for one side of the tidal platform
 
 %-------------- Start the loop for each run
 mat_size = size(mat,1);
 n = 1;
-dat = zeros(size(mat,1)^size(mat,2),5);
+dat = zeros(size(mat,1)^size(mat,2),6);
 for i = 1 : mat_size % for C_O
     C_o = C_o_(i);
     
@@ -92,11 +92,13 @@ for i = 1 : mat_size % for C_O
                         y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the formula used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
                         
                         ind = find(y(:,2)<=H); % remove data related to tidal flat to marsh conversion
-                        y(ind(2:end),:)=[]; % retain only one value afetr conversion to remember in it is a new marsh now
-                        t(ind(2:end))=[];
+                        if ~isnan(ind)
+                            y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember in it is a new marsh now
+                            t(ind(2):end,:)=[];
+                        end
                         
-                        clf
-                        plot_BoxModel(t,y)
+%                         clf
+%                         plot_BoxModel(t,y)
                         
                         width = y(:,1); % tidal falt width solution
                         n_w = length(width);
@@ -117,26 +119,29 @@ for i = 1 : mat_size % for C_O
                         
                         if n_width_diff == 2
                             dat(n,1) = width(1); % critical fetch
-                            dat(n,2) = C_f*Q_f; % Cf*Qf
-                            dat(n,3) = C_o*(L_E*b_fm*H/T_T); % Co*QT
-                            dat(n,4) = Q_f; % Qf
-                            dat(n,5) = L_E*b_fm*H/T_T; % QT
+                            dat(n,2) = C_o;
+                            dat(n,3) = C_f;
+                            dat(n,4) = Q_f;
+                            dat(n,5) = b_fm;
+                            dat(n,6) = L_E;
                             n = n+1;
                             break
                         elseif i == length(TF_width) && unique(width_diff) == 1
                             dat(n,1) = TF_width(1);
-                            dat(n,2) = C_f*Q_f; % Cf*Qf
-                            dat(n,3) = C_o*(L_E*b_fm*H/T_T); % Co*QT
-                            dat(n,4) = Q_f; % Qf
-                            dat(n,5) = L_E*b_fm*H/T_T; % QT
+                            dat(n,2) = C_o;
+                            dat(n,3) = C_f;
+                            dat(n,4) = Q_f;
+                            dat(n,5) = b_fm;
+                            dat(n,6) = L_E;
                             n = n+1;
                             break
                         elseif i == length(TF_width) && unique(width_diff) == -1
                             dat(n,1) = TF_width(end);
-                            dat(n,2) = C_f*Q_f; % Cf*Qf
-                            dat(n,3) = C_o*(L_E*b_fm*H/T_T); % Co*QT
-                            dat(n,4) = Q_f; % Qf
-                            dat(n,5) = L_E*b_fm*H/T_T; % QT
+                            dat(n,2) = C_o;
+                            dat(n,3) = C_f;
+                            dat(n,4) = Q_f;
+                            dat(n,5) = b_fm;
+                            dat(n,6) = L_E;
                             n = n+1;
                             break
                         end
@@ -155,51 +160,6 @@ end
 
 %-------------- Save and Plot Results
 save('dat_pars.mat','dat')
-% col(:,1) = ones(size(dat,1),1)/2;
-% col(:,3) = dat(:,1)/max(dat(:,1));
-% scatter(dat(:,2),dat(:,3),50,col,'o','filled')
-fetch_c = dat(:,1);
-n_clusters = 10;
-circle_siz = ones(size(dat,1),1);
-siz_step = linspace(0,max(fetch_c),n_clusters-1);
-for i = 1 : length(siz_step)-1
-circle_siz(fetch_c>siz_step(i)&fetch_c<=siz_step(i+1)) = 30*i;
-end
-figure(1)
-scatter(dat(:,2),dat(:,3),circle_siz,'k','o')
-xlabel('C_{f}.Q_{f} (kg/s)')
-ylabel('C_{o}.Q_{T} (kg/s)')
-box on
-set(findobj('type','axes'),'fontsize',15)
-h_fig=gcf;
-set(h_fig,'PaperOrientation','portrait')
-set(h_fig,'PaperPosition', [0 0 7.5 6]) % [... ... max_width=7.5 max_height=9]
-print('xc-cfqf-coqt','-dtiff','-r400')
-movefile('xc-cfqf-coqt.tif','C:\Users\fy23\Fateme\Projects\Marsh Model\Results\16 - Critical fetch for ratio')
-
-figure(2)
-scatter(dat(:,4),dat(:,5),circle_siz,'k','o')
-xlabel('Q_{f} (m^3/s)')
-ylabel('Q_{T} (m^3/s)')
-box on
-set(findobj('type','axes'),'fontsize',15)
-h_fig=gcf;
-set(h_fig,'PaperOrientation','portrait')
-set(h_fig,'PaperPosition', [0 0 7.5 6]) % [... ... max_width=7.5 max_height=9]
-print('xc-qf-qt','-dtiff','-r400')
-movefile('xc-qf-qt.tif','C:\Users\fy23\Fateme\Projects\Marsh Model\Results\16 - Critical fetch for ratio')
-
-figure(3)
-scatter(dat(:,3)./dat(:,2),dat(:,1),'k','o')
-xlabel('Ocean to Riverine Input Ratio')
-ylabel('Critical Fetch (m)')
-box on
-set(findobj('type','axes'),'fontsize',15)
-h_fig=gcf;
-set(h_fig,'PaperOrientation','portrait')
-set(h_fig,'PaperPosition', [0 0 7.5 6]) % [... ... max_width=7.5 max_height=9]
-print('xc-cfqf2coqt','-dtiff','-r400')
-movefile('xc-cfqf2coqt.tif','C:\Users\fy23\Fateme\Projects\Marsh Model\Results\16 - Critical fetch for ratio')
 
 %======================= Nested Function =========================
     function dy = ode4marshtidalflat (t,y) %  y1=b_f, y2=d_f, y3=d_m, y4=u (=C_r*(b_f*d_f+b_m*d_m, why solving u instead of C_r? u is the variable on the left hand side of mass conservation equation.)

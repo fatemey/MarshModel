@@ -1,9 +1,8 @@
-function x = fetch_threshold
-% Function fetch_threshold looks for a fetch threshold value based on
-% diffrent values of a variable of interest. Functtion fetch_threshold is
-% based on the function of BoxModel as of 2/28/17.
-% after each run for the parameter of interest, save the x in the excle
-% file, or save it as a mat file to plot later using the function plot_fetch.
+function tidalflat_convertion
+% tidalflat_convertion: checks for tidal flat conversion tomarsh based on different set of parametrs.
+% here we are intersted in values from critical fetch settings (based on BoxModel as of 2/28/2017)
+% The saved results can be used in plot_fetch function.
+%
 %--------------------------------------------------------------------------------------------------
 format compact
 format longG
@@ -14,7 +13,6 @@ par_temp = 1 : 8;
 
 for k = 1 : 8
     
-    %     k
     %-------------- Set the time span
     tyr = 500;  % solve for time tyr (years)
     ts = tyr *365*24*60*60; % tyr in (s)
@@ -48,159 +46,114 @@ for k = 1 : 8
     
     %-------------- Tide Characteristics
     T_T = 12 *60*60;   % tidal period (s) (= 12 hours)
-    H = 1.4 /2;          % tidal amplitude (range/2) (m)
+    H = 1.4/2;          % tidal amplitude (range/2) (m)
     
     %-------------- Sediment properties
     rho_s = 1000;   % sediment bulk density (kg/m3)
     omega_s = 0.5 *10^-3;   % settling velocity (m/s)
     
     %-------------- Model constants
-    gamma = 9800;   % water specific weight (N/m3)
+    gamma = 9800;   % water specific weight (N/m3 or kg/m2/s2)
     
     %-------------- Model assumptions
     Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
 %     b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
     
-    %-------------- Start the loop for each run
     par = par_temp(k);
     switch par
         case 1
-            par_v = 5 *10^-3 : 5 *10^-3 : 100 *10^-3; % for C_o
-            TF_width = 10 : 10 : b_fm-10;
+            dat = callfun1; d = 10;
         case 2
-            par_v = 0 *10^-3: 50 *10^-3 : 1000 *10^-3; % for C_f
-            TF_width = 5 : 5 : b_fm-5;
+            dat = callfun2; d = 5;
         case 3
-            par_v = 0 : 100  : 1000; % for Q_f
-            TF_width = 5 : 5 : b_fm-5;
+            dat = callfun3; d = 5;
         case 4
-            par_v = 1 *10^3 : 2 *10^3 : 20 *10^3; % for L_E
-            TF_width = 1 : 1 : b_fm-1;
+            dat = callfun4; d = 1;
         case 5
-            par_v = 1 *10^3 : 2 *10^3 : 20 *10^3; % for b_fm
+            dat = callfun5; d = 1;
         case 6
-            par_v = 0 : 2 : 20; % for v_w
-            TF_width = 10 : 10 : b_fm-10;
+            dat = callfun6; d = 10;
         case 7
-            par_v = 0 : 2 *10^-3/365/24/60/60 : 30 *10^-3/365/24/60/60; % for R
-            TF_width = 5 : 5 : b_fm-5;
+            dat = callfun7; d = 5;
         case 8
-            par_v = [1, 2 : 2 : 20]/2; % for H
-            TF_width = b_fm-1 : -1 : 1;
+            dat = callfun8; d = 1;
     end
     
-    for j = 1 : length(par_v)
+    %-------------- Start the loop for each run
+    for j = 1 : size(dat,1)
         
-%                 j
+        j
         switch par
             case 1
-                C_o = par_v(j);
+                C_o = dat(j,1);
             case 2
-                C_f = par_v(j);
+                C_f = dat(j,1);
             case 3
-                Q_f = par_v(j)/2;
+                Q_f = dat(j,1)/2;
             case 4
-                L_E = par_v(j);
+                L_E = dat(j,1);
             case 5
-                % b_fm = par_v(j)/2;
-                b_fm = par_v(j);
-                TF_width = 1 : 1 : b_fm-1;
+%                 b_fm = dat(j,1)/2;
+                b_fm = dat(j,1);
             case 6
-                v_w = par_v(j);
+                v_w = dat(j,1);
             case 7
-                R = par_v(j);
+                R = dat(j,1);
             case 8
-                H = par_v(j);
+                H = dat(j,1);
         end
         
-        clear y t width_diff        
-        for i = 1 : length(TF_width)
-            
-%             i
-            %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u(=C_r*(b_f*d_f+b_m*d_m))]
-            y0(1) = TF_width(i);
-            y0(2) = H+0.3;         % tidal flat depth (m)
-            y0(3) = H-0.3;         % marsh depth (m)
-            y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
-            
-            %-------------- Solve the system of differential equations
-            [t, y] = ode15s(@ode4marshtidalflat,tspan,y0); % or use ode15s/ode23s/ode23tb
-            t = t /365/24/60/60; % convert time unit from s to yr for plotting purposes
-            y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the formula used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
-
-            ind = find(y(:,2)<=H); % remove data related to tidal flat to marsh conversion
-            if ~isnan(ind)
-                y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember in it is a new marsh now
-                t(ind(2):end,:)=[];
-            end
-            
-            %             clf
-            %             plot_BoxModel(t,y)
-            
-            width = y(:,1); % tidal falt width solution
-            n = length(width);
-            
-            width_diff(i) = sign(width(n)-width(floor(n/2))); % - corresponds to TF contraction and + accounts for expansion
-            
-            if y(end,2) <= H % check whether if tidal flat has turned into a marsh
-                width_diff(i) = -1;
-            end
-            
-            if width(n) >= b_fm % check whether if tidal flat has reached to its boundary limits
-                width_diff(i) = 1;
-            elseif width(n) <= 0
-                width_diff(i) = -1;
-            end
-            
-            n_width_diff = length(unique(width_diff));
-            
-            if n_width_diff == 2
-                x(j,1) = width(1);
-                break
-            elseif i == length(TF_width) && unique(width_diff) == 1
-                x(j,1) = TF_width(1);
-                break
-            elseif i == length(TF_width) && unique(width_diff) == -1
-                x(j,1) = TF_width(end);
-                break
-            end
-            
+        %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u (=C_r*(b_f*d_f+b_m*d_m))]
+        y0(1) = dat(j,2)-d;      % tidal flat width (m)
+        y0(2) = H+0.3;        % tidal flat depth (m)
+        y0(3) = H-0.3;         % marsh depth (m)
+        y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
+        
+        %-------------- Solve the system of differential equations
+        [t, y] = ode15s(@ode4marshtidalflat,tspan,y0); % or use ode15s/ode23s/ode23tb
+        t = t /365/24/60/60; % convert time unit from s to yr for plotting purposes
+        y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the formula used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
+        
+        ind = find(y(:,2)<=H); % remove data related to tidal flat to marsh conversion
+        if ~isnan(ind)
+            y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember in it is a new marsh now
+            t(ind(2):end,:)=[];
+        end
+        
+        if y(end,2) <= H % check conversion of tidal flat to marsh
+            f(j,1) = 1;
+        else
+            f(j,1) = 0;
         end
         
     end
-    
-    x_new = x;
-    if length(par_v)>length(x)
-        x_new(length(x)+1:length(par_v)) = -1;
-    end
-    
-    dat = [par_v', x_new];
     
     switch par
         case 1
-            save('co.mat','dat')
+            save('co_conversion.mat','f')
         case 2
-            save('cf.mat','dat')
+            save('cf_conversion.mat','f')
         case 3
-            save('qf.mat','dat')
+            save('qf_conversion.mat','f')
         case 4
-            save('le.mat','dat')
+            save('le_conversion.mat','f')
         case 5
-            save('bfm.mat','dat')
+            save('bfm_conversion.mat','f')
         case 6
-            save('vw.mat','dat')
+            save('vw_conversion.mat','f')
         case 7
-            save('R.mat','dat')
+            save('R_conversion.mat','f')
         case 8
-            save('H.mat','dat')
+            save('H_conversion.mat','f')
     end
     
-    clear x dat x_new
+    clear f
     
 end
 
-%======================= Nested Function =========================
-    function dy = ode4marshtidalflat (t,y) %  y1=b_f, y2=d_f, y3=d_m, y4=u (=C_r*(b_f*d_f+b_m*d_m, why solving u instead of C_r? u is the variable on the left hand side of mass conservation equation.)
+%======================= Nested Functions =========================
+    function dy = ode4marshtidalflat (t,y)
+        %  y1=b_f, y2=d_f, y3=d_m, y4=u (=C_r*(b_f*d_f+b_m*d_m, why solving u instead of C_r? u is the variable on the left hand side of mass conservation equation.)
         % solves the ODE system of equations
         
         %-------------- Setting width boundary limits
@@ -250,8 +203,8 @@ end
             tau = 0; % bed shear stress
             W = 0;   % wave power density
         else
-            [ H_w, T_w ] = WaveProps ( h, v_w, chi);   % compute significant height and peak period
-            [ tau, k_w ] = ShearStress ( h, k_0, H_w, T_w);     % compute bed shear stress
+            [ H_w, T_w ] = WaveProps ( h, v_w, chi );   % compute significant height and peak period
+            [ tau, k_w ] = ShearStress ( h, k_0, H_w, T_w );     % compute bed shear stress
             % c_g = sqrt(g*h);        % wave group velocity (shallow water)
             c_g = pi/k_w/T_w*(1+2*k_w*h/sinh(2*k_w*h)); % wave group velocity (general form)
             W = gamma*c_g*H_w^2/16; % wave power density (kg.m/s3)
@@ -392,6 +345,39 @@ end
         var = bed_erosion + margin + ocean_in + river_in - TF_deposition - M_deposition - export;   % (kg/s)
         dy(4,1) =  var / L_E;
         
+    end
+
+    function dat = callfun1
+        % loading data suitable for static workspace
+        load('co.mat')
+    end
+
+    function dat = callfun2
+        load('cf.mat')
+    end
+
+    function dat = callfun3
+        load('qf.mat')
+    end
+
+    function dat = callfun4
+        load('le.mat')
+    end
+
+    function dat = callfun5
+        load('bfm.mat')
+    end
+
+    function dat = callfun6
+        load('vw.mat')
+    end
+
+    function dat = callfun7
+        load('R.mat')
+    end
+
+    function dat = callfun8
+        load('H.mat')
     end
 
 end
