@@ -1,7 +1,9 @@
 function tidalflat_convertion
 % tidalflat_convertion: checks for tidal flat conversion tomarsh based on different set of parametrs.
-% here we are intersted in values from critical fetch settings (based on BoxModel as of 2/28/2017)
+% here we are intersted in values from critical fetch settings based on BoxModel.
 % The saved results can be used in plot_fetch function.
+%
+% Last Update: 3/13/2017
 %
 %--------------------------------------------------------------------------------------------------
 format compact
@@ -11,7 +13,7 @@ clear
 
 par_temp = 1 : 8;
 
-for k = 1 : 8
+for k = 7 : 7
     
     %-------------- Set the time span
     tyr = 500;  % solve for time tyr (years)
@@ -57,7 +59,7 @@ for k = 1 : 8
     
     %-------------- Model assumptions
     Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
-%     b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
+    %     b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
     
     par = par_temp(k);
     switch par
@@ -76,7 +78,7 @@ for k = 1 : 8
         case 7
             dat = callfun7; d = 5;
         case 8
-            dat = callfun8; d = 1;
+            dat = callfun8; d = 5;
     end
     
     %-------------- Start the loop for each run
@@ -93,7 +95,7 @@ for k = 1 : 8
             case 4
                 L_E = dat(j,1);
             case 5
-%                 b_fm = dat(j,1)/2;
+                %                 b_fm = dat(j,1)/2;
                 b_fm = dat(j,1);
             case 6
                 v_w = dat(j,1);
@@ -103,6 +105,7 @@ for k = 1 : 8
                 H = dat(j,1);
         end
         
+        %-------------- Case 1: Tidal flat emergence
         %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u (=C_r*(b_f*d_f+b_m*d_m))]
         y0(1) = dat(j,2)-d;      % tidal flat width (m)
         y0(2) = H+0.3;        % tidal flat depth (m)
@@ -114,16 +117,74 @@ for k = 1 : 8
         t = t /365/24/60/60; % convert time unit from s to yr for plotting purposes
         y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the formula used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
         
+        ind = find(y(:,3)>H); % remove data related to marsh conversion to tidal flat
+        if ~isnan(ind)
+            y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember in it is a new tidal flat now
+            t(ind(2):end,:)=[];
+        end
+        
         ind = find(y(:,2)<=H); % remove data related to tidal flat to marsh conversion
         if ~isnan(ind)
             y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember in it is a new marsh now
             t(ind(2):end,:)=[];
         end
         
-        if y(end,2) <= H % check conversion of tidal flat to marsh
-            f(j,1) = 1;
+        width = y(:,1); % tidal falt width solution
+        n = length(width);
+        s = sign(width(n)-width(floor(n/2))); % -1 corresponds to TF contraction (or fully marsh) and +1 accounts for expansion (or fully tidal flat)
+        
+        %         emrg(j,1:4) = y(n,:);
+        %         emrg(j,5) = L_E;
+        %         emrg(j,6) = b_fm;
+        %         emrg(j,7) = C_o;
+        %         emrg(j,8) = C_f;
+        
+        if y(n,2) <= H % check tidal flat conversion to marsh
+            if s == 1
+                f(j,1) = 1; % corresponds to an expanding TF which converts to a marsh
+            else
+                f(j,1) = 2; % corresponds to a contracting TF which converts to a marsh
+            end
         else
             f(j,1) = 0;
+        end
+        
+        %-------------- Case 2: marsh drowning
+        %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u (=C_r*(b_f*d_f+b_m*d_m))]
+        y0(1) = dat(j,2);      % tidal flat width (m)
+        
+        %-------------- Solve the system of differential equations
+        [t, y] = ode15s(@ode4marshtidalflat,tspan,y0); % or use ode15s/ode23s/ode23tb
+        t = t /365/24/60/60; % convert time unit from s to yr for plotting purposes
+        y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the formula used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
+        
+        ind = find(y(:,3)>H); % remove data related to marsh conversion to tidal flat
+        if ~isnan(ind)
+            y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember in it is a new tidal flat now
+            t(ind(2):end,:)=[];
+        end
+        
+        ind = find(y(:,2)<=H); % remove data related to tidal flat to marsh conversion
+        if ~isnan(ind)
+            y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember in it is a new marsh now
+            t(ind(2):end,:)=[];
+        end
+        
+        width = y(:,1); % tidal falt width solution
+        n = length(width);
+        s = sign(width(n)-width(floor(n/2))); % -1 corresponds to TF contraction (or fully marsh) and +1 accounts for expansion (or fully tidal flat)
+        
+        if y(n,3) > H % check marsh conversion to tidal flat
+            if width(n) <= 0
+                f(j,1) = 3; % corresponds to an expanding marsh which drwons
+            elseif width(n) >= b_fm
+                f(j,1) = 4; % corresponds to a contracting marsh which drwons
+            elseif s == -1
+                f(j,1) = 3; % corresponds to an expanding marsh which drwons
+            elseif s == 1
+                f(j,1) = 4; % corresponds to a contracting marsh which drwons
+            end
+            
         end
         
     end

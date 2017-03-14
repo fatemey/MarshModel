@@ -1,7 +1,10 @@
 function dat = fetch_threshold_O2Rratio
 % Function fetch_threshold_O2Rratio looks for a fetch threshold value for
 % diffrent ratios ocean to riverine input. Function fetch_threshold_O2Rratio is
-% based on the function of fetch_threshold as of 2/24/17.
+% based on the function: fetch_threshold
+%
+% Last Update: as of 2/28/17
+%
 %--------------------------------------------------------------------------------------------------
 format compact
 format longG

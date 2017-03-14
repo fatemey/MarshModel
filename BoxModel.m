@@ -1,7 +1,7 @@
-% function [t, y] = BoxModel
-function BoxModel
+function [t, y] = BoxModel
+% function BoxModel
 % BoxModel: Models 0d marsh and tidal flat time
-% evolution using Matlab ode23tb function (as of 2/28/2017)
+% evolution using Matlab ode23tb function.
 %
 % Output
 %           t : vector of time data in yr
@@ -12,6 +12,8 @@ function BoxModel
 % Purpose: Determining marsh and tidal flat depths and widths changes with
 %               rising sea level. This model is solved using 4 equations and 4
 %               unknowns.
+%
+% Last Update: 3/13/2017
 %
 %--------------------------------------------------------------------------------------------------
 format compact
@@ -27,7 +29,7 @@ tspan = 0:dt:ts;
 
 %-------------- Sediment input constants
 C_o = 20 *10^-3;    % ocean concertation (kg/m3)
-C_f = 450 *10^-3;    % river concentration (kg/m3)
+C_f = 15 *10^-3;    % river concentration (kg/m3)
 Q_f = 20;         % river water discharge (m3/s)
 
 %-------------- Erosion constants
@@ -47,7 +49,7 @@ k_B = 2*10^-3 /365/24/60/60;    % vegetation characteristics (m3/s/kg)
 %-------------- Basin properties
 b_fm = 5 *10^3; % total basin width (both sides of the channel) (m)
 L_E = 15 *10^3; % basin length (m)
-R = 2 *10^-3/365/24/60/60;   % sea level rise (m/s)
+R = 4 *10^-3/365/24/60/60;   % sea level rise (m/s)
 b_r = 0; % river width (m)
 
 %-------------- Tide Characteristics
@@ -63,10 +65,10 @@ gamma = 9800;   % water specific weight (N/m3 or kg/m2/s2)
 
 %-------------- Model assumptions
 Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
-b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
+% b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
 
 %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u (=C_r*(b_f*d_f+b_m*d_m))]
-y0(1) = 775;%b_fm/2;      % tidal flat width (m)
+y0(1) = 745;%b_fm/2;      % tidal flat width (m)
 y0(2) = H+0.3;        % tidal flat depth (m)
 y0(3) = H-0.3;         % marsh depth (m)
 y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
@@ -76,7 +78,13 @@ y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
 t = t /365/24/60/60; % convert time unit from s to yr for plotting purposes
 y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the formula used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
 
-ind = find(y(:,2)<=H); % remove data related to tidal flat to marsh conversion
+ind = find(y(:,3)>H); % remove data related to marsh conversion to tidal flat
+if ~isnan(ind)
+    y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember in it is a new tidal flat now
+    t(ind(2):end,:)=[];
+end
+
+ind = find(y(:,2)<=H); % remove data related to tidal flat conversion to marsh
 if ~isnan(ind)
     y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember in it is a new marsh now
     t(ind(2):end,:)=[];
@@ -88,10 +96,10 @@ end
 figure(2)
 clf
 plot_BoxModel(t,y)
-% tit = 'co_60-bf0_800';
-% print(tit,'-dtiff','-r400')
-% movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\14 - Fetch threshold')
-% close all
+tit = 'R_4-bf0_745';
+print(tit,'-dtiff','-r400')
+movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\15 - Model Parameters relationships')
+close all
 
 % figure(2)
 % clf
