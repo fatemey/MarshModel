@@ -96,10 +96,10 @@ end
 figure(2)
 clf
 plot_BoxModel(t,y)
-tit = 'R_4-bf0_745';
-print(tit,'-dtiff','-r400')
-movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\15 - Model Parameters relationships')
-close all
+% tit = 'R_4-bf0_745';
+% print(tit,'-dtiff','-r400')
+% movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\15 - Model Parameters relationships')
+% close all
 
 % figure(2)
 % clf

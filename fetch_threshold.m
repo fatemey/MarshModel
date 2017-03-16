@@ -15,7 +15,7 @@ clear
 
 par_temp = 1 : 8;
 
-for k = 7 : 7
+for k = 4 : 5
     
     %     k
     %-------------- Set the time span
@@ -44,8 +44,8 @@ for k = 7 : 7
     k_B = 2*10^-3 /365/24/60/60;    % vegetation characteristics (m3/s/kg)
     
     %-------------- Basin properties
-    b_fm = 5 *10^3; % total basin width (both sides of the channel) (m)
-    L_E = 15 *10^3; % basin length (m)
+    b_fm = 10 *10^3; % total basin width (both sides of the channel) (m)
+    L_E = 10 *10^3; % basin length (m)
     R = 2 *10^-3/365/24/60/60;   % sea level rise (m/s)
     b_r = 0; % river width (m)
     
@@ -197,9 +197,9 @@ for k = 7 : 7
         case 3
             save('qf.mat','dat')
         case 4
-            save('le.mat','dat')
+            save('le_2.mat','dat')
         case 5
-            save('bfm.mat','dat')
+            save('bfm_2.mat','dat')
         case 6
             save('vw.mat','dat')
         case 7

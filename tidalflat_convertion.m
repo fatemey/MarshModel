@@ -13,7 +13,7 @@ clear
 
 par_temp = 1 : 8;
 
-for k = 7 : 7
+for k = 4 : 5
     
     %-------------- Set the time span
     tyr = 500;  % solve for time tyr (years)
@@ -197,9 +197,9 @@ for k = 7 : 7
         case 3
             save('qf_conversion.mat','f')
         case 4
-            save('le_conversion.mat','f')
+            save('le_2_conversion.mat','f')
         case 5
-            save('bfm_conversion.mat','f')
+            save('bfm_2_conversion.mat','f')
         case 6
             save('vw_conversion.mat','f')
         case 7
@@ -422,11 +422,11 @@ end
     end
 
     function dat = callfun4
-        load('le.mat')
+        load('le_2.mat')
     end
 
     function dat = callfun5
-        load('bfm.mat')
+        load('bfm_2.mat')
     end
 
     function dat = callfun6
