@@ -1,5 +1,5 @@
-function [t, y] = BoxModel
-% function BoxModel
+% function [t, y] = BoxModel
+function BoxModel
 % BoxModel: Models 0d marsh and tidal flat time
 % evolution using Matlab ode23tb function.
 %
@@ -49,7 +49,7 @@ k_B = 2*10^-3 /365/24/60/60;    % vegetation characteristics (m3/s/kg)
 %-------------- Basin properties
 b_fm = 5 *10^3; % total basin width (both sides of the channel) (m)
 L_E = 15 *10^3; % basin length (m)
-R = 4 *10^-3/365/24/60/60;   % sea level rise (m/s)
+R = 2 *10^-3/365/24/60/60;   % sea level rise (m/s)
 b_r = 0; % river width (m)
 
 %-------------- Tide Characteristics
@@ -68,7 +68,7 @@ Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal 
 % b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
 
 %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u (=C_r*(b_f*d_f+b_m*d_m))]
-y0(1) = 745;%b_fm/2;      % tidal flat width (m)
+y0(1) = 750;%b_fm/2;      % tidal flat width (m)
 y0(2) = H+0.3;        % tidal flat depth (m)
 y0(3) = H-0.3;         % marsh depth (m)
 y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u

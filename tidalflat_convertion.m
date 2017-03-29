@@ -1,7 +1,7 @@
 function tidalflat_convertion
 % tidalflat_convertion: checks for tidal flat conversion tomarsh based on different set of parametrs.
 % here we are intersted in values from critical fetch settings based on BoxModel.
-% The saved results can be used in plot_fetch function.
+% The saved results can be used in plot_initialwidth function.
 %
 % Last Update: 3/13/2017
 %
