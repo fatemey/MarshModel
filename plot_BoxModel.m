@@ -3,7 +3,6 @@ function plot_BoxModel(t,y)
 % The plot includes 4 graphs (C_r, b_f, d_f, d_m) for 1 set of parameters.
 %
 %--------------------------------------------------------------------------
-% C_r = y(:,4); b_f = y(:,1)/1000; d_f = y(:,2); d_m = y(:,3);
 C_r = y(:,4); b_f = y(:,1); d_f = y(:,2); d_m = y(:,3);
 
 left=.15; midh=.15; right=.05;
@@ -23,7 +22,6 @@ set(gca,'XTickLabel',[])
 
 axes('Position',[left2 bottom1 width height]);
 plot(t,b_f,'linewidth',2)
-% ylabel('Tidal Flat Width (km)')
 ylabel('Tidal Flat Width (m)')
 set(gca,'XTickLabel',[])
 

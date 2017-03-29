@@ -10,3 +10,6 @@
 % 3/13/2017: (disregard because the changes were deleted.)
 % Adding:  && length(ind)>1, to consider a case when conversion happens for
 % more than one value.
+
+% 3/28/2017: 
+% function naming was changed.

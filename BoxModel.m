@@ -1,5 +1,5 @@
-% function [t, y] = BoxModel
-function BoxModel
+function [t, y] = BoxModel
+% function BoxModel
 % BoxModel: Models 0d marsh and tidal flat time
 % evolution using Matlab ode23tb function.
 %

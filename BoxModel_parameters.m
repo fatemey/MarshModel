@@ -1,9 +1,9 @@
-function [a, b] = BoxModel_parameters(t, y, x_par, y_par)
+function [a, b] = BoxModel_parameters(t, y)
 % plot_BoxModel_vars: plots different parameters
 %
 % Input
-%           t : vector of time data in yr
-%           y : matrix of data. 1st vertical vector: tidal flat width (m),
+%           t : vector of time data in yr from BoxModel.
+%           y : matrix of data from BoxModel. 1st vertical vector: tidal flat width (m),
 %           2nd vector: tidal flat depth (m), 3rd vector: marsh depth (m),
 %           and 4th vector: C_r (g/m3).
 %           x_par : char vector of the x axis parameter of interest. It can
@@ -19,7 +19,7 @@ function [a, b] = BoxModel_parameters(t, y, x_par, y_par)
 %           a : vector of x-axis data of interset for plotting purposes
 %           b : vector of y-axis data of interset for plotting purposes
 %
-% Last Update: 3/10/2017
+% Last Update: 3/29/2017
 %
 %--------------------------------------------------------------------------------------------------
 
@@ -57,154 +57,77 @@ gamma = 9800;   % water specific weight (N/m3)
 Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
 % b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
 
-switch x_par
-    
-    case 't'
-        a = t;
-        x_lab = 'Time (yr)';
-        
-    case 'd' % tidal flat depth
-        a = y(:,2);
-        x_lab = 'Tidal Flat Depth (m)';
-        
-        %-------------- Compute Fetch (m)
-    case 'fetch'
-        a = y(:,1)*2/1000;
-        x_lab = 'Fetch (km)';
-        
-        %-------------- Compute Characteristic Depth (m)
-    case 'h'
-        a = (y(:,2)+max(0,y(:,2)-2*H))/2;
-        x_lab = 'Reference Depth (m)';
-        
+%-------------- Model parameters
+b_f = y(:,1);
+d_f = y(:,2);
+d_m = y(:,3);
+b_m = b_fm-b_f; % marsh width
+Q_T = (d_f.*b_f+d_m.*b_m)*L_E/T_T-Q_f;
+ocean = Q_T*C_o; % Ocean Sediment Input (kg/s)
+chi = b_f*2; % fetch (m)
+h =  (d_f+max(0,d_f-2*H))/2; % characteristic depth (m)
+
+tau = zeros(size(h));
+W = zeros(size(h)); % Wave Power Density (kg.m/s3)
+for i=1:length(h)
+    [ H_w, T_w] = WaveProps ( h(i), v_w, chi(i));   % compute significant height and peak period
+    [ tau(i), k_w ] = ShearStress ( h(i), k_0, H_w, T_w);
+    c_g = pi/k_w/T_w*(1+2*k_w*h(i)/sinh(2*k_w*h(i))); % wave group velocity (general form)
+    W(i) = gamma*c_g*H_w^2/16; % wave power density (kg.m/s3)
 end
 
-switch y_par
-    
-    %-------------- Compute Shear Stress (PA)
-    case 'tau'
-        h = (y(:,2)+max(0,y(:,2)-2*H))/2;
-        chi = y(:,1)*2;
-                tau = zeros(size(h));
-                for i=1:length(h)
-                    [ H_w, T_w] = WaveProps ( h(i), v_w, chi(i));   % compute significant height and peak period
-                    [ tau(i), k_w ] = ShearStress ( h(i), k_0, H_w, T_w);
-                end
-%         load tau_2
-        b = tau;
-%         b(y(:,2) > H) = 0;
-        y_lab = 'Shear Stress (PA)';
-        
-        %-------------- Compute Tidal Flat Bed Erosion (kg/s)
-    case 'bed_e'
-        h = (y(:,2)+max(0,y(:,2)-2*H))/2;
-        chi = y(:,1)*2;
-                tau = zeros(size(h));
-                for i=1:length(h)
-                    [ H_w, T_w] = WaveProps ( h(i), v_w, chi(i));   % compute significant height and peak period
-                    [ tau(i), k_w ] = ShearStress ( h(i), k_0, H_w, T_w);
-                end
-%         load tau_2
+%-------------- Plot the results
+clf
+subplot(3,3,1)
+plot(t,b_f,'linewidth',2)
+xlabel('Year')
+ylabel('Tidal Flat Width (m)')
 
-        t_s = 1/2-1/pi*asin((H-y(:,2))/H);
-        t_s(y(:,2) >= 2*H) = 1;
-        b = zeros(size(y,1),1);
-%         b(y(:,2) > H) = max(0,t_s*E_0.*(tau-tau_c)./tau_c.*y(:,1)*L_E);
-        b = max(0,t_s*E_0.*(tau-tau_c)./tau_c.*y(:,1)*L_E);
-        y_lab = 'Bed Erosion Rate (kg/s)';
-        
-        %-------------- Compute Margin Erosion (m/s)
-    case 'mar_e'
-        b_m = b_fm-y(:,1); % marsh width
-        h = (y(:,2)+max(0,y(:,2)-2*H))/2;
-        chi = y(:,1)*2;
-        W = zeros(size(h));
-        for i=1:length(h)
-            [ H_w, T_w] = WaveProps ( h(i), v_w, chi(i));   % compute significant height and peak period
-            [ tau, k_w ] = ShearStress ( h(i), k_0, H_w, T_w);
-            c_g = pi/k_w/T_w*(1+2*k_w*h(i)/sinh(2*k_w*h(i))); % wave group velocity (general form)
-            W(i) = gamma*c_g*H_w^2/16; % wave power density (kg.m/s3)
-        end
-        %         W(y(:,2) <= H) = 0;
-        
-        b = zeros(size(y,1),1);
-%         b(y(:,2) > H) = k_e*W;
-        b = k_e*W;
-        y_lab = 'Margin Erosion Rate (m/s)';
-        
-        %-------------- Compute Wave Power Density (kg.m/s3)
-    case 'wave'
-        b_m = b_fm-y(:,1); % marsh width
-        h = (y(:,2)+max(0,y(:,2)-2*H))/2;
-        chi = y(:,1)*2;
-                W = zeros(size(h));
-                for i=1:length(h)
-                    [ H_w, T_w] = WaveProps ( h(i), v_w, chi(i));   % compute significant height and peak period
-                    [ tau, k_w ] = ShearStress ( h(i), k_0, H_w, T_w);
-                    c_g = pi/k_w/T_w*(1+2*k_w*h(i)/sinh(2*k_w*h(i))); % wave group velocity (general form)
-                    W(i) = gamma*c_g*H_w^2/16; % wave power density (kg.m/s3)
-                end
-%         load W_2
-        W(y(:,2) <= H) = 0;
-        
-        b = W;
-        y_lab = 'Wave Power Density (kg.m/s^3)';
-        
-        %-------------- Compute Margin Erosion/Accretion (kg/s)
-    case 'margin'
-        b_m = b_fm-y(:,1); % marsh width
-        h = (y(:,2)+max(0,y(:,2)-2*H))/2;
-        chi = y(:,1)*2;
-                W = zeros(size(h));
-                for i=1:length(h)
-                    [ H_w, T_w] = WaveProps ( h(i), v_w, chi(i));   % compute significant height and peak period
-                    [ tau, k_w ] = ShearStress ( h(i), k_0, H_w, T_w);
-                    c_g = pi/k_w/T_w*(1+2*k_w*h(i)/sinh(2*k_w*h(i))); % wave group velocity (general form)
-                    W(i) = gamma*c_g*H_w^2/16; % wave power density (kg.m/s3)
-                end
-%         load W_2
-        
-        B_e = k_e*W;    % margin erosion
-        C_r = y(:,4)./(y(:,1).*y(:,2)+b_m.*y(:,3)); % concentration (kg/m3)
-        B_a = zeros(size(y,1),1);
-        B_a(y(:,2) > H) = k_a*omega_s*C_r/rho_s;  % margin accretion
-        
-        b = zeros(size(y,1),1);
-        b(y(:,2) > H) = (B_e - B_a).*(y(:,2)-y(:,3))*L_E*rho_s;
-        y_lab = 'Margin Erosion/Accretion Rate (kg/s)';
-        
-        %-------------- Compute Ocean Sediment Input (kg/s)
-    case 'ocean'
-        b_m = b_fm-y(:,1); % marsh width
-        Q_T = (y(:,2).*y(:,1)+y(:,3).*b_m)*L_E/T_T-Q_f;
-        
-        b = Q_T*C_o;
-        y_lab = 'Ocean Sediment Input (kg/s)';
-        
-        %-------------- Compute Ocean Input to River Input(kg/s)
-    case 'ratio'
-        b_m = b_fm-y(:,1); % marsh width
-        Q_T = (y(:,2).*y(:,1)+y(:,3).*b_m)*L_E/T_T-Q_f;
-        ocean_in = Q_T*C_o;
-        river_in = Q_f*C_f;
-        
-        b = ocean_in/river_in;
-        y_lab = 'Ocean to River Input Ratio';
-end
+subplot(3,3,4)
+plot(t,d_f,'linewidth',2)
+xlabel('Year')
+ylabel('Tidal Flat Depth (m)')
 
-%-------------- Make a Plot
-% figure
-% plot_BoxModel(t,y)
-figure
-scatter(a,b,'k','.')
-xlabel(x_lab)
-ylabel(y_lab)
-set(findobj('type','axes'),'fontsize',15)
+subplot(3,3,7)
+plot(t,d_m,'linewidth',2)
+xlabel('Year')
+ylabel('Marsh Depth (m)')
+
+subplot(3,3,2)
+plot(h,tau,'linewidth',2)
+xlabel('Reference Depth (m)')
+ylabel('Shear Stress (PA)')
+
+subplot(3,3,5)
+plot(h,W,'linewidth',2)
+xlabel('Reference Depth (m)')
+ylabel('Wave Power Density (kg.m/s^3)')
+
+subplot(3,3,8)
+plot(h,ocean,'linewidth',2)
+xlabel('Reference Depth (m)')
+ylabel('Ocean Sediment Input (kg/s)')
+
+subplot(3,3,3)
+plot(chi,tau,'linewidth',2)
+xlabel('Fetch (m)')
+ylabel('Shear Stress (PA)')
+
+subplot(3,3,6)
+plot(chi,W,'linewidth',2)
+xlabel('Fetch (m)')
+ylabel('Wave Power Density (kg.m/s^3)')
+
+subplot(3,3,9)
+plot(chi,ocean,'linewidth',2)
+xlabel('Fetch (m)')
+ylabel('Ocean Sediment Input (kg/s)')
+
 box on
 h_fig=gcf;
 set(h_fig,'PaperOrientation','portrait')
-set(h_fig,'PaperPosition', [0 0 7.5 6]) % [... ... max_width=7.5 max_height=9]
-tit=[x_par, '-', y_par];
+set(h_fig,'PaperPosition', [0 0 7.5 7.5]) % [... ... max_width=7.5 max_height=9]
+tit='bf0';
 print(tit,'-dtiff','-r400')
 movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\15 - Model Parameters relationships')
 close all
