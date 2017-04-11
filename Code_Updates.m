@@ -15,4 +15,5 @@
 % function naming was changed.
 
 % 4/11/2017
-% correct data removal with adding a condition:  && length(ind)>1
+% correct data removal:
+%substitue ~isnan(ind)  with ~isempty(ind) && length(ind)>1

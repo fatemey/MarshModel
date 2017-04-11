@@ -80,14 +80,14 @@ y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r
 
 %-------------- Data removal
 ind = find(y(:,3)>H); % remove data related to marsh conversion to tidal flat
-if ~isnan(ind) && length(ind)>1
-    y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember in it is a new tidal flat now
+if ~isempty(ind) && length(ind)>1
+    y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember it is a new tidal flat now
     t(ind(2):end,:)=[];
 end
 
 ind = find(y(:,2)<=H); % remove data related to tidal flat conversion to marsh
-if ~isnan(ind) && length(ind)>1
-    y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember in it is a new marsh now
+if ~isempty(ind) && length(ind)>1
+    y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember it is a new marsh now
     t(ind(2):end,:)=[];
 end
 
