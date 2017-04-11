@@ -13,7 +13,7 @@ function [t, y] = BoxModel
 %               rising sea level. This model is solved using 4 equations and 4
 %               unknowns.
 %
-% Last Update: 3/13/2017
+% Last Update: 4/11/2017
 %
 %--------------------------------------------------------------------------------------------------
 format compact
@@ -78,14 +78,15 @@ y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
 t = t /365/24/60/60; % convert time unit from s to yr for plotting purposes
 y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the formula used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
 
+%-------------- Data removal
 ind = find(y(:,3)>H); % remove data related to marsh conversion to tidal flat
-if ~isnan(ind)
+if ~isnan(ind) && length(ind)>1
     y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember in it is a new tidal flat now
     t(ind(2):end,:)=[];
 end
 
 ind = find(y(:,2)<=H); % remove data related to tidal flat conversion to marsh
-if ~isnan(ind)
+if ~isnan(ind) && length(ind)>1
     y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember in it is a new marsh now
     t(ind(2):end,:)=[];
 end

@@ -1,9 +1,9 @@
 function tidalflat_convertion
-% tidalflat_convertion: checks for tidal flat conversion tomarsh based on different set of parametrs.
+% tidalflat_convertion: checks for tidal flat conversion to marsh based on different set of parametrs.
 % here we are intersted in values from critical fetch settings based on BoxModel.
 % The saved results can be used in plot_initialwidth function.
 %
-% Last Update: 3/13/2017
+% Last Update: 4/11/2017
 %
 %--------------------------------------------------------------------------------------------------
 format compact
@@ -118,13 +118,13 @@ for k = 4 : 5
         y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the formula used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
         
         ind = find(y(:,3)>H); % remove data related to marsh conversion to tidal flat
-        if ~isnan(ind)
+        if ~isnan(ind) && length(ind)>1
             y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember in it is a new tidal flat now
             t(ind(2):end,:)=[];
         end
         
         ind = find(y(:,2)<=H); % remove data related to tidal flat to marsh conversion
-        if ~isnan(ind)
+        if ~isnan(ind) && length(ind)>1
             y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember in it is a new marsh now
             t(ind(2):end,:)=[];
         end
@@ -159,13 +159,13 @@ for k = 4 : 5
         y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the formula used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
         
         ind = find(y(:,3)>H); % remove data related to marsh conversion to tidal flat
-        if ~isnan(ind)
+        if ~isnan(ind) && length(ind)>1
             y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember in it is a new tidal flat now
             t(ind(2):end,:)=[];
         end
         
         ind = find(y(:,2)<=H); % remove data related to tidal flat to marsh conversion
-        if ~isnan(ind)
+        if ~isnan(ind) && length(ind)>1
             y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember in it is a new marsh now
             t(ind(2):end,:)=[];
         end

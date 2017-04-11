@@ -13,3 +13,6 @@
 
 % 3/28/2017: 
 % function naming was changed.
+
+% 4/11/2017
+% correct data removal with adding a condition:  && length(ind)>1

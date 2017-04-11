@@ -15,9 +15,9 @@ clear
 
 par_temp = 1 : 8;
 
-for k = 4 : 5
+for k = 7 : 8
     
-    %     k
+        k
     %-------------- Set the time span
     tyr = 500;  % solve for time tyr (years)
     ts = tyr *365*24*60*60; % tyr in (s)
@@ -26,8 +26,8 @@ for k = 4 : 5
     
     %-------------- Sediment input constants
     C_o = 20 *10^-3;    % ocean concertation (kg/m3)
-    C_f = 15 *10^-3;    % river concentration (kg/m3)
-    Q_f = 20;         % river water discharge (m3/s)
+    C_f = 600 *10^-3;    % river concentration (kg/m3)
+    Q_f = 600;         % river water discharge (m3/s)
     
     %-------------- Erosion constants
     k_0 = 1 *10^-3; % roughness (m)
@@ -44,8 +44,8 @@ for k = 4 : 5
     k_B = 2*10^-3 /365/24/60/60;    % vegetation characteristics (m3/s/kg)
     
     %-------------- Basin properties
-    b_fm = 10 *10^3; % total basin width (both sides of the channel) (m)
-    L_E = 10 *10^3; % basin length (m)
+    b_fm = 5 *10^3; % total basin width (both sides of the channel) (m)
+    L_E = 15 *10^3; % basin length (m)
     R = 2 *10^-3/365/24/60/60;   % sea level rise (m/s)
     b_r = 0; % river width (m)
     
@@ -62,7 +62,7 @@ for k = 4 : 5
     
     %-------------- Model assumptions
     Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
-%     b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
+    %  b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
     
     %-------------- Start the loop for each run
     par = par_temp(k);
@@ -94,7 +94,7 @@ for k = 4 : 5
     
     for j = 1 : length(par_v)
         
-                j
+        j
         switch par
             case 1
                 C_o = par_v(j);
@@ -116,7 +116,9 @@ for k = 4 : 5
                 H = par_v(j);
         end
         
-        clear y t width_diff        
+        clear y t width_diff
+        depthequil = zeros(length(par_v),2);
+        
         for i = 1 : length(TF_width)
             
             i
@@ -131,28 +133,30 @@ for k = 4 : 5
             t = t /365/24/60/60; % convert time unit from s to yr for plotting purposes
             y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the formula used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
             
-            ind = find(y(:,3)>H); % remove data related to marsh conversion to tidal flat 
-            if ~isnan(ind)
+            %-------------- Data removal
+            ind = find(y(:,3)>H); % remove data related to marsh conversion to tidal flat
+            if ~isnan(ind) && length(ind)>1
                 y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember in it is a new tidal flat now
                 t(ind(2):end,:)=[];
             end
             
-            ind = find(y(:,2)<=H); % remove data related to tidal flat conversion to marsh 
-            if ~isnan(ind)
+            ind = find(y(:,2)<=H); % remove data related to tidal flat conversion to marsh
+            if ~isnan(ind) && length(ind)>1
                 y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember in it is a new marsh now
                 t(ind(2):end,:)=[];
             end
-             
-%                         clf
-%                         plot_BoxModel(t,y)
             
+            %-------------- Check tidal flat contraction/expansion
             width = y(:,1); % tidal falt width solution
             n = length(width);
             
             width_diff(i) = sign(width(n)-width(floor(n/2))); % -1 corresponds to TF contraction (or fully marsh) and +1 accounts for expansion (or fully tidal flat)
-                       
+            
+            %-------------- Check emergence, drowning and reaching to boundary limits
+            f = 0; % flag for emergance and drowning
             if y(end,2) <= H % check whether if tidal flat has turned into a marsh
                 width_diff(i) = -1;
+                f = 1;
             end
             
             if width(n) >= b_fm % check whether if tidal flat has reached to its boundary limits
@@ -163,18 +167,53 @@ for k = 4 : 5
             
             if y(end,3) > H % check whether if marsh has drowned
                 width_diff(i) = 1;
+                f = 1;
             end
-            
+                        
+            %-------------- Record the critical initial width
             n_width_diff = length(unique(width_diff));
+            tidalflatd = y(floor(4*n/5):n,2);
+            marshd = y(floor(4*n/5):n,3);
             
             if n_width_diff == 2
                 x(j,1) = width(1);
+                
+                if f == 0
+                    if max(diff(tidalflatd)) < 0.001
+                        depthequil(j,1) = 1;
+                    end
+                    if max(diff(marshd)) < 0.001
+                        depthequil(j,2) = 1;
+                    end
+                end
+                
                 break
+                
             elseif i == length(TF_width) && unique(width_diff) == 1
                 x(j,1) = TF_width(1);
+                                
+                if f == 0
+                    if max(diff(tidalflatd)) < 0.001
+                        depthequil(j,1) = 1;
+                    end
+                    if max(diff(marshd)) < 0.001
+                        depthequil(j,2) = 1;
+                    end
+                end
+                
                 break
             elseif i == length(TF_width) && unique(width_diff) == -1
                 x(j,1) = TF_width(end);
+                                
+                if f == 0
+                    if max(diff(tidalflatd)) < 0.001
+                        depthequil(j,1) = 1;
+                    end
+                    if max(diff(marshd)) < 0.001
+                        depthequil(j,2) = 1;
+                    end
+                end
+                
                 break
             end
             
@@ -182,33 +221,34 @@ for k = 4 : 5
         
     end
     
+    %-------------- Save the results
     x_new = x;
-    if length(par_v)>length(x)
-        x_new(length(x)+1:length(par_v)) = -1;
-    end
+    %     if length(par_v)>length(x)
+    %         x_new(length(x)+1:length(par_v)) = -1;
+    %     end
     
     dat = [par_v', x_new];
     
     switch par
         case 1
-            save('co.mat','dat')
+            save('co_1.mat','dat','depthequil')
         case 2
-            save('cf.mat','dat')
+            save('cf_1.mat','dat','depthequil')
         case 3
-            save('qf.mat','dat')
+            save('qf_1.mat','dat','depthequil')
         case 4
-            save('le_2.mat','dat')
+            save('le_1.mat','dat','depthequil')
         case 5
-            save('bfm_2.mat','dat')
+            save('bfm_1.mat','dat','depthequil')
         case 6
-            save('vw.mat','dat')
+            save('vw_1.mat','dat','depthequil')
         case 7
-            save('R.mat','dat')
+            save('R_1.mat','dat','depthequil')
         case 8
-            save('H.mat','dat')
+            save('H_1.mat','dat','depthequil')
     end
     
-    clear x dat x_new
+    clear x dat x_new 
     
 end
 
@@ -231,12 +271,6 @@ end
             flag_f2m = 1; % showing that tidal flat is above MSL
         end
         
-        %-------------- Imposing a condition for marsh conversion to tidal flat in case of death of vegetation when marsh is below MSL
-        %         flag_m2f = 0;     % showing that tidal flat is below MSL
-        %         if y(3) > H
-        %             flag_m2f = 1; % showing that tidal flat is above MSL
-        %         end
-        
         %-------------- Model assumptions
         b_m = b_fm-local; % marsh width
         if flag_f2m == 0
@@ -244,12 +278,6 @@ end
         elseif flag_f2m == 1
             chi = b_r;
         end
-        
-        %         if flag_m2f == 1 && flag_f2m == 0
-        %             chi = chi + 2*b_m;
-        %         elseif flag_m2f == 1 && flag_f2m == 1
-        %             error('Error: Marsh turned to tidal flat and tidal flat turned to marsh.') %% should be corrected for when the tidal flat is still a tidal flat
-        %         end
         
         %---------------------------------- Define the equations -----------------------------------
         
@@ -306,17 +334,8 @@ end
             TF_erosion = max(0,t_s*E_0/rho_s*(tau-tau_c)/tau_c);
             
             %-------------- Compute the rate of sediment accretion (m/s)
-            %         TF_accretion = t_e*C_r*omega_s/rho_s;
+            %  TF_accretion = t_e*C_r*omega_s/rho_s;
             TF_accretion = min(t_s*C_r*omega_s/rho_s ,C_r*y(2)/T_T/rho_s);
-            %         if C_o == 10*10^-3 % condition to consider alpha based on D'Alpaos et al 2011 approach
-            %             alpha = 4 *10^-3/365/24/60/60; % (m/s)
-            %         elseif C_o == 20*10^-3
-            %             alpha = 8 *10^-3/365/24/60/60;
-            %         elseif C_o == 100*10^-3
-            %             alpha = 38 *10^-3/365/24/60/60;
-            %         end
-            %         alpha = 0.38 * C_r;
-            %         TF_accretion = alpha*dt*(y(2)/H); % based on D'Alpaos et al 2011 approach during one time step
             
             %-------------- Compute the rate of organic matter production in tidal flat (m/s)
             SOM = 0;

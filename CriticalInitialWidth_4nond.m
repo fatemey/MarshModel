@@ -3,7 +3,7 @@ function dat = CriticalInitialWidth_4nond
 % diffrent ratios ocean to riverine input. This function is
 % based on the function: CriticalInitialWidth
 %
-% Last Update: as of 3/28/17
+% Last Update: as of 4/11/17
 %
 %--------------------------------------------------------------------------------------------------
 format compact
@@ -94,20 +94,29 @@ for i = 1 : mat_size % for C_O
                         t = t /365/24/60/60; % convert time unit from s to yr for plotting purposes
                         y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the formula used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
                         
-                        ind = find(y(:,2)<=H); % remove data related to tidal flat to marsh conversion
-                        if ~isnan(ind)
+                        %-------------- Data removal
+                        ind = find(y(:,3)>H); % remove data related to marsh conversion to tidal flat
+                        if ~isnan(ind) && length(ind)>1
+                            y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember in it is a new tidal flat now
+                            t(ind(2):end,:)=[];
+                        end
+                        
+                        ind = find(y(:,2)<=H); % remove data related to tidal flat conversion to marsh
+                        if ~isnan(ind) && length(ind)>1
                             y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember in it is a new marsh now
                             t(ind(2):end,:)=[];
                         end
                         
-%                         clf
-%                         plot_BoxModel(t,y)
+                        %   clf
+                        %   plot_BoxModel(t,y)
                         
+                        %-------------- Check tidal flat contraction/expansion
                         width = y(:,1); % tidal falt width solution
                         n_w = length(width);
                         
                         width_diff(p) = sign(width(n_w)-width(floor(n_w/2))); % - corresponds to TF contraction and + accounts for expansion
                         
+                        %-------------- Check emergence, drowning and reaching to boundary limits
                         if y(end,2) <= H % check whether if tidal flat has turned into a marsh
                             width_diff(p) = -1;
                         end
@@ -118,6 +127,11 @@ for i = 1 : mat_size % for C_O
                             width_diff(p) = -1;
                         end
                         
+                        if y(end,3) > H % check whether if marsh has drowned
+                            width_diff(i) = 1;
+                        end
+                        
+                        %-------------- Record the critical initial width
                         n_width_diff = length(unique(width_diff));
                         
                         if n_width_diff == 2
