@@ -13,7 +13,7 @@ clear
 
 par_temp = 1 : 8;
 
-for k = 4 : 5
+for k = 1 : 8
     
     %-------------- Set the time span
     tyr = 500;  % solve for time tyr (years)
@@ -95,7 +95,7 @@ for k = 4 : 5
             case 4
                 L_E = dat(j,1);
             case 5
-                %                 b_fm = dat(j,1)/2;
+                %  b_fm = dat(j,1)/2;
                 b_fm = dat(j,1);
             case 6
                 v_w = dat(j,1);
@@ -191,21 +191,21 @@ for k = 4 : 5
     
     switch par
         case 1
-            save('co_conversion.mat','f')
+            save('co_1_conversion.mat','f')
         case 2
-            save('cf_conversion.mat','f')
+            save('cf_1_conversion.mat','f')
         case 3
-            save('qf_conversion.mat','f')
+            save('qf_1_conversion.mat','f')
         case 4
-            save('le_2_conversion.mat','f')
+            save('le_1_conversion.mat','f')
         case 5
-            save('bfm_2_conversion.mat','f')
+            save('bfm_1_conversion.mat','f')
         case 6
-            save('vw_conversion.mat','f')
+            save('vw_1_conversion.mat','f')
         case 7
-            save('R_conversion.mat','f')
+            save('R_1_conversion.mat','f')
         case 8
-            save('H_conversion.mat','f')
+            save('H_1_conversion.mat','f')
     end
     
     clear f
@@ -232,12 +232,6 @@ end
             flag_f2m = 1; % showing that tidal flat is above MSL
         end
         
-        %-------------- Imposing a condition for marsh conversion to tidal flat in case of death of vegetation when marsh is below MSL
-        %         flag_m2f = 0;     % showing that tidal flat is below MSL
-        %         if y(3) > H
-        %             flag_m2f = 1; % showing that tidal flat is above MSL
-        %         end
-        
         %-------------- Model assumptions
         b_m = b_fm-local; % marsh width
         if flag_f2m == 0
@@ -245,12 +239,6 @@ end
         elseif flag_f2m == 1
             chi = b_r;
         end
-        
-        %         if flag_m2f == 1 && flag_f2m == 0
-        %             chi = chi + 2*b_m;
-        %         elseif flag_m2f == 1 && flag_f2m == 1
-        %             error('Error: Marsh turned to tidal flat and tidal flat turned to marsh.') %% should be corrected for when the tidal flat is still a tidal flat
-        %         end
         
         %---------------------------------- Define the equations -----------------------------------
         
@@ -309,15 +297,6 @@ end
             %-------------- Compute the rate of sediment accretion (m/s)
             %         TF_accretion = t_e*C_r*omega_s/rho_s;
             TF_accretion = min(t_s*C_r*omega_s/rho_s ,C_r*y(2)/T_T/rho_s);
-            %         if C_o == 10*10^-3 % condition to consider alpha based on D'Alpaos et al 2011 approach
-            %             alpha = 4 *10^-3/365/24/60/60; % (m/s)
-            %         elseif C_o == 20*10^-3
-            %             alpha = 8 *10^-3/365/24/60/60;
-            %         elseif C_o == 100*10^-3
-            %             alpha = 38 *10^-3/365/24/60/60;
-            %         end
-            %         alpha = 0.38 * C_r;
-            %         TF_accretion = alpha*dt*(y(2)/H); % based on D'Alpaos et al 2011 approach during one time step
             
             %-------------- Compute the rate of organic matter production in tidal flat (m/s)
             SOM = 0;
@@ -410,35 +389,35 @@ end
 
     function dat = callfun1
         % loading data suitable for static workspace
-        load('co.mat')
+        load co_1 dat
     end
 
     function dat = callfun2
-        load('cf.mat')
+        load cf_1 dat
     end
 
     function dat = callfun3
-        load('qf.mat')
+        load qf_1 dat
     end
 
     function dat = callfun4
-        load('le_2.mat')
+        load le_1 dat
     end
 
     function dat = callfun5
-        load('bfm_2.mat')
+        load bfm_1 dat
     end
 
     function dat = callfun6
-        load('vw.mat')
+        load vw_1 dat
     end
 
     function dat = callfun7
-        load('R.mat')
+        load R_1 dat
     end
 
     function dat = callfun8
-        load('H.mat')
+        load H_1 dat
     end
 
 end
