@@ -15,9 +15,9 @@ clear
 
 par_temp = 1 : 8;
 
-for k = 7 : 8
+for k = 1 : 1
     
-        k
+    k
     %-------------- Set the time span
     tyr = 500;  % solve for time tyr (years)
     ts = tyr *365*24*60*60; % tyr in (s)
@@ -26,8 +26,8 @@ for k = 7 : 8
     
     %-------------- Sediment input constants
     C_o = 20 *10^-3;    % ocean concertation (kg/m3)
-    C_f = 600 *10^-3;    % river concentration (kg/m3)
-    Q_f = 600;         % river water discharge (m3/s)
+    C_f = 15 *10^-3;    % river concentration (kg/m3)
+    Q_f = 20;         % river water discharge (m3/s)
     
     %-------------- Erosion constants
     k_0 = 1 *10^-3; % roughness (m)
@@ -44,8 +44,8 @@ for k = 7 : 8
     k_B = 2*10^-3 /365/24/60/60;    % vegetation characteristics (m3/s/kg)
     
     %-------------- Basin properties
-    b_fm = 5 *10^3; % total basin width (both sides of the channel) (m)
-    L_E = 15 *10^3; % basin length (m)
+    b_fm = 10 *10^3; % total basin width (both sides of the channel) (m)
+    L_E = 10 *10^3; % basin length (m)
     R = 2 *10^-3/365/24/60/60;   % sea level rise (m/s)
     b_r = 0; % river width (m)
     
@@ -69,7 +69,7 @@ for k = 7 : 8
     switch par
         case 1
             par_v = 5 *10^-3 : 5 *10^-3 : 100 *10^-3; % for C_o
-            TF_width = 10 : 10 : b_fm-10;
+            TF_width = 10 : 100 : b_fm-10;
         case 2
             par_v = 0 *10^-3: 50 *10^-3 : 1000 *10^-3; % for C_f
             TF_width = 5 : 5 : b_fm-5;
@@ -105,7 +105,6 @@ for k = 7 : 8
             case 4
                 L_E = par_v(j);
             case 5
-                % b_fm = par_v(j)/2;
                 b_fm = par_v(j);
                 TF_width = 1 : 1 : b_fm-1;
             case 6
@@ -229,24 +228,26 @@ for k = 7 : 8
     
     dat = [par_v', x_new];
     
-    switch par
-        case 1
-            save('co_1.mat','dat','depthequil')
-        case 2
-            save('cf_1.mat','dat','depthequil')
-        case 3
-            save('qf_1.mat','dat','depthequil')
-        case 4
-            save('le_1.mat','dat','depthequil')
-        case 5
-            save('bfm_1.mat','dat','depthequil')
-        case 6
-            save('vw_1.mat','dat','depthequil')
-        case 7
-            save('R_1.mat','dat','depthequil')
-        case 8
-            save('H_1.mat','dat','depthequil')
-    end
+    save('co-check.mat','dat','depthequil')
+
+%     switch par
+%         case 1
+%             save('co_1.mat','dat','depthequil')
+%         case 2
+%             save('cf_1.mat','dat','depthequil')
+%         case 3
+%             save('qf_1.mat','dat','depthequil')
+%         case 4
+%             save('le_1.mat','dat','depthequil')
+%         case 5
+%             save('bfm_1.mat','dat','depthequil')
+%         case 6
+%             save('vw_1.mat','dat','depthequil')
+%         case 7
+%             save('R_1.mat','dat','depthequil')
+%         case 8
+%             save('H_1.mat','dat','depthequil')
+%     end
     
     clear x dat x_new 
     
@@ -368,7 +369,7 @@ end
         
         %-------------- Compute organice matter production (m/s)
         z = H-y(3);       % elevation of marsh platform
-        if z >= 0           % condition for no presence of vegetation when marsh is below MSL
+        if z >= 0           % condition for presence of vegetation when marsh is above MSL
             r = -0.5*z/H+1;     % reproduction rate
             m = 0.5*z/H;         % mortality rate
             B = B_max*(1-m/r);  % steady state solution for biomass (kg/m2)

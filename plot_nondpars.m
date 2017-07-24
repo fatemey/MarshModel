@@ -22,31 +22,59 @@ rho_s = 1000;   % sediment bulk density (kg/m3)
 
 %-------------- Plot 1
 clf
-scatter(C_o./C_f,X_c./sqrt(A),'k','o','filled')
-xlabel('C_{o}/C_{f}')
-ylabel('\chi_{c}/{\surd}A')
+scatter(C_o./C_f,X_c./b_fm,'k','o','filled')
+xlabel('Ocean Concentration to River Concentration')
+ylabel('Critical Initial Width to Basin Width')
 box on
 set(findobj('type','axes'),'fontsize',15)
 h_fig=gcf;
 set(h_fig,'PaperOrientation','portrait')
 set(h_fig,'PaperPosition', [0 0 7.5 6]) % [... ... max_width=7.5 max_height=9]
 tit='plot 1';
-% print(tit,'-dtiff','-r400')
-% movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\17 - Nondimensional analysis for critical fetch')
+print(tit,'-dtiff','-r400')
+movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\17 - Nondimensional analysis for critical fetch')
+
+%-------------- Plot 1-2
+clf
+scatter(C_o./C_f,X_c./L_E,'k','o','filled')
+xlabel('Ocean Concentration to River Concentration')
+ylabel('Critical Initial Width to Estuary Length')
+box on
+set(findobj('type','axes'),'fontsize',15)
+h_fig=gcf;
+set(h_fig,'PaperOrientation','portrait')
+set(h_fig,'PaperPosition', [0 0 7.5 6]) % [... ... max_width=7.5 max_height=9]
+tit='plot 1-2';
+print(tit,'-dtiff','-r400')
+movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\17 - Nondimensional analysis for critical fetch')
 
 %-------------- Plot 2
 clf
-scatter(R.*A./Q_f,X_c./sqrt(A),'k','o','filled')
-xlabel('R.A/Q_{f}')
-ylabel('\chi_{c}/{\surd}A')
+scatter(R.*A./Q_f,X_c./b_fm,'k','o','filled')
+xlabel('Sea Level Rise Rate x Area to River Discharge')
+ylabel('Critical Initial Width to Basin Width')
 box on
 set(findobj('type','axes'),'fontsize',15)
 h_fig=gcf;
 set(h_fig,'PaperOrientation','portrait')
 set(h_fig,'PaperPosition', [0 0 7.5 6]) % [... ... max_width=7.5 max_height=9]
 tit='plot 2';
-% print(tit,'-dtiff','-r400')
-% movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\17 - Nondimensional analysis for critical fetch')
+print(tit,'-dtiff','-r400')
+movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\17 - Nondimensional analysis for critical fetch')
+
+%-------------- Plot 2-2
+clf
+scatter(R.*A./Q_f,X_c./L_E,'k','o','filled')
+xlabel('Sea Level Rise Rate x Area to River Discharge')
+ylabel('Critical Initial Width to Estuary Length')
+box on
+set(findobj('type','axes'),'fontsize',15)
+h_fig=gcf;
+set(h_fig,'PaperOrientation','portrait')
+set(h_fig,'PaperPosition', [0 0 7.5 6]) % [... ... max_width=7.5 max_height=9]
+tit='plot 2-2';
+print(tit,'-dtiff','-r400')
+movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\17 - Nondimensional analysis for critical fetch')
 
 %-------------- Plot 3/4
 clf
@@ -100,49 +128,49 @@ tit='plot 4';
 clf
 scatter(C_o*H.*L_E.*b_fm/T./C_f./Q_f, X_c./b_fm,'k','o','filled')
 xlabel('Ocean to River Input')
-ylabel('Critical Initial Width/ Basin Width')
+ylabel('Critical Initial Width to Basin Width')
 box on
 set(findobj('type','axes'),'fontsize',15)
 h_fig=gcf;
 set(h_fig,'PaperOrientation','portrait')
 set(h_fig,'PaperPosition', [0 0 7.5 6]) % [... ... max_width=7.5 max_height=9]
 tit='plot 5';
-% print(tit,'-dtiff','-r400')
-% movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\17 - Nondimensional analysis for critical fetch')
+print(tit,'-dtiff','-r400')
+movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\17 - Nondimensional analysis for critical fetch')
 
 %-------------- Plot 6
 clf
 scatter(C_o*H.*L_E.*b_fm/T./C_f./Q_f, X_c./L_E,'k','o','filled')
 xlabel('Ocean to River Input')
-ylabel('Critical Initial Width/ Estuary Length')
+ylabel('Critical Initial Width to Estuary Length')
 box on
 set(findobj('type','axes'),'fontsize',15)
 h_fig=gcf;
 set(h_fig,'PaperOrientation','portrait')
 set(h_fig,'PaperPosition', [0 0 7.5 6]) % [... ... max_width=7.5 max_height=9]
 tit='plot 6';
-% print(tit,'-dtiff','-r400')
-% movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\17 - Nondimensional analysis for critical fetch')
+print(tit,'-dtiff','-r400')
+movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\17 - Nondimensional analysis for critical fetch')
 
 %-------------- Plot 7
 clf
-scatter(C_o*H.*L_E.*b_fm/T./C_f./Q_f, X_c./sqrt(L_E.*b_fm),'k','o','filled')
-xlabel('Ocean to River Input')
-ylabel('Critical Initial Width/ {\surd}Area')
+scatter(((C_o*H.*L_E.*b_fm/T)+C_f.*Q_f)./R./L_E./b_fm./C_o, X_c./L_E,'k','o','filled')
+xlabel('River + Ocean Input to Input for Created Space due to SLR ')
+ylabel('Critical Initial Width to Estuary Length')
 box on
 set(findobj('type','axes'),'fontsize',15)
 h_fig=gcf;
 set(h_fig,'PaperOrientation','portrait')
 set(h_fig,'PaperPosition', [0 0 7.5 6]) % [... ... max_width=7.5 max_height=9]
 tit='plot 7';
-% print(tit,'-dtiff','-r400')
-% movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\17 - Nondimensional analysis for critical fetch')
+print(tit,'-dtiff','-r400')
+movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\17 - Nondimensional analysis for critical fetch')
 
 %-------------- Plot 8
 clf
 scatter(((C_o*H.*L_E.*b_fm/T)+C_f.*Q_f)./R./L_E./b_fm./C_o, X_c./b_fm,'k','o','filled')
-xlabel('River + Ocean Input to Input from Created Space due to SLR ')
-ylabel('Critical Initial Width/ Basin Width')
+xlabel('River + Ocean Input to Input for Created Space due to SLR ')
+ylabel('Critical Initial Width to Basin Width')
 box on
 set(findobj('type','axes'),'fontsize',15)
 h_fig=gcf;
@@ -152,4 +180,33 @@ tit='plot 8';
 print(tit,'-dtiff','-r400')
 movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\17 - Nondimensional analysis for critical fetch')
 
+%-------------- Plot 9
+clf
+scatter((H.*L_E.*b_fm+T*Q_f)./R./L_E./b_fm./T, X_c./L_E,'k','o','filled')
+xlabel('River + Ocean Water Input to Water Input for Created Space due to SLR ')
+ylabel('Critical Initial Width to Estuary Length')
+box on
+set(findobj('type','axes'),'fontsize',15)
+h_fig=gcf;
+set(h_fig,'PaperOrientation','portrait')
+set(h_fig,'PaperPosition', [0 0 7.5 6]) % [... ... max_width=7.5 max_height=9]
+tit='plot 9';
+print(tit,'-dtiff','-r400')
+movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\17 - Nondimensional analysis for critical fetch')
+
+%-------------- Plot 10
+clf
+scatter((H.*L_E.*b_fm+T*Q_f)./R./L_E./b_fm./T, X_c./b_fm,'k','o','filled')
+xlabel('River + Ocean Water Input to Water Input for Created Space due to SLR ')
+ylabel('Critical Initial Width to Basin Width')
+box on
+set(findobj('type','axes'),'fontsize',15)
+h_fig=gcf;
+set(h_fig,'PaperOrientation','portrait')
+set(h_fig,'PaperPosition', [0 0 7.5 6]) % [... ... max_width=7.5 max_height=9]
+tit='plot 10';
+print(tit,'-dtiff','-r400')
+movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\17 - Nondimensional analysis for critical fetch')
+
+close all
 end

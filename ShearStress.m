@@ -14,12 +14,12 @@ function [ tau, k_w ] = ShearStress ( h, k_0, H_w, T_w )
 
 %-------------- Constants
 rho_w = 1000;   % water density (kg/m3)
-g = 9.81;       % gravitational acceleration (m/s2)
+g = 9.81;       % gravitational acceleratxion (m/s2)
 
 %-------------- Parameters
 % k_w_0 = 2*pi/T_w/sqrt(g*h);
-k_w_0 = 1;
-opts = optimoptions('fsolve','Display','off');
+% k_w_0 = 1;
+% opts = optimoptions('fsolve','Display','off');
 % opts = optimoptions('fsolve','Display','off','Algorithm','levenberg-marquardt');
 % k_w = fsolve(@ (k_w) (2*pi/T_w)^2-g*k_w*tanh(k_w*h),k_w_0,opts); % wave number (general form)
 k_w = 2*pi/T_w/sqrt(g*h);               % wave number (for k_w*h<0.1pi)

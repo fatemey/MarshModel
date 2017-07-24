@@ -17,3 +17,16 @@
 % 4/11/2017
 % correct data removal condition:
 % substitute ~isnan(ind)  with ~isempty(ind) && length(ind)>1
+
+% 7/17/17
+% delete extra unused code lines
+%         if C_o == 10*10^-3 % condition to consider alpha based on D'Alpaos et al 2011 approach
+%             alpha = 4 *10^-3/365/24/60/60; % (m/s)
+%         elseif C_o == 20*10^-3
+%             alpha = 8 *10^-3/365/24/60/60;
+%         elseif C_o == 100*10^-3
+%             alpha = 38 *10^-3/365/24/60/60;
+%         end
+%         alpha = 0.38 * C_r;
+%         TF_accretion = alpha*dt*(y(2)/H); % based on D'Alpaos et al 2011 approach during one time step
+%         TF_deposition = alpha*dt*(y(2)/H)*local*L_E*rho_s;

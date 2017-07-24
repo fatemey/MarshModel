@@ -1,5 +1,5 @@
-function [t, y] = BoxModel
-% function BoxModel
+% function [t, y] = BoxModel
+function BoxModel
 % BoxModel: Models 0d marsh and tidal flat time
 % evolution using Matlab ode23tb function.
 %
@@ -28,7 +28,7 @@ dt = 12*60*60; % time step in (s)
 tspan = 0:dt:ts;
 
 %-------------- Sediment input constants
-C_o = 20 *10^-3;    % ocean concertation (kg/m3)
+C_o = 5 *10^-3;    % ocean concertation (kg/m3)
 C_f = 15 *10^-3;    % river concentration (kg/m3)
 Q_f = 20;         % river water discharge (m3/s)
 
@@ -36,7 +36,7 @@ Q_f = 20;         % river water discharge (m3/s)
 k_0 = 1 *10^-3; % roughness (m)
 tau_c = 0.3;  % critical shear stress (Pa)
 E_0 = 10^-4;    % bed erosion coefficient (kg/m2/s)
-k_e =  0.16 /365/24/60/60;  % margin erodibility coefficient (m2/s/W)
+k_e = 0.16 /365/24/60/60;  % margin erodibility coefficient (m2/s/W)
 v_w = 6;        % reference wind speed (m/s)
 
 % -------------- Accretion constants
@@ -47,14 +47,14 @@ B_max = 1;      % maximum biomass density (kg/m2)
 k_B = 2*10^-3 /365/24/60/60;    % vegetation characteristics (m3/s/kg)
 
 %-------------- Basin properties
-b_fm = 5 *10^3; % total basin width (both sides of the channel) (m)
-L_E = 15 *10^3; % basin length (m)
+b_fm = 10 *10^3; % total basin width (both sides of the channel) (m)
+L_E = 10 *10^3; % basin length (m)
 R = 2 *10^-3/365/24/60/60;   % sea level rise (m/s)
 b_r = 0; % river width (m)
 
 %-------------- Tide Characteristics
 T_T = 12 *60*60;   % tidal period (s) (= 12 hours)
-H = 1.4/2;          % tidal amplitude (range/2) (m)
+H = 1.4 /2;          % tidal amplitude (range/2) (m)
 
 %-------------- Sediment properties
 rho_s = 1000;   % sediment bulk density (kg/m3)
@@ -68,7 +68,7 @@ Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal 
 % b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
 
 %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u (=C_r*(b_f*d_f+b_m*d_m))]
-y0(1) = 750;%b_fm/2;      % tidal flat width (m)
+y0(1) = 490;%1540;%b_fm/2;      % tidal flat width (m)
 y0(2) = H+0.3;        % tidal flat depth (m)
 y0(3) = H-0.3;         % marsh depth (m)
 y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
@@ -78,7 +78,7 @@ y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
 t = t /365/24/60/60; % convert time unit from s to yr for plotting purposes
 y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the formula used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
 
-%-------------- Data removal
+%-------------- Removing data cooresponding to platform conversion
 ind = find(y(:,3)>H); % remove data related to marsh conversion to tidal flat
 if ~isempty(ind) && length(ind)>1
     y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember it is a new tidal flat now
@@ -91,10 +91,8 @@ if ~isempty(ind) && length(ind)>1
     t(ind(2):end,:)=[];
 end
 
-% fetch2depth = y(:,1)./y(:,2); % fetch to tidal flat depth ratio
-
 %-------------- Plot Results
-figure(2)
+figure(4)
 clf
 plot_BoxModel(t,y)
 % tit = 'R_4-bf0_745';
@@ -130,12 +128,6 @@ plot_BoxModel(t,y)
             flag_f2m = 1; % showing that tidal flat is above MSL
         end
         
-        %-------------- Imposing a condition for marsh conversion to tidal flat in case of death of vegetation when marsh is below MSL
-        %         flag_m2f = 0;     % showing that tidal flat is below MSL
-        %         if y(3) > H
-        %             flag_m2f = 1; % showing that tidal flat is above MSL
-        %         end
-        
         %-------------- Model assumptions
         b_m = b_fm-local; % marsh width
         if flag_f2m == 0
@@ -143,12 +135,6 @@ plot_BoxModel(t,y)
         elseif flag_f2m == 1
             chi = b_r;
         end
-        
-        %         if flag_m2f == 1 && flag_f2m == 0
-        %             chi = chi + 2*b_m;
-        %         elseif flag_m2f == 1 && flag_f2m == 1
-        %             error('Error: Marsh turned to tidal flat and tidal flat turned to marsh.') %% should be corrected for when the tidal flat is still a tidal flat
-        %         end
         
         %---------------------------------- Define the equations -----------------------------------
         
@@ -162,7 +148,7 @@ plot_BoxModel(t,y)
             tau = 0; % bed shear stress
             W = 0;   % wave power density
         else
-            [ H_w, T_w ] = WaveProps ( h, v_w, chi );   % compute significant height and peak period
+            [ H_w, T_w ] = WaveProps ( h, v_w, chi);   % compute significant height and peak period
             [ tau, k_w ] = ShearStress ( h, k_0, H_w, T_w );     % compute bed shear stress
             % c_g = sqrt(g*h);        % wave group velocity (shallow water)
             c_g = pi/k_w/T_w*(1+2*k_w*h/sinh(2*k_w*h)); % wave group velocity (general form)
@@ -205,18 +191,8 @@ plot_BoxModel(t,y)
             TF_erosion = max(0,t_s*E_0/rho_s*(tau-tau_c)/tau_c);
             
             %-------------- Compute the rate of sediment accretion (m/s)
-            %         TF_accretion = t_e*C_r*omega_s/rho_s;
             TF_accretion = min(t_s*C_r*omega_s/rho_s ,C_r*y(2)/T_T/rho_s);
-            %         if C_o == 10*10^-3 % condition to consider alpha based on D'Alpaos et al 2011 approach
-            %             alpha = 4 *10^-3/365/24/60/60; % (m/s)
-            %         elseif C_o == 20*10^-3
-            %             alpha = 8 *10^-3/365/24/60/60;
-            %         elseif C_o == 100*10^-3
-            %             alpha = 38 *10^-3/365/24/60/60;
-            %         end
-            %         alpha = 0.38 * C_r;
-            %         TF_accretion = alpha*dt*(y(2)/H); % based on D'Alpaos et al 2011 approach during one time step
-            
+         
             %-------------- Compute the rate of organic matter production in tidal flat (m/s)
             SOM = 0;
             
@@ -248,7 +224,7 @@ plot_BoxModel(t,y)
         
         %-------------- Compute organice matter production (m/s)
         z = H-y(3);       % elevation of marsh platform
-        if z >= 0           % condition for no presence of vegetation when marsh is below MSL
+        if z >= 0           % condition for presence of vegetation when marsh is above MSL
             r = -0.5*z/H+1;     % reproduction rate
             m = 0.5*z/H;         % mortality rate
             B = B_max*(1-m/r);  % steady state solution for biomass (kg/m2)
@@ -283,9 +259,7 @@ plot_BoxModel(t,y)
         
         %-------------- Compute deposition on tidal flat (kg/s)
         if flag_f2m == 0
-            %         TF_deposition = t_e*C_r*local*omega_s*L_E;
             TF_deposition = min(t_s*C_r*local*omega_s*L_E, C_r*local*y(2)*L_E/T_T);
-            %         TF_deposition = alpha*dt*(y(2)/H)*local*L_E*rho_s;
         else
             TF_deposition = C_r*local*y(2)*L_E/T_T;
         end
