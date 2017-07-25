@@ -68,7 +68,7 @@ Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal 
 % b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
 
 %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u (=C_r*(b_f*d_f+b_m*d_m))]
-y0(1) = 490;%1540;%b_fm/2;      % tidal flat width (m)
+y0(1) = 340;%1540;%b_fm/2;      % tidal flat width (m)
 y0(2) = H+0.3;        % tidal flat depth (m)
 y0(3) = H-0.3;         % marsh depth (m)
 y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
@@ -92,7 +92,7 @@ if ~isempty(ind) && length(ind)>1
 end
 
 %-------------- Plot Results
-figure(4)
+figure(1)
 clf
 plot_BoxModel(t,y)
 % tit = 'R_4-bf0_745';

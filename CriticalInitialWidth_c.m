@@ -3,12 +3,16 @@ function data = CriticalInitialWidth_c
 % different system chracteristics using the same method as BoxModel.m.
 % Output:
 %           8 saved data matrices related to 8 parameters including:
-%           1st col: parameter value
+%           1st col: parameter value (SI)
 %           2nd col: critical width (m)
-%           3rd col: equilibrium tidal flat depth (m)
-%           4th col: equilibrium marsh depth (m)
-
-
+%           3rd col: final tidal flat depth (m)
+%           4th col: final marsh depth (m)
+%           5th col: equlibrium in tidal flat depth (logical)
+%           6th col: equlibrium in marsh depth (logical)
+%           7th col: platform conversion (0: none, 1:tidal flat emergence & expansion,
+%                    2:tidal flat emergence & contraction, 3: marsh drowning & expansion,
+%                    4:drowning & contraction)
+%
 % To plot the results, use the function plot_initialwidth.
 %
 % Last Update: 7/24/2017
@@ -75,7 +79,7 @@ for k = 1 : 1
     switch par
         case 1
             par_v = 5 *10^-3 : 5 *10^-3 : 100 *10^-3; % for C_o
-            TF_width = 10 : 100 : b_fm-10;
+            TF_width = 10 : 10 : b_fm-10;
         case 2
             par_v = 0 *10^-3: 50 *10^-3 : 1000 *10^-3; % for C_f
             TF_width = 5 : 5 : b_fm-5;
@@ -94,7 +98,7 @@ for k = 1 : 1
             par_v = 0 : 2 *10^-3/365/24/60/60 : 30 *10^-3/365/24/60/60; % for R
             TF_width = 5 : 5 : b_fm-5;
         case 8
-            par_v = [1 : 1 : 10]/2; % for H
+            par_v = (1 : 1 : 10)/2; % for H
             TF_width = 5 : 5 : b_fm-5;
     end
     
@@ -121,8 +125,11 @@ for k = 1 : 1
                 H = par_v(j);
         end
         
+        if j == 1
+        data = zeros(length(par_v),5);
+        end
         clear y t width_diff
-        
+
         for i = 1 : length(TF_width)
             
             i
@@ -137,32 +144,28 @@ for k = 1 : 1
             t = t /365/24/60/60; % convert time unit from s to yr for plotting purposes
             y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the formula used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
             
-            %-------------- Removing data cooresponding to platform conversion
-            ind = find(y(:,3)>H); % remove data related to marsh conversion to tidal flat
+            %-------------- Removing data corresponding to platform conversion
+            ind = find(y(:,3)>H); % marsh conversion to tidal flat
             if ~isempty(ind) && length(ind)>1
                 y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember it is a new tidal flat now
                 t(ind(2):end,:)=[];
             end
             
-            ind = find(y(:,2)<=H); % remove data related to tidal flat conversion to marsh
+            ind = find(y(:,2)<=H); % tidal flat conversion to marsh
             if ~isempty(ind) && length(ind)>1
                 y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember it is a new marsh now
                 t(ind(2):end,:)=[];
             end
             
-            depth(i,1:2) = [y(end,2),y(end,3)];
-            
             %-------------- Check tidal flat contraction/expansion
             width = y(:,1); % tidal falt width solution
             n = length(width);
             
-            width_diff(i) = sign(width(n)-width(floor(n/2))); % -1 corresponds to TF contraction (or fully marsh) and +1 accounts for expansion (or fully tidal flat)
+            width_diff(i) = sign(width(n)-width(floor(n/2))); % -1 corresponds to tidal flat contraction (or fully marsh) and +1 accounts for expansion (or fully tidal flat)
             
             %-------------- Check emergence, drowning and reaching to boundary limits
-            f = 0; % flag for emergance and drowning
-            if y(end,2) <= H % check whether if tidal flat has turned into a marsh
+            if y(end,2) <= H % check whether if tidal flat has emerged above MSL
                 width_diff(i) = -1;
-                f = 1;
             end
             
             if width(n) >= b_fm % check whether if tidal flat has reached to its boundary limits
@@ -171,19 +174,23 @@ for k = 1 : 1
                 width_diff(i) = -1;
             end
             
-            if y(end,3) > H % check whether if marsh was drowned
+            if y(end,3) > H % check whether if marsh has been drowned
                 width_diff(i) = 1;
-                f = 1;
             end
             
-            %-------------- Record the data of interest
+            %-------------- Evaluate the solutions
             n_width_diff = length(unique(width_diff));
-            tidalflatd = y(floor(4*n/5):n,2);
-            marshd = y(floor(4*n/5):n,3);
+            tidalflatd = y(floor(9*n/10):n,2);
+            marshd = y(floor(9*n/10):n,3);
+            depth(i,1:2) = [y(end,2),y(end,3)];
             
             if n_width_diff == 2 || (i == length(TF_width) && unique(width_diff) == 1) || (i == length(TF_width) && unique(width_diff) == -1)
                 
-                if n_width_diff == 2
+%                 figure(2)
+%                 clf
+%                 plot_BoxModel(t,y)
+                
+                if n_width_diff == 2 % recording critical width
                     data(j,1) = width(1);
                 elseif i == length(TF_width) && unique(width_diff) == 1
                     data(j,1) = TF_width(1);
@@ -191,55 +198,35 @@ for k = 1 : 1
                     data(j,1) = TF_width(end);
                 end
                 
-                data(j,2) = y(end,2);
-                data(j,3) = y(end,3);
+                data(j,2) = y(end,2); % recording tidal flat depth
+                data(j,3) = y(end,3); % recording marsh depth
                 
-                if f == 0 % in case of no conversion
-                    if max(diff(tidalflatd)) < 0.001
-                        data(j,4) = 1; % TF reached to an equilibrium depth
+                if abs(max(tidalflatd)-min(tidalflatd)) < 1e-3
+                    data(j,4) = 1; % tidal flat reached to an equilibrium depth
+                end
+                
+                if abs(max(marshd)-min(marshd)) < 1e-3
+                    data(j,4) = 2;  % marsh reached to an equilibrium depth
+                end
+                
+                if abs(max(tidalflatd)-min(tidalflatd)) < 1e-3 && abs(max(marshd)-min(marshd)) < 1e-3
+                    data(j,4) = 3;  % both tidal flat and marsh reached to an equilibrium depth
+                end
+                
+                if depth(i-1,1) <= H % tidal flat emergence
+                    if width_diff(end) == 1
+                        data(j,5) = 1; % tidal flat emergence & expansion
+                    elseif width_diff(end) == -1
+                        data(j,5) = 2; % tidal flat emergence & contraction
                     end
-                    if max(diff(marshd)) < 0.001
-                        data(j,5) = 1;  % marsh reached to an equilibrium depth
+                end
+                
+                if depth(i,2) >= H % marsh drowning
+                    if width_diff(end) == -1 % marsh drowning & expansion
+                        data(j,5) = 3;
+                    elseif width_diff(end) == 1 % marsh drowning & contraction
+                        data(j,5) = 4;
                     end
-                    data(j,6) = 0;
-                    data(j,7) = 0;
-                    
-                elseif f == 1
-                    data(j,4) = 0;
-                    data(j,5) = 0;
-                    
-                    if depth(i-1,1) <= H % TF emergence
-                        if width_diff(end) == 1
-                            data(j,6) = 1; % TF contraction
-                        elseif width_diff(end) == -1
-                            data(j,6) = 2; % TF expansion
-                        end
-                    end
-                    
-                    if depth(i-1,2) >= H % marsh drowning
-                        if width_diff(end) == 1 % marsh expansion
-                            data(j,6) = 3;
-                        elseif width_diff(end) == -1 % marsh contraction
-                            data(j,6) = 4;
-                        end
-                    end
-                    
-                    if depth(i,1) <= H % TF emergence
-                        if width_diff(end) == 1
-                            data(j,7) = -1; % TF contraction
-                        elseif width_diff(end) == -1
-                            data(j,7) = -2; % TF expansion
-                        end
-                    end
-                    
-                    if depth(i,2) >= H % marsh drowning
-                        if width_diff(end) == 1 % marsh expansion
-                            data(j,7) = -3;
-                        elseif width_diff(end) == -1 % marsh contraction
-                            data(j,7) = -4;
-                        end
-                    end
-                    
                 end
                 
                 break

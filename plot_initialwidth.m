@@ -1,5 +1,5 @@
 function plot_initialwidth
-% Function plot_initialwidth plots critical initial width values (computed from functin CriticalInitialWidth) vs diffrent
+% Function plot_initialwidth plots critical initial width values (computed from functin CriticalInitialWidth) vs difzrent
 % parameters. The size of the circles are the results from the function
 % tidalflat_convertion.
 %
