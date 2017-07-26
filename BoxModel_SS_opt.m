@@ -76,7 +76,7 @@ for i = 1 : length(C_o_V)
     ub = [b_fm,Inf,Inf];
     objfun = @Fun_BoxModel_SS;
     confun = @Fun_BoxModel_SS_con;
-    options = optimoptions('fmincon','Algorithm','interior-point','Display','final','StepTolerance',1e-100,'ConstraintTolerance',1e-20,'MaxFunctionEvaluations',100000,'MaxIterations',100000,'OptimalityTolerance',1e-20,'OutputFcn',@outfun); %'Algorithm','active-set','sqp'
+    options = optimoptions('fmincon','Algorithm','interior-point','Display','final','StepTolerance',1e-200,'ConstraintTolerance',1e-15,'MaxFunctionEvaluations',100000,'MaxIterations',100000,'OptimalityTolerance',1e-20,'OutputFcn',@outfun); %'Algorithm','active-set','sqp'
 %     options = optimoptions('fmincon','Algorithm','active-set','Display','final','StepTolerance',1e-300,'ConstraintTolerance',1e-100,'MaxFunctionEvaluations',1000000,'MaxIterations',1000000,'OptimalityTolerance',1e-30,'OutputFcn',@outfun); %'Algorithm','active-set','sqp'
     [x,fval,exitflag,output,lambda,grad,hessian] = fmincon(objfun,x0,[],[],[],[],lb,ub,confun,options);
     
@@ -88,7 +88,7 @@ for i = 1 : length(C_o_V)
 end
 
 dat = [C_o_V'*.001, Sol];
-save('co_data_SS_opt1.mat','dat')
+save('co_data_SS_opt.mat','dat')
 
 %-------------- Plot Results
 % figure(1)
