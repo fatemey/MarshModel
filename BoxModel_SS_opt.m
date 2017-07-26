@@ -17,9 +17,10 @@ history.fval = [];
 % searchdir = [];
 
 %-------------- Set up shared variables with main functions
-load co; bf_0=dat(:,2); %bf_0(19:20)=[1500,1500];
+load co_data; bf_0=dat(:,2); %bf_0(19:20)=[1500,1500];
 C_o_V = 5:5:100;
-Sol = zeros(length(C_o_V),7);
+
+Sol = zeros(length(C_o_V),4);
 for i = 1 : length(C_o_V)
     i
     %-------------- Sediment input constants
@@ -75,13 +76,19 @@ for i = 1 : length(C_o_V)
     ub = [b_fm,Inf,Inf];
     objfun = @Fun_BoxModel_SS;
     confun = @Fun_BoxModel_SS_con;
-    options = optimoptions('fmincon','Algorithm','interior-point','Display','final','StepTolerance',1e-200,'ConstraintTolerance',1e-15,'MaxFunctionEvaluations',100000,'MaxIterations',100000,'OptimalityTolerance',1e-20,'OutputFcn',@outfun); %'Algorithm','active-set','sqp'
-    [x,fval] = fmincon(objfun,x0,[],[],[],[],lb,ub,confun,options);
+    options = optimoptions('fmincon','Algorithm','interior-point','Display','final','StepTolerance',1e-100,'ConstraintTolerance',1e-20,'MaxFunctionEvaluations',100000,'MaxIterations',100000,'OptimalityTolerance',1e-20,'OutputFcn',@outfun); %'Algorithm','active-set','sqp'
+%     options = optimoptions('fmincon','Algorithm','active-set','Display','final','StepTolerance',1e-300,'ConstraintTolerance',1e-100,'MaxFunctionEvaluations',1000000,'MaxIterations',1000000,'OptimalityTolerance',1e-30,'OutputFcn',@outfun); %'Algorithm','active-set','sqp'
+    [x,fval,exitflag,output,lambda,grad,hessian] = fmincon(objfun,x0,[],[],[],[],lb,ub,confun,options);
     
     Sol(i,1:length(x)+length(fval)) = [x,fval];
+
 %     [G,Geq] = Fun_BoxModel_SS_con(x);
 %     Sol(i,length(x)+length(fval)+1:length(x)+length(fval)+2) = Geq;
+
 end
+
+dat = [C_o_V'*.001, Sol];
+save('co_data_SS_opt1.mat','dat')
 
 %-------------- Plot Results
 % figure(1)
@@ -112,7 +119,7 @@ clf
 hold on
 df=Sol(:,2);
 dm=Sol(:,3);
-scatter(C_o_V,df,'b<','filled')
+scatter(C_o_V,df,60,'b<','filled')
 scatter(C_o_V,dm,'go','filled')
 xlabel('Ocean Concentration (mg/l)')
 ylabel('Depth (m)')
@@ -131,10 +138,10 @@ box on
 figure(3)
 clf
 hold on
-load co; co1=dat(:,1)*1000; bf1=dat(:,2);
+load co_data; co1=dat(:,1)*1000; bf1=dat(:,2);
 co2=C_o_V; bf2=Sol(:,1);
-scatter(co1(1:7),bf1(1:7),'k','>','filled')
-scatter(co1(8:end),bf1(8:end),'k','o','filled')
+scatter(co1(1:7),bf1(1:7),55,'k','>','filled')
+scatter(co1(8:end),bf1(8:end),55,'k','o','filled')
 scatter(co2,bf2,'ro','filled')
 xlabel('Ocean Concentration (mg/l)')
 ylabel('Tidal Flat Width (m)')
@@ -360,7 +367,7 @@ box on
         
         switch state
             case 'init'
-                hold on
+%                 hold on
             case 'iter'
                 % Concatenate current point and objective function
                 % value with history. x must be a row vector.
@@ -377,7 +384,7 @@ box on
                 %                     num2str(optimValues.iteration));
                 %                 title('Sequence of Points Computed by fmincon');
             case 'done'
-                hold off
+%                 hold off
             otherwise
         end
         
