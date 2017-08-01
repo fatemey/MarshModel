@@ -25,7 +25,7 @@ clear
 
 fileID = fopen('Res.txt','w');
 fprintf(fileID,'%12s %12s %12s %12s %12s %12s %12s\n','C_o','b_f','d_f','d_m','eqtf','eqn','conv');
-                
+
 par_temp = 1 : 8;
 
 for k = 1 : 1
@@ -129,7 +129,7 @@ for k = 1 : 1
         end
         
         if j == 1
-        data = zeros(length(par_v),6);
+            data = zeros(length(par_v),6);
         end
         clear y t %width_diff
         width_diff = zeros(length(TF_width),1);
@@ -167,7 +167,7 @@ for k = 1 : 1
                 y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new marsh now
                 t(ind(2):end,:)=[];
             end
-
+            
             ind = find(y(:,1)<=0); % marsh filling the basin
             if ~isempty(ind) && length(ind)>1
                 y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new marsh now
@@ -185,12 +185,6 @@ for k = 1 : 1
                 width_diff(i) = -1;
             end
             
-%             if width(n) >= b_fm % check whether if tidal flat has reached to its boundary limits
-%                 width_diff(i) = 1;
-%             elseif width(n) <= 0
-%                 width_diff(i) = -1;
-%             end
-            
             if y(end,3) > H % check whether if marsh has been drowned
                 width_diff(i) = 1;
             end
@@ -207,21 +201,11 @@ for k = 1 : 1
                     data(j,1) = width(1);
                 else
                     if unique(width_diff) == 1
-                    data(j,1) = TF_width(1);
+                        data(j,1) = TF_width(1);
                     else
-                    data(j,1) = TF_width(end);
+                        data(j,1) = TF_width(end);
                     end
                 end
-                
-%                 n_width_diff == 3 || (i == length(TF_width) && length(unique(width_diff)) == 2)
-%                                
-%                 if n_width_diff == 3 % recording critical width
-%                     data(j,1) = width(1);
-%                 elseif i == length(TF_width) && unique(width_diff) == 1
-%                     data(j,1) = TF_width(1);
-%                 elseif i == length(TF_width) && unique(width_diff) == -1
-%                     data(j,1) = TF_width(end);
-%                 end
                 
                 data(j,2) = y(end,2); % recording tidal flat depth
                 data(j,3) = y(end,3); % recording marsh depth
@@ -251,7 +235,7 @@ for k = 1 : 1
                 end
                 
                 fprintf(fileID,'%12f %12d %12f %12f %12d %12d %12d\n',[par_v(j), data(j,:)]);
-
+                
                 break
                 
             end

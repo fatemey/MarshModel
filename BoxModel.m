@@ -22,7 +22,7 @@ clear
 % clf
 
 %-------------- Set the time span
-tyr = 5000;  % solve for time tyr (years)
+tyr = 1000;  % solve for time tyr (years)
 ts = tyr *365*24*60*60; % tyr in (s)
 dt = 12*60*60; % time step in (s)
 tspan = 0:dt:ts;
@@ -68,7 +68,7 @@ Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal 
 % b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
 
 %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u (=C_r*(b_f*d_f+b_m*d_m))]
-y0(1) = 410;%b_fm/2;      % tidal flat width (m)
+y0(1) = 420;%b_fm/2;      % tidal flat width (m)
 y0(2) = H+0.3;        % tidal flat depth (m)
 y0(3) = H-0.3;         % marsh depth (m)
 y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
@@ -78,21 +78,33 @@ y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
 t = t /365/24/60/60; % convert time unit from s to yr for plotting purposes
 y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the equation used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
 
-%-------------- Removing data cooresponding to platform conversion
-ind = find(y(:,3)>H); % remove data related to marsh conversion to tidal flat
+%-------------- Removing data corresponding to platform conversion and reaching to basin boundary limits
+ind = find(y(:,3)>H); % marsh conversion to tidal flat
 if ~isempty(ind) && length(ind)>1
     y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new tidal flat now
     t(ind(2):end,:)=[];
 end
 
-ind = find(y(:,2)<=H); % remove data related to tidal flat conversion to marsh
+ind = find(y(:,2)<=H); % tidal flat conversion to marsh
 if ~isempty(ind) && length(ind)>1
     y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new marsh now
     t(ind(2):end,:)=[];
 end
 
+% ind = find(y(:,1)>=b_fm); % tidal flat filling the basin
+% if ~isempty(ind) && length(ind)>1
+%     y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new marsh now
+%     t(ind(2):end,:)=[];
+% end
+% 
+% ind = find(y(:,1)<=0); % marsh filling the basin
+% if ~isempty(ind) && length(ind)>1
+%     y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new marsh now
+%     t(ind(2):end,:)=[];
+% end
+
 %-------------- Plot Results
-figure(2)
+figure(1)
 clf
 plot_BoxModel(t,y)
 % tit = 'R_4-bf0_745';
