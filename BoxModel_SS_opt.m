@@ -66,9 +66,6 @@ for i = 1 : length(C_o_V)
     x0(1) = bf_0(i);%1570;%b_fm/2;      % tidal flat width (m)
     x0(2) = H+0.3;        % tidal flat depth (m)
     x0(3) = H-0.3;         % marsh depth (m)
-    %     x0(1) = 1200;
-    %     x0(2) = .7;
-    %     x0(3) = .3;
     
     %-------------- Solve the system
     %     lb = [0,-Inf,-Inf];
@@ -81,7 +78,6 @@ for i = 1 : length(C_o_V)
     [x,fval,exitflag,output,lambda,grad,hessian] = fmincon(objfun,x0,[],[],[],[],lb,ub,confun,options);
     
     Sol(i,1:length(x)+length(fval)) = [x,fval];
-
 %     [G,Geq] = Fun_BoxModel_SS_con(x);
 %     Sol(i,length(x)+length(fval)+1:length(x)+length(fval)+2) = Geq;
 

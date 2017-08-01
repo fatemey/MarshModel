@@ -23,13 +23,16 @@ format longG
 clear
 % clf
 
+fileID = fopen('Res.txt','w');
+fprintf(fileID,'%12s %12s %12s %12s %12s %12s %12s\n','C_o','b_f','d_f','d_m','eqtf','eqn','conv');
+                
 par_temp = 1 : 8;
 
 for k = 1 : 1
     
     k
     %-------------- Set the time span
-    tyr = 500;  % solve for time tyr (years)
+    tyr = 5000;  % solve for time tyr (years)
     ts = tyr *365*24*60*60; % tyr in (s)
     dt = 12*60*60; % time step in (s)
     tspan = 0:dt:ts;
@@ -126,10 +129,12 @@ for k = 1 : 1
         end
         
         if j == 1
-        data = zeros(length(par_v),5);
+        data = zeros(length(par_v),6);
         end
-        clear y t width_diff
-
+        clear y t %width_diff
+        width_diff = zeros(length(TF_width),1);
+        depth = zeros(length(TF_width),1);
+        
         for i = 1 : length(TF_width)
             
             i
@@ -184,13 +189,13 @@ for k = 1 : 1
             marshd = y(floor(9*n/10):n,3);
             depth(i,1:2) = [y(end,2),y(end,3)];
             
-            if n_width_diff == 2 || (i == length(TF_width) && unique(width_diff) == 1) || (i == length(TF_width) && unique(width_diff) == -1)
+            if n_width_diff == 3 || (i == length(TF_width) && unique(width_diff) == 1) || (i == length(TF_width) && unique(width_diff) == -1)
                 
 %                 figure(2)
 %                 clf
 %                 plot_BoxModel(t,y)
                 
-                if n_width_diff == 2 % recording critical width
+                if n_width_diff == 3 % recording critical width
                     data(j,1) = width(1);
                 elseif i == length(TF_width) && unique(width_diff) == 1
                     data(j,1) = TF_width(1);
@@ -201,34 +206,32 @@ for k = 1 : 1
                 data(j,2) = y(end,2); % recording tidal flat depth
                 data(j,3) = y(end,3); % recording marsh depth
                 
-                if abs(max(tidalflatd)-min(tidalflatd)) < 1e-3
+                if abs(max(tidalflatd)-min(tidalflatd)) < 1e-5
                     data(j,4) = 1; % tidal flat reached to an equilibrium depth
                 end
                 
-                if abs(max(marshd)-min(marshd)) < 1e-3
-                    data(j,4) = 2;  % marsh reached to an equilibrium depth
-                end
-                
-                if abs(max(tidalflatd)-min(tidalflatd)) < 1e-3 && abs(max(marshd)-min(marshd)) < 1e-3
-                    data(j,4) = 3;  % both tidal flat and marsh reached to an equilibrium depth
+                if abs(max(marshd)-min(marshd)) < 1e-5
+                    data(j,5) = 1;  % marsh reached to an equilibrium depth
                 end
                 
                 if depth(i-1,1) <= H % tidal flat emergence
                     if width_diff(end) == 1
-                        data(j,5) = 1; % tidal flat emergence & expansion
+                        data(j,6) = 1; % tidal flat emergence & expansion
                     elseif width_diff(end) == -1
-                        data(j,5) = 2; % tidal flat emergence & contraction
+                        data(j,6) = 2; % tidal flat emergence & contraction
                     end
                 end
                 
                 if depth(i,2) >= H % marsh drowning
                     if width_diff(end) == -1 % marsh drowning & expansion
-                        data(j,5) = 3;
+                        data(j,6) = 3;
                     elseif width_diff(end) == 1 % marsh drowning & contraction
-                        data(j,5) = 4;
+                        data(j,6) = 4;
                     end
                 end
                 
+                fprintf(fileID,'%12f %12d %12f %12f %12d %12d %12d\n',[par_v(j), data(j,:)]);
+
                 break
                 
             end
@@ -242,7 +245,7 @@ for k = 1 : 1
     
     switch par
         case 1
-            save('co_data.mat','dat')
+            save('co_data_new.mat','dat')
         case 2
             save('cf_data.mat','dat')
         case 3
@@ -262,6 +265,8 @@ for k = 1 : 1
     clear data dat
     
 end
+
+fclose(fileID);
 
 %======================= Nested Function =========================
     function dy = ode4marshtidalflat (t,y) %  y1=b_f, y2=d_f, y3=d_m, y4=u (=C_r*(b_f*d_f+b_m*d_m, why solving u instead of C_r? u is the variable on the left hand side of mass conservation equation.)

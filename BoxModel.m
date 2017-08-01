@@ -22,7 +22,7 @@ clear
 % clf
 
 %-------------- Set the time span
-tyr = 1000;  % solve for time tyr (years)
+tyr = 5000;  % solve for time tyr (years)
 ts = tyr *365*24*60*60; % tyr in (s)
 dt = 12*60*60; % time step in (s)
 tspan = 0:dt:ts;
@@ -68,7 +68,7 @@ Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal 
 % b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
 
 %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u (=C_r*(b_f*d_f+b_m*d_m))]
-y0(1) = 370;%1540;%b_fm/2;      % tidal flat width (m)
+y0(1) = 420;%b_fm/2;      % tidal flat width (m)
 y0(2) = H+0.3;        % tidal flat depth (m)
 y0(3) = H-0.3;         % marsh depth (m)
 y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
@@ -76,7 +76,7 @@ y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
 %-------------- Solve the system of differential equations
 [t, y] = ode15s(@ode4marshtidalflat,tspan,y0); % or use ode15s/ode23s/ode23tb
 t = t /365/24/60/60; % convert time unit from s to yr for plotting purposes
-y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the formula used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
+y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the equation used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
 
 %-------------- Removing data cooresponding to platform conversion
 ind = find(y(:,3)>H); % remove data related to marsh conversion to tidal flat
