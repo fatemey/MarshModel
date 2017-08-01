@@ -82,7 +82,7 @@ for k = 1 : 1
     switch par
         case 1
             par_v = 5 *10^-3 : 5 *10^-3 : 100 *10^-3; % for C_o
-            TF_width = 410:10:420;%10 : 10 : b_fm-10;
+            TF_width = 10 : 10 : b_fm-10;
         case 2
             par_v = 0 *10^-3: 50 *10^-3 : 1000 *10^-3; % for C_f
             TF_width = 5 : 5 : b_fm-5;
@@ -128,12 +128,12 @@ for k = 1 : 1
                 H = par_v(j);
         end
         
-        if j == 1
-            data = zeros(length(par_v),6);
-        end
-        clear y t %width_diff
+        clear y t
         width_diff = zeros(length(TF_width),1);
         depth = zeros(length(TF_width),1);
+        if j == 1
+            data = zeros(length(par_v),6);
+        end   
         
         for i = 1 : length(TF_width)
             
