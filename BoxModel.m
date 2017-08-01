@@ -68,7 +68,7 @@ Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal 
 % b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
 
 %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u (=C_r*(b_f*d_f+b_m*d_m))]
-y0(1) = 420;%b_fm/2;      % tidal flat width (m)
+y0(1) = 410;%b_fm/2;      % tidal flat width (m)
 y0(2) = H+0.3;        % tidal flat depth (m)
 y0(3) = H-0.3;         % marsh depth (m)
 y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
@@ -81,18 +81,18 @@ y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r
 %-------------- Removing data cooresponding to platform conversion
 ind = find(y(:,3)>H); % remove data related to marsh conversion to tidal flat
 if ~isempty(ind) && length(ind)>1
-    y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember it is a new tidal flat now
+    y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new tidal flat now
     t(ind(2):end,:)=[];
 end
 
 ind = find(y(:,2)<=H); % remove data related to tidal flat conversion to marsh
 if ~isempty(ind) && length(ind)>1
-    y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember it is a new marsh now
+    y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new marsh now
     t(ind(2):end,:)=[];
 end
 
 %-------------- Plot Results
-figure(1)
+figure(2)
 clf
 plot_BoxModel(t,y)
 % tit = 'R_4-bf0_745';

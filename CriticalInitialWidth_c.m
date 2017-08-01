@@ -82,7 +82,7 @@ for k = 1 : 1
     switch par
         case 1
             par_v = 5 *10^-3 : 5 *10^-3 : 100 *10^-3; % for C_o
-            TF_width = 10 : 10 : b_fm-10;
+            TF_width = 410:10:420;%10 : 10 : b_fm-10;
         case 2
             par_v = 0 *10^-3: 50 *10^-3 : 1000 *10^-3; % for C_f
             TF_width = 5 : 5 : b_fm-5;
@@ -147,18 +147,30 @@ for k = 1 : 1
             %-------------- Solve the system of differential equations
             [t, y] = ode15s(@ode4marshtidalflat,tspan,y0); % or use ode15s/ode23s/ode23tb
             t = t /365/24/60/60; % convert time unit from s to yr for plotting purposes
-            y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the formula used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
+            y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the equation used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
             
-            %-------------- Removing data corresponding to platform conversion
+            %-------------- Removing data corresponding to platform conversion and reaching to basin boundary limits
             ind = find(y(:,3)>H); % marsh conversion to tidal flat
             if ~isempty(ind) && length(ind)>1
-                y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember it is a new tidal flat now
+                y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new tidal flat now
                 t(ind(2):end,:)=[];
             end
             
             ind = find(y(:,2)<=H); % tidal flat conversion to marsh
             if ~isempty(ind) && length(ind)>1
-                y(ind(2):end,:)=[]; % retain only one value afetr conversion to remember it is a new marsh now
+                y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new marsh now
+                t(ind(2):end,:)=[];
+            end
+            
+            ind = find(y(:,1)>=b_fm); % tidal flat filling the basin
+            if ~isempty(ind) && length(ind)>1
+                y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new marsh now
+                t(ind(2):end,:)=[];
+            end
+
+            ind = find(y(:,1)<=0); % marsh filling the basin
+            if ~isempty(ind) && length(ind)>1
+                y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new marsh now
                 t(ind(2):end,:)=[];
             end
             
@@ -168,16 +180,16 @@ for k = 1 : 1
             
             width_diff(i) = sign(width(n)-width(floor(n/2))); % -1 corresponds to tidal flat contraction (or fully marsh) and +1 accounts for expansion (or fully tidal flat)
             
-            %-------------- Check emergence, drowning and reaching to boundary limits
+            %-------------- Check platform conversion
             if y(end,2) <= H % check whether if tidal flat has emerged above MSL
                 width_diff(i) = -1;
             end
             
-            if width(n) >= b_fm % check whether if tidal flat has reached to its boundary limits
-                width_diff(i) = 1;
-            elseif width(n) <= 0
-                width_diff(i) = -1;
-            end
+%             if width(n) >= b_fm % check whether if tidal flat has reached to its boundary limits
+%                 width_diff(i) = 1;
+%             elseif width(n) <= 0
+%                 width_diff(i) = -1;
+%             end
             
             if y(end,3) > H % check whether if marsh has been drowned
                 width_diff(i) = 1;
@@ -189,19 +201,27 @@ for k = 1 : 1
             marshd = y(floor(9*n/10):n,3);
             depth(i,1:2) = [y(end,2),y(end,3)];
             
-            if n_width_diff == 3 || (i == length(TF_width) && unique(width_diff) == 1) || (i == length(TF_width) && unique(width_diff) == -1)
+            if ~ (n_width_diff == 2 && ismember(0,width_diff))
                 
-%                 figure(2)
-%                 clf
-%                 plot_BoxModel(t,y)
-                
-                if n_width_diff == 3 % recording critical width
+                if n_width_diff == 2 || n_width_diff == 3 % recording critical width
                     data(j,1) = width(1);
-                elseif i == length(TF_width) && unique(width_diff) == 1
+                else
+                    if unique(width_diff) == 1
                     data(j,1) = TF_width(1);
-                elseif i == length(TF_width) && unique(width_diff) == -1
+                    else
                     data(j,1) = TF_width(end);
+                    end
                 end
+                
+%                 n_width_diff == 3 || (i == length(TF_width) && length(unique(width_diff)) == 2)
+%                                
+%                 if n_width_diff == 3 % recording critical width
+%                     data(j,1) = width(1);
+%                 elseif i == length(TF_width) && unique(width_diff) == 1
+%                     data(j,1) = TF_width(1);
+%                 elseif i == length(TF_width) && unique(width_diff) == -1
+%                     data(j,1) = TF_width(end);
+%                 end
                 
                 data(j,2) = y(end,2); % recording tidal flat depth
                 data(j,3) = y(end,3); % recording marsh depth
@@ -245,7 +265,7 @@ for k = 1 : 1
     
     switch par
         case 1
-            save('co_data_new.mat','dat')
+            save('co_data_new1.mat','dat')
         case 2
             save('cf_data.mat','dat')
         case 3
