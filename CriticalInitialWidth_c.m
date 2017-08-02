@@ -2,7 +2,7 @@ function data = CriticalInitialWidth_c
 % Function CriticalInitialWidth looks for a critical fetch value based on
 % different system chracteristics using the same method as BoxModel.m.
 % Output:
-%           8 saved data matrices related to 8 parameters including:
+%           8 saved data matrices related to 8 parameters, containing:
 %           1st col: parameter value (SI)
 %           2nd col: critical width (m)
 %           3rd col: final tidal flat depth (m)
@@ -219,17 +219,17 @@ for k = 1 : 1
                 end
                 
                 if depth(i-1,1) <= H % tidal flat emergence
-                    if width_diff(end) == 1
+                    if width_diff(i) == 1
                         data(j,6) = 1; % tidal flat emergence & expansion
-                    elseif width_diff(end) == -1
+                    elseif width_diff(i) == -1
                         data(j,6) = 2; % tidal flat emergence & contraction
                     end
                 end
                 
                 if depth(i,2) >= H % marsh drowning
-                    if width_diff(end) == -1 % marsh drowning & expansion
+                    if width_diff(i) == -1 % marsh drowning & expansion
                         data(j,6) = 3;
-                    elseif width_diff(end) == 1 % marsh drowning & contraction
+                    elseif width_diff(i) == 1 % marsh drowning & contraction
                         data(j,6) = 4;
                     end
                 end
