@@ -11,11 +11,11 @@ function data = CriticalInitialWidth_c
 %           6th col: equlibrium in marsh depth (logical)
 %           7th col: platform conversion (0: none, 1:tidal flat emergence & expansion,
 %                    2:tidal flat emergence & contraction, 3: marsh drowning & expansion,
-%                    4:drowning & contraction)
+%                    4:marsh drowning & contraction)
 %
 % To plot the results, use the function plot_initialwidth.
 %
-% Last Update: 7/24/2017
+% Last Update: 8/2/2017
 %
 %--------------------------------------------------------------------------------------------------
 format compact
@@ -249,7 +249,7 @@ for k = 1 : 1
     
     switch par
         case 1
-            save('co_data_new1.mat','dat')
+            save('co_data_5000yr.mat','dat')
         case 2
             save('cf_data.mat','dat')
         case 3

@@ -19,51 +19,43 @@ function [a, b] = BoxModel_parameters(t, y)
 %           a : vector of x-axis data of interset for plotting purposes
 %           b : vector of y-axis data of interset for plotting purposes
 %
-% Last Update: 3/29/2017
+% Last Update: 8/2/2017
 %
 %--------------------------------------------------------------------------------------------------
 
 %-------------- Sediment input constants
 C_o = 20 *10^-3;    % ocean concertation (kg/m3)
 C_f = 15 *10^-3;    % river concentration (kg/m3)
-Q_f = 20;         % river water discharge (m3/s)
+Q_f = 20;           % river water discharge (m3/s)
 
 %-------------- Erosion constants
 k_0 = 1 *10^-3; % roughness (m)
-tau_c = 0.3;  % critical shear stress (Pa)
-E_0 = 10^-4;    % bed erosion coefficient (kg/m2/s)
-k_e =  0.16 /365/24/60/60;  % margin erodibility coefficient (m2/s/W)
 v_w = 6;        % reference wind speed (m/s)
 
-% -------------- Accretion constants
-k_a = 2;        % margin accretion coefficient
-
 %-------------- Basin properties
-b_fm = 5 *10^3; % total basin width (both sides of the channel) (m)
-L_E = 15 *10^3; % basin length (m)
+b_fm = 10 *10^3; % total basin width (both sides of the channel) (m)
+L_E = 10 *10^3;  % basin length (m)
 
 %-------------- Tide Characteristics
 T_T = 12 *60*60;   % tidal period (s) (= 12 hours)
-H = 1.4/2;          % tidal amplitude (range/2) (m)
-
-%-------------- Sediment properties
-rho_s = 1000;   % sediment bulk density (kg/m3)
-omega_s = 0.5 *10^-3;   % settling velocity (m/s)
+H = 1.4 /2;        % tidal amplitude (range/2) (m)
 
 %-------------- Model constants
-gamma = 9800;   % water specific weight (N/m3)
+gamma = 9800;   % water specific weight (N/m3 or kg/m2/s2)
 
 %-------------- Model assumptions
-Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
+Q_f = Q_f/2;      % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
 % b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
 
 %-------------- Model parameters
 b_f = y(:,1);
 d_f = y(:,2);
 d_m = y(:,3);
+C_r = y(:,4);
 b_m = b_fm-b_f; % marsh width
 Q_T = (d_f.*b_f+d_m.*b_m)*L_E/T_T-Q_f;
-ocean = Q_T*C_o; % Ocean Sediment Input (kg/s)
+M_ocean2river = Q_T*C_o/Q_f/C_f; % Ocean Sediment Input (kg/s)
+V_ocean2river = Q_T/Q_f; % Ocean Sediment Input (kg/s)
 chi = b_f*2; % fetch (m)
 h =  (d_f+max(0,d_f-2*H))/2; % characteristic depth (m)
 
@@ -77,57 +69,92 @@ for i=1:length(h)
 end
 
 %-------------- Plot the results
+figure(2)
 clf
-subplot(3,3,1)
+subplot(4,4,1)
 plot(t,b_f,'linewidth',2)
 xlabel('Year')
 ylabel('Tidal Flat Width (m)')
 
-subplot(3,3,4)
+subplot(4,4,2)
 plot(t,d_f,'linewidth',2)
 xlabel('Year')
 ylabel('Tidal Flat Depth (m)')
 
-subplot(3,3,7)
+subplot(4,4,3)
 plot(t,d_m,'linewidth',2)
 xlabel('Year')
 ylabel('Marsh Depth (m)')
 
-subplot(3,3,2)
+subplot(4,4,4)
+plot(t,C_r,'linewidth',2)
+xlabel('Year')
+ylabel('Concentration (kg/m3)')
+
+subplot(4,4,5)
+plot(t,tau,'linewidth',2)
+xlabel('Year')
+ylabel('Shear Stress (PA)')
+
+subplot(4,4,9)
 plot(h,tau,'linewidth',2)
 xlabel('Reference Depth (m)')
 ylabel('Shear Stress (PA)')
 
-subplot(3,3,5)
-plot(h,W,'linewidth',2)
-xlabel('Reference Depth (m)')
-ylabel('Wave Power Density (kg.m/s^3)')
-
-subplot(3,3,8)
-plot(h,ocean,'linewidth',2)
-xlabel('Reference Depth (m)')
-ylabel('Ocean Sediment Input (kg/s)')
-
-subplot(3,3,3)
+subplot(4,4,13)
 plot(chi,tau,'linewidth',2)
 xlabel('Fetch (m)')
 ylabel('Shear Stress (PA)')
 
-subplot(3,3,6)
+subplot(4,4,6)
+plot(t,W,'linewidth',2)
+xlabel('Year')
+ylabel('Wave Power Density (kg.m/s^3)')
+
+subplot(4,4,10)
+plot(h,W,'linewidth',2)
+xlabel('Reference Depth (m)')
+ylabel('Wave Power Density (kg.m/s^3)')
+
+subplot(4,4,14)
 plot(chi,W,'linewidth',2)
 xlabel('Fetch (m)')
 ylabel('Wave Power Density (kg.m/s^3)')
 
-subplot(3,3,9)
-plot(chi,ocean,'linewidth',2)
-xlabel('Fetch (m)')
-ylabel('Ocean Sediment Input (kg/s)')
+subplot(4,4,7)
+plot(t,M_ocean2river,'linewidth',2)
+xlabel('Year')
+ylabel('Ocean to River Sediment Input')
 
-box on
-h_fig=gcf;
-set(h_fig,'PaperOrientation','portrait')
-set(h_fig,'PaperPosition', [0 0 7.5 7.5]) % [... ... max_width=7.5 max_height=9]
-tit='bf0';
-print(tit,'-dtiff','-r400')
-movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\15 - Model Parameters relationships')
-close all
+subplot(4,4,11)
+plot(h,M_ocean2river,'linewidth',2)
+xlabel('Reference Depth (m)')
+ylabel('Ocean to River Sediment Input')
+
+subplot(4,4,15)
+plot(chi,M_ocean2river,'linewidth',2)
+xlabel('Fetch (m)')
+ylabel('Ocean to River Sediment Input')
+
+subplot(4,4,8)
+plot(t,V_ocean2river,'linewidth',2)
+xlabel('Year')
+ylabel('Ocean to River Tidal Prism')
+
+subplot(4,4,12)
+plot(h,V_ocean2river,'linewidth',2)
+xlabel('Reference Depth (m)')
+ylabel('Ocean to River Tidal Prism')
+
+subplot(4,4,16)
+plot(chi,V_ocean2river,'linewidth',2)
+xlabel('Fetch (m)')
+ylabel('Ocean to River Tidal Prism')
+
+% h_fig=gcf;
+% set(h_fig,'PaperOrientation','portrait')
+% set(h_fig,'PaperPosition', [0 0 7.5 7.5]) % [... ... max_width=7.5 max_height=9]
+% tit='bf0';
+% print(tit,'-dtiff','-r400')
+% movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\15 - Model Parameters relationships')
+% close all

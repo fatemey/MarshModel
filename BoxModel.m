@@ -22,13 +22,13 @@ clear
 % clf
 
 %-------------- Set the time span
-tyr = 1000;  % solve for time tyr (years)
+tyr = 20;  % solve for time tyr (years)
 ts = tyr *365*24*60*60; % tyr in (s)
 dt = 12*60*60; % time step in (s)
 tspan = 0:dt:ts;
 
 %-------------- Sediment input constants
-C_o = 5 *10^-3;    % ocean concertation (kg/m3)
+C_o = 35 *10^-3;    % ocean concertation (kg/m3)
 C_f = 15 *10^-3;    % river concentration (kg/m3)
 Q_f = 20;         % river water discharge (m3/s)
 
@@ -68,7 +68,7 @@ Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal 
 % b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
 
 %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u (=C_r*(b_f*d_f+b_m*d_m))]
-y0(1) = 420;%b_fm/2;      % tidal flat width (m)
+y0(1) = 789;%b_fm/2;      % tidal flat width (m)
 y0(2) = H+0.3;        % tidal flat depth (m)
 y0(3) = H-0.3;         % marsh depth (m)
 y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
@@ -91,17 +91,17 @@ if ~isempty(ind) && length(ind)>1
     t(ind(2):end,:)=[];
 end
 
-% ind = find(y(:,1)>=b_fm); % tidal flat filling the basin
-% if ~isempty(ind) && length(ind)>1
-%     y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new marsh now
-%     t(ind(2):end,:)=[];
-% end
-% 
-% ind = find(y(:,1)<=0); % marsh filling the basin
-% if ~isempty(ind) && length(ind)>1
-%     y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new marsh now
-%     t(ind(2):end,:)=[];
-% end
+ind = find(y(:,1)>=b_fm); % tidal flat filling the basin
+if ~isempty(ind) && length(ind)>1
+    y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new marsh now
+    t(ind(2):end,:)=[];
+end
+
+ind = find(y(:,1)<=0); % marsh filling the basin
+if ~isempty(ind) && length(ind)>1
+    y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new marsh now
+    t(ind(2):end,:)=[];
+end
 
 %-------------- Plot Results
 figure(1)
@@ -120,6 +120,8 @@ plot_BoxModel(t,y)
 % box on
 % set(findobj('type','axes'),'fontsize',15)
 
+% BoxModel_parameters(t,y)
+
 %======================= Nested Function =========================
     function dy = ode4marshtidalflat (t,y) 
         %  y1=b_f, y2=d_f, y3=d_m, y4=u (=C_r*(b_f*d_f+b_m*d_m, why solving u instead of C_r? u is the variable on the left hand side of mass conservation equation.)
@@ -127,11 +129,11 @@ plot_BoxModel(t,y)
         
         %-------------- Setting width boundary limits
         local = y(1); % imposing a constraint for lower and upper limits of y(1)
-        if (local < 0)
-            local = 0 ;
+        if local < 0
+            local = 0;
         end
-        if (local > b_fm)
-            local = b_fm ;
+        if local > b_fm
+            local = b_fm;
         end
         
         %-------------- Imposing a condition for tidal flat conversion to marsh in case of presence of new vegetation when tidal flat is above MSL
@@ -219,9 +221,9 @@ plot_BoxModel(t,y)
             %-------------- Compute the rate of organic matter production in the new marsh (m/s)
             z_new = H-y(2);       % elevation of marsh platform
             r_new = -0.5*z_new/H+1;     % reproduction rate
-            m_new = 0.5*z_new/H;         % mortality rate
+            m_new = 0.5*z_new/H;        % mortality rate
             B_new = B_max*(1-m_new/r_new);  % steady state solution for biomass (kg/m2)
-            SOM = k_B*B_new;        % organic matter production rate
+            SOM = k_B*B_new;      % organic matter production rate
             
         end
         
@@ -236,11 +238,11 @@ plot_BoxModel(t,y)
         
         %-------------- Compute organice matter production (m/s)
         z = H-y(3);       % elevation of marsh platform
-        if z >= 0           % condition for presence of vegetation when marsh is above MSL
+        if z >= 0         % condition for presence of vegetation when marsh is above MSL
             r = -0.5*z/H+1;     % reproduction rate
-            m = 0.5*z/H;         % mortality rate
+            m = 0.5*z/H;        % mortality rate
             B = B_max*(1-m/r);  % steady state solution for biomass (kg/m2)
-            O = k_B*B;            % organic matter production rate
+            O = k_B*B;          % organic matter production rate
         else
             O = 0;
         end
