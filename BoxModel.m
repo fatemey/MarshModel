@@ -22,13 +22,13 @@ clear
 % clf
 
 %-------------- Set the time span
-tyr = 20;  % solve for time tyr (years)
+tyr = 5000;  % solve for time tyr (years)
 ts = tyr *365*24*60*60; % tyr in (s)
 dt = 12*60*60; % time step in (s)
 tspan = 0:dt:ts;
 
 %-------------- Sediment input constants
-C_o = 35 *10^-3;    % ocean concertation (kg/m3)
+C_o = 95 *10^-3;    % ocean concertation (kg/m3)
 C_f = 15 *10^-3;    % river concentration (kg/m3)
 Q_f = 20;         % river water discharge (m3/s)
 
@@ -68,7 +68,7 @@ Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal 
 % b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
 
 %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u (=C_r*(b_f*d_f+b_m*d_m))]
-y0(1) = 789;%b_fm/2;      % tidal flat width (m)
+y0(1) = 2210;%b_fm/2;      % tidal flat width (m)
 y0(2) = H+0.3;        % tidal flat depth (m)
 y0(3) = H-0.3;         % marsh depth (m)
 y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
@@ -104,9 +104,9 @@ if ~isempty(ind) && length(ind)>1
 end
 
 %-------------- Plot Results
-figure(1)
-clf
-plot_BoxModel(t,y)
+% figure
+% clf
+% plot_BoxModel(t,y)
 % tit = 'R_4-bf0_745';
 % print(tit,'-dtiff','-r400')
 % movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\15 - Model Parameters relationships')
@@ -120,7 +120,7 @@ plot_BoxModel(t,y)
 % box on
 % set(findobj('type','axes'),'fontsize',15)
 
-% BoxModel_parameters(t,y)
+BoxModel_parameters(t,y)
 
 %======================= Nested Function =========================
     function dy = ode4marshtidalflat (t,y) 

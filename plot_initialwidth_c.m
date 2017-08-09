@@ -11,13 +11,13 @@ clear
 clf
 
 %------------------------------------------------
-load co_data_new; a = dat(:,1)*1000; b = dat(:,2); dtf = dat(:,3); dm = dat(:,4); eqdtf = dat(:,5); eqdm = dat(:,6); conv = dat(:,7);
+load co_data_5000yr; a = dat(:,1)*1000; b = dat(:,2); dtf = dat(:,3); dm = dat(:,4); eqdtf = dat(:,5); eqdm = dat(:,6); conv = dat(:,7);
 load co_data_SS_opt; b2 = dat(:,2); dtf2 = dat(:,3); dm2 = dat(:,4);
 subplot(1,2,1)
 hold on
+scatter(a,b2,50,[0, 153, 0]/255,'x')
 gscatter(a,b,conv,'kr',[],[],'off')
 xlabel('Ocean Concentration (mg/l)')
-scatter(a,b2,50,[0, 153, 0]/255,'x')
 ylabel('Tidal Flat Width (m)') 
 box on
 

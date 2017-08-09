@@ -24,21 +24,32 @@ function [a, b] = BoxModel_parameters(t, y)
 %--------------------------------------------------------------------------------------------------
 
 %-------------- Sediment input constants
-C_o = 20 *10^-3;    % ocean concertation (kg/m3)
+C_o = 95 *10^-3;    % ocean concertation (kg/m3)
 C_f = 15 *10^-3;    % river concentration (kg/m3)
-Q_f = 20;           % river water discharge (m3/s)
+Q_f = 20;         % river water discharge (m3/s)
 
 %-------------- Erosion constants
 k_0 = 1 *10^-3; % roughness (m)
 v_w = 6;        % reference wind speed (m/s)
 
+% -------------- Accretion constants
+k_a = 2;        % margin accretion coefficient
+
+%-------------- Vegetation properties
+B_max = 1;      % maximum biomass density (kg/m2)
+k_B = 2*10^-3 /365/24/60/60;    % vegetation characteristics (m3/s/kg)
+
 %-------------- Basin properties
 b_fm = 10 *10^3; % total basin width (both sides of the channel) (m)
-L_E = 10 *10^3;  % basin length (m)
+L_E = 10 *10^3; % basin length (m)
 
 %-------------- Tide Characteristics
 T_T = 12 *60*60;   % tidal period (s) (= 12 hours)
-H = 1.4 /2;        % tidal amplitude (range/2) (m)
+H = 1.4 /2;          % tidal amplitude (range/2) (m)
+
+%-------------- Sediment properties
+rho_s = 1000;   % sediment bulk density (kg/m3)
+omega_s = 0.5 *10^-3;   % settling velocity (m/s)
 
 %-------------- Model constants
 gamma = 9800;   % water specific weight (N/m3 or kg/m2/s2)
@@ -57,7 +68,14 @@ Q_T = (d_f.*b_f+d_m.*b_m)*L_E/T_T-Q_f;
 M_ocean2river = Q_T*C_o/Q_f/C_f; % Ocean Sediment Input (kg/s)
 V_ocean2river = Q_T/Q_f; % Ocean Sediment Input (kg/s)
 chi = b_f*2; % fetch (m)
-h =  (d_f+max(0,d_f-2*H))/2; % characteristic depth (m)
+h = (d_f+max(0,d_f-2*H))/2; % characteristic depth (m)
+Mar_accr = k_a*omega_s*C_r/rho_s *365*24*60*60;
+z = H-d_m;       % elevation of marsh platform
+r = -0.5*z/H+1;     % reproduction rate
+m = 0.5*z/H;        % mortality rate
+B = B_max*(1-m./r);  % steady state solution for biomass (kg/m2)
+SOM = k_B*B *365*24*60*60*1000;  % organic matter production rate
+SOM(z<0) = 0;
 
 tau = zeros(size(h));
 W = zeros(size(h)); % Wave Power Density (kg.m/s3)
@@ -69,87 +87,121 @@ for i=1:length(h)
 end
 
 %-------------- Plot the results
-figure(2)
+figure
 clf
-subplot(4,4,1)
+n = 3; m = 7;
+
+subplot(n,m,1)
 plot(t,b_f,'linewidth',2)
 xlabel('Year')
 ylabel('Tidal Flat Width (m)')
+title('Solutions')
 
-subplot(4,4,2)
+subplot(n,m,m+1)
 plot(t,d_f,'linewidth',2)
 xlabel('Year')
 ylabel('Tidal Flat Depth (m)')
 
-subplot(4,4,3)
+subplot(n,m,2*m+1)
 plot(t,d_m,'linewidth',2)
 xlabel('Year')
 ylabel('Marsh Depth (m)')
 
-subplot(4,4,4)
-plot(t,C_r,'linewidth',2)
-xlabel('Year')
-ylabel('Concentration (kg/m3)')
-
-subplot(4,4,5)
+subplot(n,m,2+2*m)
 plot(t,tau,'linewidth',2)
 xlabel('Year')
-ylabel('Shear Stress (PA)')
+ylabel('\tau (PA)')
 
-subplot(4,4,9)
-plot(h,tau,'linewidth',2)
-xlabel('Reference Depth (m)')
-ylabel('Shear Stress (PA)')
+subplot(n,m,2+m)
+plot(h*2,tau,'linewidth',2)
+xlabel('Reference Depth (x2, m)')
+ylabel('\tau (PA)')
 
-subplot(4,4,13)
-plot(chi,tau,'linewidth',2)
-xlabel('Fetch (m)')
-ylabel('Shear Stress (PA)')
+subplot(n,m,2)
+plot(chi/2,tau,'linewidth',2)
+xlabel('Fetch (/2, m)')
+ylabel('\tau (PA)')
+title('Shear Stress')
 
-subplot(4,4,6)
+subplot(n,m,3+2*m)
 plot(t,W,'linewidth',2)
 xlabel('Year')
-ylabel('Wave Power Density (kg.m/s^3)')
+ylabel('W (kg.m/s^3)')
 
-subplot(4,4,10)
-plot(h,W,'linewidth',2)
-xlabel('Reference Depth (m)')
-ylabel('Wave Power Density (kg.m/s^3)')
+subplot(n,m,3+m)
+plot(h*2,W,'linewidth',2)
+xlabel('Reference Depth (x2, m)')
+ylabel('W (kg.m/s^3)')
 
-subplot(4,4,14)
-plot(chi,W,'linewidth',2)
-xlabel('Fetch (m)')
-ylabel('Wave Power Density (kg.m/s^3)')
+subplot(n,m,3)
+plot(chi/2,W,'linewidth',2)
+xlabel('Fetch (/2, m)')
+ylabel('W (kg.m/s^3)')
+title('Wave Power Density')
 
-subplot(4,4,7)
+subplot(n,m,4+2*m)
+plot(t,Mar_accr,'linewidth',2)
+xlabel('Year')
+ylabel('Accretion Rate (m/yr)')
+
+subplot(n,m,4+m)
+plot(h*2,Mar_accr,'linewidth',2)
+xlabel('Reference Depth (x2, m)')
+ylabel('Accretion Rate (m/yr)')
+
+subplot(n,m,4)
+plot(chi/2,Mar_accr,'linewidth',2)
+xlabel('Fetch (/2, m)')
+ylabel('Accretion Rate (m/yr)')
+title('Margin Accretion Rate')
+
+subplot(n,m,5+2*m)
 plot(t,M_ocean2river,'linewidth',2)
 xlabel('Year')
-ylabel('Ocean to River Sediment Input')
+ylabel('Qo.Co/Qf.Cf')
 
-subplot(4,4,11)
-plot(h,M_ocean2river,'linewidth',2)
-xlabel('Reference Depth (m)')
-ylabel('Ocean to River Sediment Input')
+subplot(n,m,5+m)
+plot(h*2,M_ocean2river,'linewidth',2)
+xlabel('Reference Depth (x2, m)')
+ylabel('Qo.Co/Qf.Cf')
 
-subplot(4,4,15)
-plot(chi,M_ocean2river,'linewidth',2)
-xlabel('Fetch (m)')
-ylabel('Ocean to River Sediment Input')
+subplot(n,m,5)
+plot(chi/2,M_ocean2river,'linewidth',2)
+xlabel('Fetch (/2, m)')
+ylabel('Qo.Co/Qf.Cf')
+title('Sediment Input Ratio')
 
-subplot(4,4,8)
+subplot(n,m,6+2*m)
 plot(t,V_ocean2river,'linewidth',2)
 xlabel('Year')
-ylabel('Ocean to River Tidal Prism')
+ylabel('Qo/Qf')
 
-subplot(4,4,12)
-plot(h,V_ocean2river,'linewidth',2)
-xlabel('Reference Depth (m)')
-ylabel('Ocean to River Tidal Prism')
+subplot(n,m,6+m)
+plot(h*2,V_ocean2river,'linewidth',2)
+xlabel('Reference Depth (x2, m)')
+ylabel('Qo/Qf')
 
-subplot(4,4,16)
-plot(chi,V_ocean2river,'linewidth',2)
-xlabel('Fetch (m)')
-ylabel('Ocean to River Tidal Prism')
+subplot(n,m,6)
+plot(chi/2,V_ocean2river,'linewidth',2)
+xlabel('Fetch (/2, m)')
+ylabel('Qo/Qf')
+title('Tidal Prism Ratio')
+
+subplot(n,m,7+2*m)
+plot(t,SOM,'linewidth',2)
+xlabel('Year')
+ylabel('SOM Production (mm/yr)')
+
+subplot(n,m,7+m)
+plot(h*2,SOM,'linewidth',2)
+xlabel('Reference Depth (x2, m)')
+ylabel('SOM Production (mm/yr)')
+
+subplot(n,m,7)
+plot(chi/2,SOM,'linewidth',2)
+xlabel('Fetch (/2, m)')
+ylabel('SOM Production (mm/yr)')
+title('SOM Production Rate')
 
 % h_fig=gcf;
 % set(h_fig,'PaperOrientation','portrait')
