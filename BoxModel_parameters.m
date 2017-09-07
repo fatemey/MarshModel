@@ -24,9 +24,9 @@ function [a, b] = BoxModel_parameters(t, y)
 %--------------------------------------------------------------------------------------------------
 
 %-------------- Sediment input constants
-C_o = 95 *10^-3;    % ocean concertation (kg/m3)
-C_f = 15 *10^-3;    % river concentration (kg/m3)
-Q_f = 20;         % river water discharge (m3/s)
+C_o = 35 *10^-3;    % ocean concertation (kg/m3)
+C_f = 15 *10^-3;   % river concentration (kg/m3)
+Q_f = 20;          % river water discharge (m3/s)
 
 %-------------- Erosion constants
 k_0 = 1 *10^-3; % roughness (m)
@@ -70,6 +70,7 @@ V_ocean2river = Q_T/Q_f; % Ocean Sediment Input (kg/s)
 chi = b_f*2; % fetch (m)
 h = (d_f+max(0,d_f-2*H))/2; % characteristic depth (m)
 Mar_accr = k_a*omega_s*C_r/rho_s *365*24*60*60;
+Bed_accr = C_r.*d_f/T_T/rho_s *365*24*60*60*1000;
 z = H-d_m;       % elevation of marsh platform
 r = -0.5*z/H+1;     % reproduction rate
 m = 0.5*z/H;        % mortality rate
@@ -193,20 +194,22 @@ xlabel('Year')
 ylabel('SOM Production (mm/yr)')
 
 subplot(n,m,7+m)
-plot(h*2,SOM,'linewidth',2)
-xlabel('Reference Depth (x2, m)')
-ylabel('SOM Production (mm/yr)')
-
-subplot(n,m,7)
-plot(chi/2,SOM,'linewidth',2)
-xlabel('Fetch (/2, m)')
+plot(d_m,SOM,'linewidth',2)
+xlabel('Marsh Depth (m)')
 ylabel('SOM Production (mm/yr)')
 title('SOM Production Rate')
 
+subplot(n,m,7)
+plot(t,Bed_accr,'linewidth',2)
+xlabel('Year')
+ylabel('Bed Accreation (mm/yr)')
+title('TF Bed Accreation Rate')
+
 % h_fig=gcf;
 % set(h_fig,'PaperOrientation','portrait')
-% set(h_fig,'PaperPosition', [0 0 7.5 7.5]) % [... ... max_width=7.5 max_height=9]
-% tit='bf0';
+% set(h_fig,'PaperPosition', [0 0 14 6]) % [... ... max_width=7.5 max_height=9]
+% tit='Co_95_parameters_ssshal';
 % print(tit,'-dtiff','-r400')
-% movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\15 - Model Parameters relationships')
+% % movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\15 - Model Parameters relationships')
+% movefile([tit,'.tif'],'/Users/Callisto/Files/Work/Marsh Model/Results/20 - Unstable Equlibrium Results through Optimization of Steady State')
 % close all

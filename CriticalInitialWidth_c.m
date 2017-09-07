@@ -32,7 +32,7 @@ for k = 1 : 1
     
     k
     %-------------- Set the time span
-    tyr = 5000;  % solve for time tyr (years)
+    tyr = 1000;  % solve for time tyr (years)
     ts = tyr *365*24*60*60; % tyr in (s)
     dt = 12*60*60; % time step in (s)
     tspan = 0:dt:ts;
@@ -81,7 +81,7 @@ for k = 1 : 1
     par = par_temp(k);
     switch par
         case 1
-            par_v = 5 *10^-3 : 5 *10^-3 : 100 *10^-3; % for C_o
+            par_v = 1 *10^-3 : 1 *10^-3 : 10 *10^-3; % for C_o
             TF_width = 10 : 10 : b_fm-10;
         case 2
             par_v = 0 *10^-3: 50 *10^-3 : 1000 *10^-3; % for C_f
@@ -249,7 +249,7 @@ for k = 1 : 1
     
     switch par
         case 1
-            save('co_data_5000yr.mat','dat')
+            save('co_data_1000yr_1to10.mat','dat')
         case 2
             save('cf_data.mat','dat')
         case 3
