@@ -28,7 +28,7 @@ dt = 12*60*60; % time step in (s)
 tspan = 0:dt:ts;
 
 %-------------- Sediment input constants
-C_o = 35 *10^-3;    % ocean concertation (kg/m3)
+C_o = 50 *10^-3;    % ocean concertation (kg/m3)
 C_f = 15 *10^-3;    % river concentration (kg/m3)
 Q_f = 20;         % river water discharge (m3/s)
 
@@ -68,9 +68,9 @@ Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal 
 % b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
 
 %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u (=C_r*(b_f*d_f+b_m*d_m))]
-y0(1) = 790;%b_fm/2;      % tidal flat width (m)
-y0(2) = H+0.3;        % tidal flat depth (m)
-y0(3) = H-0.3;         % marsh depth (m)
+y0(1) =[1061];%b_fm/2;      % tidal flat width (m)
+y0(2) =[0.812076185030824];% H+0.3;        % tidal flat depth (m)
+y0(3) =[0.0507889136801601];% H-0.3;         % marsh depth (m)
 y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
 
 %-------------- Solve the system of differential equations
@@ -104,20 +104,16 @@ if ~isempty(ind) && length(ind)>1
 end
 
 %-------------- Plot Results
-% figure
-% clf
 % plot_BoxModel(t,y)
-% h_fig=gcf;
-% set(h_fig,'PaperOrientation','portrait')
-% set(h_fig,'PaperPosition', [0 0 7 7]) % [... ... max_width=7.5 max_height=9]
-% tit = 'Co_35_SS5kSolutionsdeep';
-% print(tit,'-dtiff','-r400')
-% % movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\15 - Model Parameters relationships')
-% movefile([tit,'.tif'],'/Users/Callisto/Files/Work/Marsh Model/Results/20 - Unstable Equlibrium Results through Optimization of Steady State')
-% close all
+BoxModel_parameters(t,y,C_o)
 
-
-BoxModel_parameters(t,y)
+h_fig=gcf;
+set(h_fig,'PaperOrientation','portrait')
+set(h_fig,'PaperPosition', [0 0 14 6]) % [... ... max_width=7.5 max_height=9]
+tit = 'Co_50_SSSolutiondeep4initial';
+print(tit,'-dtiff','-r400')
+movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\20 - Unstable Equlibrium Results through Optimization of Steady State')
+close all
 
 %======================= Nested Function =========================
     function dy = ode4marshtidalflat (t,y) 

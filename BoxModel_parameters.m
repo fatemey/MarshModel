@@ -1,4 +1,4 @@
-function [a, b] = BoxModel_parameters(t, y)
+function [a, b] = BoxModel_parameters(t, y,c)
 % plot_BoxModel_vars: plots different parameters
 %
 % Input
@@ -24,7 +24,7 @@ function [a, b] = BoxModel_parameters(t, y)
 %--------------------------------------------------------------------------------------------------
 
 %-------------- Sediment input constants
-C_o = 35 *10^-3;    % ocean concertation (kg/m3)
+C_o = c *10^-3;    % ocean concertation (kg/m3)
 C_f = 15 *10^-3;   % river concentration (kg/m3)
 Q_f = 20;          % river water discharge (m3/s)
 

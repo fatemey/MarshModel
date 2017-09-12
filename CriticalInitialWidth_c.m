@@ -81,8 +81,8 @@ for k = 1 : 1
     par = par_temp(k);
     switch par
         case 1
-            par_v = 1 *10^-3 : 1 *10^-3 : 10 *10^-3; % for C_o
-            TF_width = 10 : 10 : b_fm-10;
+            par_v = 50 *10^-3;% : 5 *10^-3 : 100 *10^-3; % for C_o
+            TF_width = 1060:1080;%10 : 10 : b_fm-10;
         case 2
             par_v = 0 *10^-3: 50 *10^-3 : 1000 *10^-3; % for C_f
             TF_width = 5 : 5 : b_fm-5;
@@ -140,8 +140,8 @@ for k = 1 : 1
             i
             %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u(=C_r*(b_f*d_f+b_m*d_m))]
             y0(1) = TF_width(i);
-            y0(2) = H+0.3;         % tidal flat depth (m)
-            y0(3) = H-0.3;         % marsh depth (m)
+            y0(2) = 0.72;%H+0.3;         % tidal flat depth (m)
+            y0(3) = 0.051;%H-0.3;         % marsh depth (m)
             y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
             
             %-------------- Solve the system of differential equations
@@ -249,7 +249,7 @@ for k = 1 : 1
     
     switch par
         case 1
-            save('co_data_1000yr_1to10.mat','dat')
+            save('co50_data_1000yr_df72.mat','dat')
         case 2
             save('cf_data.mat','dat')
         case 3
