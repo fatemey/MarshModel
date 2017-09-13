@@ -24,7 +24,7 @@ clear
 % clf
 
 fileID = fopen('Res.txt','w');
-fprintf(fileID,'%12s %12s %12s %12s %12s %12s %12s\n','C_o','b_f','d_f','d_m','eqtf','eqn','conv');
+fprintf(fileID,'%12s %12s %12s %12s %12s %12s %12s %12s\n','C_o','b_f','d_f','d_m','eqtf','eqm','conv','bound');
 
 par_temp = 1 : 8;
 
@@ -81,8 +81,8 @@ for k = 1 : 1
     par = par_temp(k);
     switch par
         case 1
-            par_v = 50 *10^-3;% : 5 *10^-3 : 100 *10^-3; % for C_o
-            TF_width = 1060:1080;%10 : 10 : b_fm-10;
+            par_v = 5 *10^-3 : 5 *10^-3 : 100 *10^-3; % for C_o
+            TF_width = 10 : 10 : b_fm-10;
         case 2
             par_v = 0 *10^-3: 50 *10^-3 : 1000 *10^-3; % for C_f
             TF_width = 5 : 5 : b_fm-5;
@@ -132,7 +132,7 @@ for k = 1 : 1
         width_diff = zeros(length(TF_width),1);
         depth = zeros(length(TF_width),1);
         if j == 1
-            data = zeros(length(par_v),6);
+            data = zeros(length(par_v),7);
         end   
         
         for i = 1 : length(TF_width)
@@ -140,8 +140,8 @@ for k = 1 : 1
             i
             %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u(=C_r*(b_f*d_f+b_m*d_m))]
             y0(1) = TF_width(i);
-            y0(2) = 0.72;%H+0.3;         % tidal flat depth (m)
-            y0(3) = 0.051;%H-0.3;         % marsh depth (m)
+            y0(2) = 1.68;%H+0.3;         % tidal flat depth (m)
+            y0(3) = 0.055;%H-0.3;         % marsh depth (m)
             y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
             
             %-------------- Solve the system of differential equations
@@ -163,15 +163,18 @@ for k = 1 : 1
             end
             
             ind = find(y(:,1)>=b_fm); % tidal flat filling the basin
+            flag_boundary = 0;    % flag for basin boundary limits
             if ~isempty(ind) && length(ind)>1
                 y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new marsh now
                 t(ind(2):end,:)=[];
+                flag_boundary = 1; % corresponding to a fully tidal flat basin (reaching to upper boundary limit)
             end
             
             ind = find(y(:,1)<=0); % marsh filling the basin
             if ~isempty(ind) && length(ind)>1
                 y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new marsh now
                 t(ind(2):end,:)=[];
+                flag_boundary = 2; % corresponding to a fully marsh basin (reaching to lower boundary limit)
             end
             
             %-------------- Check tidal flat contraction/expansion
@@ -234,7 +237,13 @@ for k = 1 : 1
                     end
                 end
                 
-                fprintf(fileID,'%12f %12d %12f %12f %12d %12d %12d\n',[par_v(j), data(j,:)]);
+                    if flag_boundary == 1 % fully tidal flat
+                        data(j,7) = 1;
+                    elseif flag_boundary == 2 % fully marsh
+                        data(j,7) = 2;
+                    end
+                
+                fprintf(fileID,'%12f %12d %12f %12f %12d %12d %12d %12d\n',[par_v(j), data(j,:)]);
                 
                 break
                 
@@ -249,7 +258,7 @@ for k = 1 : 1
     
     switch par
         case 1
-            save('co50_data_1000yr_df72.mat','dat')
+            save('co_data_1000yr.mat','dat')
         case 2
             save('cf_data.mat','dat')
         case 3
