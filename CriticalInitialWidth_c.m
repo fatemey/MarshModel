@@ -237,9 +237,9 @@ for k = 1 : 1
                     end
                 end
                 
-                    if flag_boundary == 1 % fully tidal flat
+                    if flag_boundary == 1 % hitting the upper boundary limit (fully tidal flat)
                         data(j,7) = 1;
-                    elseif flag_boundary == 2 % fully marsh
+                    elseif flag_boundary == 2 % hitting the lower boundary limit (fully marsh)
                         data(j,7) = 2;
                     end
                 
