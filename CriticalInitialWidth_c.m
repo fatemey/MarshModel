@@ -140,8 +140,8 @@ for k = 1 : 1
             i
             %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u(=C_r*(b_f*d_f+b_m*d_m))]
             y0(1) = TF_width(i);
-            y0(2) = 1.68;%H+0.3;         % tidal flat depth (m)
-            y0(3) = 0.055;%H-0.3;         % marsh depth (m)
+            y0(2) = H+0.3;         % tidal flat depth (m)
+            y0(3) = H-0.3;         % marsh depth (m)
             y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
             
             %-------------- Solve the system of differential equations
@@ -237,11 +237,11 @@ for k = 1 : 1
                     end
                 end
                 
-                    if flag_boundary == 1 % hitting the upper boundary limit (fully tidal flat)
-                        data(j,7) = 1;
-                    elseif flag_boundary == 2 % hitting the lower boundary limit (fully marsh)
-                        data(j,7) = 2;
-                    end
+                if flag_boundary == 1 % hitting the upper boundary limit (fully tidal flat)
+                    data(j,7) = 1;
+                elseif flag_boundary == 2 % hitting the lower boundary limit (fully marsh)
+                    data(j,7) = 2;
+                end
                 
                 fprintf(fileID,'%12f %12d %12f %12f %12d %12d %12d %12d\n',[par_v(j), data(j,:)]);
                 
