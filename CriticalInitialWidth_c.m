@@ -24,7 +24,7 @@ clear
 % clf
 
 fileID = fopen('Res.txt','w');
-fprintf(fileID,'%12s %12s %12s %12s %12s %12s %12s %12s\n','C_o','b_f','d_f','d_m','eqtf','eqm','conv','bound');
+fprintf(fileID,'%12s %12s %12s %12s %12s %12s %12s %12s \n','C_o','b_f','d_f','d_m','eqtf','eqm','conv','bound');
 
 par_temp = 1 : 8;
 
@@ -243,7 +243,7 @@ for k = 1 : 1
                     data(j,7) = 2;
                 end
                 
-                fprintf(fileID,'%12f %12d %12f %12f %12d %12d %12d %12d\n',[par_v(j), data(j,:)]);
+                fprintf(fileID,'%12f %12d %12f %12f %12d %12d %12d %12d \n',[par_v(j), data(j,:)]);
                 
                 break
                 

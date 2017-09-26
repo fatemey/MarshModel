@@ -12,6 +12,8 @@ height=(1-up-midv-bottom)/2;
 left1=left; left2=left+width+midh;
 bottom1=midv+height+bottom; bottom2=bottom;
 
+figure
+
 axis off
 
 axes('Position',[left1 bottom1 width height]);
