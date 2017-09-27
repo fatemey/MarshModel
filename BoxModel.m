@@ -28,7 +28,7 @@ dt = 12*60*60; % time step in (s)
 tspan = 0:dt:ts;
 
 %-------------- Sediment input constants
-C_o = 35 *10^-3;    % ocean concertation (kg/m3)
+C_o = 40 *10^-3;    % ocean concertation (kg/m3)
 C_f = 15 *10^-3;    % river concentration (kg/m3)
 Q_f = 20;         % river water discharge (m3/s)
 
@@ -68,9 +68,9 @@ Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal 
 % b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
 
 %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u (=C_r*(b_f*d_f+b_m*d_m))]
-y0(1) =[782];%y1;%b_fm/2;      % tidal flat width (m)
-y0(2) =[0.767134933220550];%H+0.3;        % tidal flat depth (m)
-y0(3) =[0.0687349405535752];%H-0.3;         % marsh depth (m)
+y0(1) =[849.598301809407];%y1;%b_fm/2;      % tidal flat width (m)
+y0(2) =[0.729936136849793];%H+0.3;        % tidal flat depth (m)
+y0(3) =[0.0610966451790888];%H-0.3;         % marsh depth (m)
 y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
 
 %-------------- Solve the system of differential equations
@@ -175,7 +175,7 @@ plot_BoxModel(t,y)
         
         %-------------- Describe the equation for b_f (m)
         dy(1,1) = B_e - B_a;
-        dy(1,1) = 0;
+%         dy(1,1) = 0;
                 
         if (y(1) < 0 && dy(1,1) < 0) % imposing a constraint for boundary limits of b_f (or y(1))
             dy(1,1) = 0 ;
