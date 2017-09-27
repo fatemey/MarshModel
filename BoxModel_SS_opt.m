@@ -63,7 +63,7 @@ for i = 1 : length(C_o_V)
     Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
     
     %-------------- Initial conditions, x0=[b_f, d_f, d_m]
-    x0(1) = bf_0(i);%1570;%b_fm/2;      % tidal flat width (m)
+    x0(1) = bf_0(i)+2;%b_fm/2;      % tidal flat width (m)
     x0(2) = H+0.3;        % tidal flat depth (m)
     x0(3) = H-0.3;         % marsh depth (m)
     
@@ -71,20 +71,27 @@ for i = 1 : length(C_o_V)
     %     lb = [0,-Inf,-Inf];
     lb = [0,0,0];
     ub = [b_fm,Inf,Inf];
-    objfun = @Fun_BoxModel_SS;
-    confun = @Fun_BoxModel_SS_con;
-    options = optimoptions('fmincon','Algorithm','interior-point','Display','final','StepTolerance',1e-200,'ConstraintTolerance',1e-15,'MaxFunctionEvaluations',100000,'MaxIterations',100000,'OptimalityTolerance',1e-20,'OutputFcn',@outfun); %'Algorithm','active-set','sqp'
+    D = diag([1e-2,1e2,1e2]); % used for scaling the problem ->width in thousands of m but depth in 10ths of m??!!
+    objfun = @(x) Fun_BoxModel_SS(D*x);
+%     objfun = @(w) Fun_BoxModel_SS([w(1)+1e3;w(2)-1e2;w(2)-1e2]); % centered
+%     objfun2 = @(w) objfun([w(1)+1e3;w(2)-1e2;w(2)-1e2]); % centered
+%     objfun = @Fun_BoxModel_SS;
+%     confun = @Fun_BoxModel_SS_con;
+    confun = @(x) Fun_BoxModel_SS_con(D*x);
+%     confun2 = @(w) confun([w(1)+1e3;w(2)-1e2;w(2)-1e2]); % centered
+%     confun = @(w) Fun_BoxModel_SS_con([w(1)+1e3;w(2)-1e2;w(2)-1e2]); % centered
+    options = optimoptions('fmincon','Algorithm','interior-point','Display','final','StepTolerance',1e-500,'ConstraintTolerance',1e-20,'MaxFunctionEvaluations',10000,'MaxIterations',10000,'OptimalityTolerance',1e-100,'OutputFcn',@outfun); %'Algorithm','active-set','sqp'
 %     options = optimoptions('fmincon','Algorithm','active-set','Display','final','StepTolerance',1e-300,'ConstraintTolerance',1e-100,'MaxFunctionEvaluations',1000000,'MaxIterations',1000000,'OptimalityTolerance',1e-30,'OutputFcn',@outfun); %'Algorithm','active-set','sqp'
-    [x,fval,exitflag,output,lambda,grad,hessian] = fmincon(objfun,x0,[],[],[],[],lb,ub,confun,options);
+    [x,fval,exitflag,output,lambda,grad,hessian] = fmincon(objfun,x0',[],[],[],[],lb,ub,confun,options);
     
-    Sol(i,1:length(x)+length(fval)) = [x,fval];
+    Sol(i,1:length(x)+length(fval)) = [x',fval];
 %     [G,Geq] = Fun_BoxModel_SS_con(x);
 %     Sol(i,length(x)+length(fval)+1:length(x)+length(fval)+2) = Geq;
 
 end
 
 dat = [C_o_V'*.001, Sol];
-save('co_data_SS_opt.mat','dat')
+save('co_data_SS_opt_2.mat','dat')
 
 %-------------- Plot Results
 % figure(1)
@@ -113,12 +120,15 @@ save('co_data_SS_opt.mat','dat')
 figure(1)
 clf
 hold on
+load co_data_1000yr; df_pre=dat(:,3);dm_pre=dat(:,4);
 df=Sol(:,2);
 dm=Sol(:,3);
-scatter(C_o_V,df,60,'b<','filled')
-scatter(C_o_V,dm,'go','filled')
+scatter(C_o_V,df*100,80,'b<','filled')
+scatter(C_o_V,dm*100,'go','filled')
+% scatter(C_o_V,df_pre*100,100,'b<')
+% scatter(C_o_V,dm_pre*100,100,'go')
 xlabel('Ocean Concentration (mg/l)')
-ylabel('Depth (m)')
+ylabel('Depth (cm)')
 legend('Tidal Flat','Marsh','location','northwest')
 box on
 
@@ -134,13 +144,14 @@ box on
 figure(3)
 clf
 hold on
-load co_data; co1=dat(:,1)*1000; bf1=dat(:,2);
+co1=dat(:,1)*1000; bf1=dat(:,2);
 co2=C_o_V; bf2=Sol(:,1);
-scatter(co1(1:7),bf1(1:7),55,'k','>','filled')
-scatter(co1(8:end),bf1(8:end),55,'k','o','filled')
-scatter(co2,bf2,'ro','filled')
+% scatter(co1(1:7),bf1(1:7),80,'k','>','filled')
+% scatter(co1(8:end),bf1(8:end),55,'k','o','filled')
+scatter(co1,bf1/1000,80,'k','<','filled')
+scatter(co2,bf2/1000,'ro','filled')
 xlabel('Ocean Concentration (mg/l)')
-ylabel('Tidal Flat Width (m)')
+ylabel('Tidal Flat Width (km)')
 box on
 
 % figure(4)
