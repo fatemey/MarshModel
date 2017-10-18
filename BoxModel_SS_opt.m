@@ -1,15 +1,13 @@
 function BoxModel_SS_opt()
-% BoxModel_SS: Models 0d marsh and tidal flat time
-% evolution using optimization and in equilibrium conditions.
-% This approacche works better than BoxModel_SS
+% BoxModel_SS_opt: Models 0d marsh and tidal flat time
+% evolution using optimization at equilibrium conditions.
 %
-% Last Update: 7/5/2017
+% Last Update: 10/16/2017
 %
 %--------------------------------------------------------------------------------------------------
 format compact
 format longG
 clear
-% clf
 
 %-------------- Set up shared variables with OUTFUN
 history.x = [];
@@ -17,14 +15,15 @@ history.fval = [];
 % searchdir = [];
 
 %-------------- Set up shared variables with main functions
-load co_data; bf_0=dat(:,2); %bf_0(19:20)=[1500,1500];
-C_o_V = 5:5:100;
+load co_data_1000yr; bf_0=dat(:,2);
+C_o_V = [5:5:100] *10^-3;
 
 Sol = zeros(length(C_o_V),4);
 for i = 1 : length(C_o_V)
+    
     i
     %-------------- Sediment input constants
-    C_o = C_o_V(i) *10^-3;    % ocean concertation (kg/m3)
+    C_o = C_o_V(i);    % ocean concertation (kg/m3)
     C_f = 15 *10^-3;    % river concentration (kg/m3)
     Q_f = 20;         % river water discharge (m3/s)
     
@@ -43,8 +42,8 @@ for i = 1 : length(C_o_V)
     k_B = 2*10^-3 /365/24/60/60;    % vegetation characteristics (m3/s/kg)
     
     %-------------- Basin properties
-    b_fm = 5 *10^3; % total basin width (both sides of the channel) (m)
-    L_E = 15 *10^3; % basin length (m)
+    b_fm = 10*10^3; % total basin width (both sides of the channel) (m)
+    L_E = 10 *10^3; % basin length (m)
     R = 2 *10^-3/365/24/60/60;   % sea level rise (m/s)
     b_r = 0; % river width (m)
     
@@ -63,7 +62,7 @@ for i = 1 : length(C_o_V)
     Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
     
     %-------------- Initial conditions, x0=[b_f, d_f, d_m]
-    x0(1) = bf_0(i)+2;%b_fm/2;      % tidal flat width (m)
+    x0(1) = bf_0(i)+200;%b_fm/2;      % tidal flat width (m)
     x0(2) = H+0.3;        % tidal flat depth (m)
     x0(3) = H-0.3;         % marsh depth (m)
     
@@ -71,106 +70,66 @@ for i = 1 : length(C_o_V)
     %     lb = [0,-Inf,-Inf];
     lb = [0,0,0];
     ub = [b_fm,Inf,Inf];
-    D = diag([1e-2,1e2,1e2]); % used for scaling the problem ->width in thousands of m but depth in 10ths of m??!!
+    %     D = diag([1e-2,1e2,1e2]); % used for scaling the problem ->width in thousands of m but depth in 10ths of m??!!
+    D = diag([1/b_fm,1/2/H,1/2/H]); % used for scaling the problem ->width in thousands of m but depth in 10ths of m??!!
     objfun = @(x) Fun_BoxModel_SS(D*x);
-%     objfun = @(w) Fun_BoxModel_SS([w(1)+1e3;w(2)-1e2;w(2)-1e2]); % centered
-%     objfun2 = @(w) objfun([w(1)+1e3;w(2)-1e2;w(2)-1e2]); % centered
-%     objfun = @Fun_BoxModel_SS;
-%     confun = @Fun_BoxModel_SS_con;
-    confun = @(x) Fun_BoxModel_SS_con(D*x);
-%     confun2 = @(w) confun([w(1)+1e3;w(2)-1e2;w(2)-1e2]); % centered
-%     confun = @(w) Fun_BoxModel_SS_con([w(1)+1e3;w(2)-1e2;w(2)-1e2]); % centered
-    options = optimoptions('fmincon','Algorithm','interior-point','Display','final','StepTolerance',1e-500,'ConstraintTolerance',1e-20,'MaxFunctionEvaluations',10000,'MaxIterations',10000,'OptimalityTolerance',1e-100,'OutputFcn',@outfun); %'Algorithm','active-set','sqp'
-%     options = optimoptions('fmincon','Algorithm','active-set','Display','final','StepTolerance',1e-300,'ConstraintTolerance',1e-100,'MaxFunctionEvaluations',1000000,'MaxIterations',1000000,'OptimalityTolerance',1e-30,'OutputFcn',@outfun); %'Algorithm','active-set','sqp'
+    %     objfun = @(w) Fun_BoxModel_SS([w(1)+1e3;w(2)-1e2;w(2)-1e2]); % centered
+    %     objfun2 = @(w) objfun([w(1)+1e3;w(2)-1e2;w(2)-1e2]); % centered
+    %     objfun = @Fun_BoxModel_SS;
+    confun = @Fun_BoxModel_SS_con;
+    %     confun = @(x) Fun_BoxModel_SS_con(D*x);
+    %     confun2 = @(w) confun([w(1)+1e3;w(2)-1e2;w(2)-1e2]); % centered
+    %     confun = @(w) Fun_BoxModel_SS_con([w(1)+1e3;w(2)-1e2;w(2)-1e2]); % centered
+    options = optimoptions('fmincon','Algorithm','interior-point','Display','final','StepTolerance',1e-300,'ConstraintTolerance',1e-20,'MaxFunctionEvaluations',10000,'MaxIterations',10000,'OptimalityTolerance',1e-100,'OutputFcn',@outfun); %'Algorithm','active-set','sqp'
+    %     options = optimoptions('fmincon','Algorithm','active-set','Display','final','StepTolerance',1e-300,'ConstraintTolerance',1e-100,'MaxFunctionEvaluations',1000000,'MaxIterations',1000000,'OptimalityTolerance',1e-30,'OutputFcn',@outfun); %'Algorithm','active-set','sqp'
     [x,fval,exitflag,output,lambda,grad,hessian] = fmincon(objfun,x0',[],[],[],[],lb,ub,confun,options);
     
     Sol(i,1:length(x)+length(fval)) = [x',fval];
-%     [G,Geq] = Fun_BoxModel_SS_con(x);
-%     Sol(i,length(x)+length(fval)+1:length(x)+length(fval)+2) = Geq;
-
+    %     [G,Geq] = Fun_BoxModel_SS_con(x);
+    %     Sol(i,length(x)+length(fval)+1:length(x)+length(fval)+2) = Geq;
+    
 end
 
-dat = [C_o_V'*.001, Sol];
-save('co_data_SS_opt_2.mat','dat')
+% dat = [C_o_V', Sol];
+% save('co_data_SS_opt_2.mat','dat')
 
 %-------------- Plot Results
-% figure(1)
-% clf
-% hold on
-% yyaxis left
-% bf=history.x(:,1);
-% scatter(1:length(bf),bf)
-% ylabel('Tidal Flat Width (m)')
-% yyaxis right
-% df=history.x(:,2);
-% dm=history.x(:,3);
-% scatter(1:length(bf),df)
-% scatter(1:length(bf),dm,'filled')
-% xlabel('Iteration')
-% ylabel('Depth (m)')
-% box on
-% 
-% figure(2)
-% clf
-% scatter(1:length(bf),history.fval,'k','o')
-% xlabel('Iteration')
-% ylabel('Tidal Flat Width Rate (mm/yr)')
-% box on
+load co_data_1000yr; co=dat(:,1)*1000; bf_TM=dat(:,2);
+bf=Sol(:,1); df=Sol(:,2); dm=Sol(:,3); feval=Sol(:,end);
 
-figure(1)
 clf
+subplot(2,2,1)
+
 hold on
-load co_data_1000yr; df_pre=dat(:,3);dm_pre=dat(:,4);
-df=Sol(:,2);
-dm=Sol(:,3);
-scatter(C_o_V,df*100,80,'b<','filled')
-scatter(C_o_V,dm*100,'go','filled')
-% scatter(C_o_V,df_pre*100,100,'b<')
-% scatter(C_o_V,dm_pre*100,100,'go')
+scatter(co,bf_TM/1000,80,'k<','filled')
+scatter(co,bf/1000,'ro','filled')
+xlabel('Ocean Concentration (mg/l)')
+ylabel('Tidal Flat Width (km)')
+box on
+
+subplot(2,2,2)
+
+hold on
+scatter(co,df*100,80,'b<','filled')
+scatter(co,dm*100,'go','filled')
 xlabel('Ocean Concentration (mg/l)')
 ylabel('Depth (cm)')
 legend('Tidal Flat','Marsh','location','northwest')
 box on
 
-figure(2)
-clf
+subplot(2,2,3)
+
 hold on
-co=C_o_V; feval=Sol(:,end);
 scatter(co,feval,'ko')
 xlabel('Ocean Concentration (mg/l)')
 ylabel('Tidal Flat Width Rate (mm/yr)')
 box on
 
-figure(3)
-clf
-hold on
-co1=dat(:,1)*1000; bf1=dat(:,2);
-co2=C_o_V; bf2=Sol(:,1);
-% scatter(co1(1:7),bf1(1:7),80,'k','>','filled')
-% scatter(co1(8:end),bf1(8:end),55,'k','o','filled')
-scatter(co1,bf1/1000,80,'k','<','filled')
-scatter(co2,bf2/1000,'ro','filled')
-xlabel('Ocean Concentration (mg/l)')
-ylabel('Tidal Flat Width (km)')
-box on
-
-% figure(4)
-% clf
-% hold on
-% g1=Sol(:,end-1);
-% g2=Sol(:,end);
-% scatter(C_o_V,g1,'b<','filled')
-% scatter(C_o_V,g2,'go','filled')
-% xlabel('Ocean Concentration (mg/l)')
-% ylabel('Constraintents (mm/yr)')
-% legend('C1','C2','location','northwest')
-% box on
-
 % set(findobj('type','axes'),'fontsize',15)
 % h_fig=gcf;
 % set(h_fig,'PaperOrientation','portrait')
 % set(h_fig,'PaperPosition', [0 0 7.5 6]) % [... ... max_width=7.5 max_height=9]
-% tit='3-initialguess';
+% tit='2';
 % print(tit,'-dtiff','-r400')
 
 %======================= Nested Function =========================
@@ -234,8 +193,9 @@ box on
             B_a = 0;
         end
         
-        %-------------- Describe the equation for b_f (m)
-        F = abs(B_e - B_a) *1000*60*60*24*365;
+        %-------------- Describe the equation for b_f (m/s)
+        F = abs(B_e - B_a); % (m/s)
+        F = F *1000*60*60*24*365; % (mm/yr)
         
     end
 
@@ -326,7 +286,7 @@ box on
             
         end
         
-        %-------------- Describe the equation for d_f (m)
+        %-------------- Describe the equation for d_f (m/s)
         Geq(1) = TF_erosion - TF_accretion - SOM + R;
         
         
@@ -341,6 +301,10 @@ box on
         
         %-------------- Compute external sediment input (kg/s)
         Q_T = (d_f*b_f+d_m*b_m)*L_E/T_T-Q_f;
+        if Q_T<0
+            Q_T = 0;
+        end
+        
         ocean_in = Q_T*C_o;
         river_in = Q_f*C_f;
         
@@ -361,10 +325,11 @@ box on
             export = 0;
         end
         
-        %-------------- Describe the equation for C_r (kg/m3)
+        %-------------- Describe the equation for C_r (kg/s)
         Geq(2) = bed_erosion + ocean_in + river_in - TF_deposition - M_deposition - export;   % (kg/s)
+        Geq(2) = Geq(2)/rho_s/L_E/b_fm;   % (m/s)
         
-        Geq = Geq *1000*60*60*24*365;
+        Geq = Geq *1000*60*60*24*365; % (mm/yr)
         G = [];
         
     end
@@ -374,7 +339,7 @@ box on
         
         switch state
             case 'init'
-%                 hold on
+                %                 hold on
             case 'iter'
                 % Concatenate current point and objective function
                 % value with history. x must be a row vector.
@@ -391,7 +356,7 @@ box on
                 %                     num2str(optimValues.iteration));
                 %                 title('Sequence of Points Computed by fmincon');
             case 'done'
-%                 hold off
+                %                 hold off
             otherwise
         end
         
