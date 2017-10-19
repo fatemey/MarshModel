@@ -10,9 +10,9 @@ format longG
 clear
 
 %-------------- Set up shared variables with main functions
-Co = (5:5:100) *10^-3;
-bfm_ = 1:2:20;
-n = 10;
+Co = (5:40:100) *10^-3;
+bfm_ = 1:1:20;
+n = 20;
 Sol = zeros(length(Co),2,n);
 
 for j = 1 : n
@@ -271,9 +271,10 @@ end
         end
         
         %-------------- Compute external sediment input (kg/s)
-        Q_T = (d_f*b_f+d_m*b_m)*L_E/T_T-Q_f;
-        if Q_T<0
-            Q_T = 0;
+        Vol = (d_f*b_f+d_m*b_m)*L_E; % availble volume in the system to be filled with water
+        Q_T = max(Vol/T_T-Q_f,0);
+        if Q_T==0
+            Q_f = Vol/T_T;
         end
         
         ocean_in = Q_T*C_o;

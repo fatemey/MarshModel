@@ -20,7 +20,7 @@ R = 2 *10^-3/365/24/60/60; % sea level rise (m/s)
 H = 1.4 /2;       % tidal amplitude (range/2) (m)
 
 %--------------------- Graph 1 --------------------
-load co_data_Rby2_smallbasin; conv = dat(:,7);
+load co_data_Rby2; conv = dat(:,7);
 Chi = dat(:,2);    % Nonstable  equilibrium tidal flat width
 C_o = dat(:,1);    % ocean concertation (kg/m3)
 
@@ -30,10 +30,10 @@ x = C_o/C_f;
 y = Chi/b_fm;
 z1 = round(R*b_fm*L_E/Q_f,4);
 
-p1 = gscatter(x,y,conv,'k','x<s+',[],'off');
+p1 = gscatter(x,y,conv,'k','ox<s+',[],'off');
 
 %--------------------- Graph 2 --------------------
-load co_data_base_smallbasin; conv = dat(:,7);
+load co_data_base; conv = dat(:,7);
 Chi = dat(:,2);    % Nonstable  equilibrium tidal flat width
 C_o = dat(:,1);    % ocean concertation (kg/m3)
 
@@ -43,10 +43,10 @@ x = C_o/C_f;
 y = Chi/b_fm;
 z2 = round(R*b_fm*L_E/Q_f,4);
 
-p2 = gscatter(x,y,conv,'r','x<s+',[],'off');
+p2 = gscatter(x,y,conv,'r','ox<s+',[],'off');
 
 %--------------------- Graph 3 --------------------
-load co_data_Rx2_smallbasin; conv = dat(:,7);
+load co_data_Rx2; conv = dat(:,7);
 Chi = dat(:,2);    % Nonstable  equilibrium tidal flat width
 C_o = dat(:,1);    % ocean concertation (kg/m3)
 
@@ -56,10 +56,10 @@ x = C_o/C_f;
 y = Chi/b_fm;
 z3 = round(R*b_fm*L_E/Q_f,4);
 
-p3 = gscatter(x,y,conv,'b','x<s+',[],'off');
+p3 = gscatter(x,y,conv,'b','ox<s+',[],'off');
 
 %--------------------- Graph 4 --------------------
-load co_data_Rx4_smallbasin; conv = dat(:,7);
+load co_data_Rx4; conv = dat(:,7);
 Chi = dat(:,2);    % Nonstable  equilibrium tidal flat width
 C_o = dat(:,1);    % ocean concertation (kg/m3)
 
@@ -81,8 +81,8 @@ box on
 % set(findobj('type','axes'),'fontsize',10)
 % h_fig=gcf;
 % set(h_fig,'PaperOrientation','portrait')
-% set(h_fig,'PaperPosition', [0 0 12 5]) % [... ... max_width=7.5 max_height=9]
-% tit='equilibrium solutions-1kyr';
+% set(h_fig,'PaperPosition', [0 0 5 5]) % [... ... max_width=7.5 max_height=9]
+% tit='R';
 % print(tit,'-dtiff','-r400')
-% movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\20 - Unstable Equlibrium Results through Optimization of Steady State')
+% movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\22 - Nondimensional Analysis')
 % close all

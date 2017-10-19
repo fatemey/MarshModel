@@ -1,4 +1,4 @@
-function data = CriticalInitialWidth_c
+function data = CriticalInitialWidth
 % Function CriticalInitialWidth looks for a critical fetch value based on
 % different system chracteristics using the same method as BoxModel.m.
 % Output:
@@ -442,9 +442,10 @@ fclose(fileID);
         end
         
         %-------------- Compute external sediment input (kg/s)
-        Q_T = (local_df*local_bf+local_dm*b_m)*L_E/T_T-Q_f;
-        if Q_T<0
-            Q_T = 0;
+        Vol = (local_df*local_bf+local_dm*b_m)*L_E; % availble volume in the system to be filled with water
+        Q_T = max(Vol/T_T-Q_f,0);
+        if Q_T==0
+            Q_f = Vol/T_T;
         end
         
         ocean_in = Q_T*C_o;
