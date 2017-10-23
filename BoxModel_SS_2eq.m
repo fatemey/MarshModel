@@ -1,8 +1,8 @@
-function BoxModel_SS_2eq()
+function BoxModel_SS_2eq() % Co & bfm
 % BoxModel_SS_2eq: Models 0d marsh and tidal flat time
 % evolution by reducing 3 equations to 2, at equilibrium conditions.
-%
-% Last Update: 10/16/2017
+% 
+% Last Update: 10/18/2017
 %
 %--------------------------------------------------------------------------------------------------
 format compact
@@ -10,21 +10,24 @@ format longG
 clear
 
 %-------------- Set up shared variables with main functions
-Co = (5:40:100) *10^-3;
-bfm_ = 1:1:20;
-n = 20;
-Sol = zeros(length(Co),2,n);
+Co_ = (5:5:95) *10^-3;
+bfm_ = (5:5:20) *10^3;
+% bfm_ = (2.^(1:4)) *10^3;
 
-for j = 1 : n
+n = length(Co_); % # of Co
+k = length (bfm_); % # number of bfm
+Sol = zeros(n,6,k);
+
+for j = 1 : k
     
     j
     
-    for i = 1 : length(Co)
+    for i = 1 : n
         
-        %     i
+%             i
         
         %-------------- Sediment input constants
-        C_o = Co(i);    % ocean concertation (kg/m3)
+        C_o = Co_(i);    % ocean concertation (kg/m3)
         C_f = 15 *10^-3;    % river concentration (kg/m3)
         Q_f = 20;         % river water discharge (m3/s)
         
@@ -43,7 +46,7 @@ for j = 1 : n
         k_B = 2*10^-3 /365/24/60/60;    % vegetation characteristics (m3/s/kg)
         
         %-------------- Basin properties
-        b_fm = bfm_(j)*10^3; % total basin width (both sides of the channel) (m)
+        b_fm = bfm_(j); % total basin width (both sides of the channel) (m)
         L_E = 10 *10^3; % basin length (m)
         R = 2 *10^-3/365/24/60/60;   % sea level rise (m/s)
         b_r = 0; % river width (m)
@@ -74,9 +77,9 @@ for j = 1 : n
         %-------------- Solve the system
         fun_width = @(x) Fun_BoxModel_SS_width(x);
         options_width = optimoptions('fsolve','Display','off','FunctionTolerance',1e-30, 'MaxFunctionEvaluations', 100000,'MaxIterations',100000);%,'Algorithm','trust-region-dogleg','FunctionTolerance',1e-18));
-        [x,fval_x] = fsolve(fun_width,x0,options_width);
-        fun_depth = @(y) Fun_BoxModel_SS_depth ([x,y]);
-        [y,fval_y] = fsolve(fun_depth,y0,options_width);
+        [x,fval_x] = fsolve(fun_width,x0,options_width); % =[TF width, fval(width)]
+        fun_depth = @(y) Fun_BoxModel_SS_depth ([x,y]); 
+        [y,fval_y] = fsolve(fun_depth,y0,options_width); % =[TF depth, M depth, fval(TF depth), fval(M depth)]
         
         Sol(i,1:6,j) = [x,y,fval_x,fval_y];
         
@@ -84,90 +87,10 @@ for j = 1 : n
     
 end
 
+save  Sol_Co_bfm Sol
+
 %-------------- Plot Results
-% load co_data_1000yr; c_TM=dat(:,1); bf_TM=dat(:,2);
-
-clf
-colormap copper
-
-subplot(2,2,1)
-
-for i = 1 : n
-    hold on
-    scatter(Co*1000,Sol(:,1,i),'filled')
-    xlabel('Concentration (mg/l)')
-    ylabel('TF Width (m)')
-    box on
-end
-
-subplot(2,2,2)
-
-for i = 1 : n
-    hold on
-    scatter(Co*1000,Sol(:,2,i),'filled')
-    plot([0,100],[.7,.7],'k:')
-    text(90,.72,'MSL')
-    xlabel('Concentration (mg/l)')
-    ylabel('Tidal Flat Depth (m)')
-    box on
-end
-
-subplot(2,2,3)
-
-for i = 1 : n
-    hold on
-    scatter(Co*1000,Sol(:,3,i),'filled')
-    plot([0,100],[.7,.7],'k:')
-    text(90,.72,'MSL')
-    xlabel('Concentration (mg/l)')
-    ylabel('Marsh Depth (m)')
-    box on
-end
-
-% subplot(1,2,1)
-%
-% hold on
-% scatter(c_TM*1000,bf_TM,80,'k<','filled')
-% scatter(Co*1000,Sol(:,1),'ro','filled')
-% xlabel('Concentration (mg/l)')
-% ylabel('TF Width (m)')
-% box on
-%
-% subplot(1,2,2)
-%
-% hold on
-% scatter(Co*1000,Sol(:,2),'b<','filled')
-% scatter(Co*1000,Sol(:,3),'go','filled')
-% plot([0,100],[.7,.7],'k:')
-% text(90,.72,'MSL')
-% xlabel('Concentration (mg/l)')
-% ylabel('Depth (m)')
-% box on
-
-% figure
-% subplot(2,2,3)
-%
-% hold on
-% scatter(C_o_V*1000,Sol(:,4),'ko','filled')
-% xlabel('Concentration (mg/l)')
-% ylabel('Rate of TF Width (mm/yr)')
-% box on
-%
-% subplot(2,2,4)
-%
-% hold on
-% scatter(C_o_V*1000,Sol(:,5),'b<')
-% scatter(C_o_V*1000,Sol(:,6),'go')
-% xlabel('Concentration (mg/l)')
-% ylabel('Rate of TF Width (mm/yr)')
-% box on
-
-% set(findobj('type','axes'),'fontsize',15)
-% h_fig=gcf;
-% set(h_fig,'PaperOrientation','portrait')
-% set(h_fig,'PaperPosition', [0 0 7.5 6]) % [... ... max_width=7.5 max_height=9]
-% tit='2';
-% print(tit,'-dtiff','-r400')
+% go to plot_nondimensional
 
 %======================= Nested Function =========================
     function G = Fun_BoxModel_SS_depth (x)

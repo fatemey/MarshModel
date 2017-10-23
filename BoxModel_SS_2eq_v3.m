@@ -1,4 +1,4 @@
-function BoxModel_SS_2eq_v2() % Co & R
+function BoxModel_SS_2eq_v3() % Co & le
 % BoxModel_SS_2eq: Models 0d marsh and tidal flat time
 % evolution by reducing 3 equations to 2, at equilibrium conditions.
 % 
@@ -11,10 +11,11 @@ clear
 
 %-------------- Set up shared variables with main functions
 Co_ = (5:5:95) *10^-3;
-R_ = (1:2:9) *10^-3/365/24/60/60;
+LE_ = (5:5:20) *10^3;
+% bfm_ = (2.^(1:4)) *10^3;
 
-n = length(Co_);
-k = length (R_);
+n = length(Co_); % # of Co
+k = length (LE_); % # number of bfm
 Sol = zeros(n,6,k);
 
 for j = 1 : k
@@ -45,9 +46,9 @@ for j = 1 : k
         k_B = 2*10^-3 /365/24/60/60;    % vegetation characteristics (m3/s/kg)
         
         %-------------- Basin properties
-        b_fm = 10  *10^3; % total basin width (both sides of the channel) (m)
-        L_E = 10 *10^3; % basin length (m)
-        R = R_(j);   % sea level rise (m/s)
+        b_fm = 10 *10^3; % total basin width (both sides of the channel) (m)
+        L_E = LE_(j); % basin length (m)
+        R = 2 *10^-3/365/24/60/60;   % sea level rise (m/s)
         b_r = 0; % river width (m)
         
         %-------------- Tide Characteristics
@@ -66,7 +67,7 @@ for j = 1 : k
         
         %-------------- Initial conditions
         if i == 1 % TF width (m)
-            x0 = 72;
+            x0 = 100;
         else
             x0 = Sol(i-1,1,j);
         end
@@ -86,10 +87,10 @@ for j = 1 : k
     
 end
 
-save  Sol_Co_R Sol
+save  Sol_Co_le Sol
 
 %-------------- Plot Results
-% go to plot_nondimensional_v2
+% go to plot_nondimensional
 
 %======================= Nested Function =========================
     function G = Fun_BoxModel_SS_depth (x)
