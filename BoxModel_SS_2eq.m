@@ -10,10 +10,10 @@ format longG
 clear
 
 %-------------- Set up shared variables with main functions
-Co_ = (5:5:95) *10^-3;
+Co_ = (5:5:100) *10^-3;
 bfm_ = (5:5:20) *10^3;
 % bfm_ = (2.^(1:4)) *10^3;
-
+bfm_=10000;
 n = length(Co_); % # of Co
 k = length (bfm_); % # number of bfm
 Sol = zeros(n,6,k);
@@ -87,7 +87,7 @@ for j = 1 : k
     
 end
 
-save  Sol_Co_bfm Sol
+save  Sol_Co_SS Sol
 
 %-------------- Plot Results
 % go to plot_nondimensional
