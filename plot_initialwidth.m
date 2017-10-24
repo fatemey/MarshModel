@@ -14,7 +14,7 @@ clf
 load co_data_1000yr; a = dat(:,1)*1000; b = dat(:,2); dtf = dat(:,3); dm = dat(:,4); eqdtf = dat(:,5); eqdm = dat(:,6); conv = dat(:,7);
 % load co_data_SS_opt; b2 = dat(:,2); dtf2 = dat(:,3); dm2 = dat(:,4);
 load Sol_Co_SS; b2 = Sol(:,1); dtf2 = Sol(:,2); dm2 = Sol(:,3);
-subplot(1,2,1)
+subplot(1,2,1) 
 hold on
 scatter(a,b2,80,[77, 148, 255]/255,'x','LineWidth',1.1)
 gscatter(a,b,conv,[77, 148, 255]/255,[],[],'off')
