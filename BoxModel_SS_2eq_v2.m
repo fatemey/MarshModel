@@ -45,8 +45,8 @@ for j = 1 : k
         k_B = 2*10^-3 /365/24/60/60;    % vegetation characteristics (m3/s/kg)
         
         %-------------- Basin properties
-        b_fm = 10  *10^3; % total basin width (both sides of the channel) (m)
-        L_E = 10 *10^3; % basin length (m)
+        b_fm = 5  *10^3; % total basin width (both sides of the channel) (m)
+        L_E = 5 *10^3; % basin length (m)
         R = R_(j);   % sea level rise (m/s)
         b_r = 0; % river width (m)
         
@@ -86,7 +86,7 @@ for j = 1 : k
     
 end
 
-save  Sol_Co_R Sol
+save  Sol_Co_R_small Sol
 
 %-------------- Plot Results
 % go to plot_nondimensional_v2

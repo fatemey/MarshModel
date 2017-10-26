@@ -11,7 +11,7 @@ clear
 
 %-------------- Set up shared variables with main functions
 Co_ = (5:5:95) *10^-3;
-LE_ = (5:5:20) *10^3;
+LE_ = (5:1:10) *10^2; %5:5:20
 % bfm_ = (2.^(1:4)) *10^3;
 
 n = length(Co_); % # of Co
@@ -46,7 +46,7 @@ for j = 1 : k
         k_B = 2*10^-3 /365/24/60/60;    % vegetation characteristics (m3/s/kg)
         
         %-------------- Basin properties
-        b_fm = 10 *10^3; % total basin width (both sides of the channel) (m)
+        b_fm = 5 *10^2; % total basin width (both sides of the channel) (m)
         L_E = LE_(j); % basin length (m)
         R = 2 *10^-3/365/24/60/60;   % sea level rise (m/s)
         b_r = 0; % river width (m)
@@ -87,7 +87,7 @@ for j = 1 : k
     
 end
 
-save  Sol_Co_le Sol
+save  Sol_Co_le_small Sol
 
 %-------------- Plot Results
 % go to plot_nondimensional

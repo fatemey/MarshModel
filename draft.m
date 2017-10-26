@@ -41,3 +41,9 @@ siz_step = linspace(0,max(fetch_c),n_clusters-1);
 for i = 1 : length(siz_step)-1
     circle_siz(fetch_c>siz_step(i)&fetch_c<=siz_step(i+1)) = 30*i;
 end
+
+%----------------------------------------------------------------------
+% linear solve for independent variables need for nondimensionla analysis
+A=[0 0 1;1 2 -3;-1 0 0];
+B=[1 0  -1]';
+linsolve(A,B)
