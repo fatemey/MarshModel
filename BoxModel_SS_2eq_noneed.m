@@ -1,21 +1,93 @@
-function BoxModel_SS_2eq_v3() % Co & le
+function BoxModel_SS_2eq() 
 % BoxModel_SS_2eq: Models 0d marsh and tidal flat time
 % evolution by reducing 3 equations to 2, at equilibrium conditions.
-% 
-% Last Update: 10/18/2017
+%
+% Last Update: 10/30/2017
 %
 %--------------------------------------------------------------------------------------------------
 format compact
 format longG
 clear
 
+for par =9:10
+    par
 %-------------- Set up shared variables with main functions
-Co_ = (5:5:95) *10^-3;
-LE_ = (5:1:10) *10^2; %5:5:20
-% bfm_ = (2.^(1:4)) *10^3;
+% par = 1; % 1 : 8
+% par_v = [1/2, 1, 2, 4, 6];
+par_v = [1/3, 2/3, 1, 4/3];
 
-n = length(Co_); % # of Co
-k = length (LE_); % # number of bfm
+%-------------- Sediment input constants
+C_o = 20 *10^-3;    % ocean concertation (kg/m3)
+C_f = 15 *10^-3;    % river concentration (kg/m3)
+Q_f = 20;         % river water discharge (m3/s)
+
+%-------------- Erosion constants
+k_0 = 1 *10^-3; % roughness (m)
+tau_c = 0.3;  % critical shear stress (Pa)
+E_0 = 10^-4;    % bed erosion coefficient (kg/m2/s)
+k_e = 0.16 /365/24/60/60;  % margin erodibility coefficient (m2/s/W)
+v_w = 6;        % reference wind speed (m/s)
+
+% -------------- Accretion constants
+k_a = 2;        % margin accretion coefficient
+
+%-------------- Vegetation properties
+B_max = 1;      % maximum biomass density (kg/m2)
+k_B = 2*10^-3 /365/24/60/60;    % vegetation characteristics (m3/s/kg)
+
+%-------------- Basin properties
+b_fm = 5 *10^3; % total basin width (both sides of the channel) (m)
+L_E = 5 *10^3; % basin length (m)
+R = 2 *10^-3/365/24/60/60;   % sea level rise (m/s)
+b_r = 0; % river width (m)
+
+%-------------- Tide Characteristics
+T_T = 12 *60*60;   % tidal period (s) (= 12 hours)
+H = 1.4/2;          % tidal amplitude (range/2) (m)
+
+%-------------- Sediment properties
+rho_s = 1000;   % sediment bulk density (kg/m3)
+omega_s = 0.5 *10^-3;   % settling velocity (m/s)
+
+%-------------- Model constants
+gamma = 9800;   % water specific weight (N/m3 or kg/m2/s2)
+
+%-------------- Model assumptions
+Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
+
+switch par
+    case 1
+        Co_ = (10:10:80) *10^-3;
+        bfm_ = b_fm * par_v;
+    case 2
+        Co_ = (10:10:80) *10^-3;
+        LE_ = L_E * par_v;
+    case 3
+        Co_ = (10:10:80) *10^-3;
+        H_ = H * par_v;
+    case 4
+        Co_ = (10:10:80) *10^-3;
+        Qf_ = Q_f ./ par_v;
+    case 5
+        R_ = (1:8) *10^-3/365/24/60/60;
+        bfm_ = b_fm ./ par_v;
+    case 6
+        R_ = (1:8) *10^-3/365/24/60/60;
+        LE_ = L_E ./ par_v;
+    case 7
+        R_ = (1:8) *10^-3/365/24/60/60;
+        Co_ = C_o ./ par_v;
+    case 8
+        R_ = (1:8) *10^-3/365/24/60/60;
+        Cf_ = C_f * par_v;
+    case 9
+        R_ = R ./ par_v;
+            case 10
+        rho_ = rho_s ./ par_v;
+end
+
+n = 8;%length(Co_);
+k = length (par_v);
 Sol = zeros(n,6,k);
 
 for j = 1 : k
@@ -24,46 +96,38 @@ for j = 1 : k
     
     for i = 1 : n
         
-%             i
-        
-        %-------------- Sediment input constants
-        C_o = Co_(i);    % ocean concertation (kg/m3)
-        C_f = 15 *10^-3;    % river concentration (kg/m3)
-        Q_f = 20;         % river water discharge (m3/s)
-        
-        %-------------- Erosion constants
-        k_0 = 1 *10^-3; % roughness (m)
-        tau_c = 0.3;  % critical shear stress (Pa)
-        E_0 = 10^-4;    % bed erosion coefficient (kg/m2/s)
-        k_e = 0.16 /365/24/60/60;  % margin erodibility coefficient (m2/s/W)
-        v_w = 6;        % reference wind speed (m/s)
-        
-        % -------------- Accretion constants
-        k_a = 2;        % margin accretion coefficient
-        
-        %-------------- Vegetation properties
-        B_max = 1;      % maximum biomass density (kg/m2)
-        k_B = 2*10^-3 /365/24/60/60;    % vegetation characteristics (m3/s/kg)
-        
-        %-------------- Basin properties
-        b_fm = 5 *10^2; % total basin width (both sides of the channel) (m)
-        L_E = LE_(j); % basin length (m)
-        R = 2 *10^-3/365/24/60/60;   % sea level rise (m/s)
-        b_r = 0; % river width (m)
-        
-        %-------------- Tide Characteristics
-        T_T = 12 *60*60;   % tidal period (s) (= 12 hours)
-        H = 1.4/2;          % tidal amplitude (range/2) (m)
-        
-        %-------------- Sediment properties
-        rho_s = 1000;   % sediment bulk density (kg/m3)
-        omega_s = 0.5 *10^-3;   % settling velocity (m/s)
-        
-        %-------------- Model constants
-        gamma = 9800;   % water specific weight (N/m3 or kg/m2/s2)
-        
-        %-------------- Model assumptions
-        Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
+                    i
+                    
+        switch par
+            case 1
+                C_o = Co_(i);
+                b_fm = bfm_(j);
+            case 2
+                C_o = Co_(i);
+                L_E = LE_(j);
+            case 3
+                C_o = Co_(i);
+                H = H_(j);
+            case 4
+                C_o = Co_(i);
+                Q_f = Qf_(j);
+            case 5
+                R = R_(i);
+                b_fm = bfm_(j);
+            case 6
+                R = R_(i);
+                L_E = LE_(j);
+            case 7
+                R = R_(i);
+                C_o = Co_(j);
+            case 8
+                R = R_(i);
+                C_f = Cf_(j);
+    case 9
+        R = R_(j);
+            case 10
+        rho_s = rho_(j);
+        end
         
         %-------------- Initial conditions
         if i == 1 % TF width (m)
@@ -76,9 +140,9 @@ for j = 1 : k
         
         %-------------- Solve the system
         fun_width = @(x) Fun_BoxModel_SS_width(x);
-        options_width = optimoptions('fsolve','Display','off','FunctionTolerance',1e-30, 'MaxFunctionEvaluations', 100000,'MaxIterations',100000);%,'Algorithm','trust-region-dogleg','FunctionTolerance',1e-18));
+        options_width = optimoptions('fsolve','Display','off','FunctionTolerance',1e-30, 'MaxFunctionEvaluations', 1000,'MaxIterations',1000);%,'Algorithm','trust-region-dogleg','FunctionTolerance',1e-18));
         [x,fval_x] = fsolve(fun_width,x0,options_width); % =[TF width, fval(width)]
-        fun_depth = @(y) Fun_BoxModel_SS_depth ([x,y]); 
+        fun_depth = @(y) Fun_BoxModel_SS_depth ([x,y]);
         [y,fval_y] = fsolve(fun_depth,y0,options_width); % =[TF depth, M depth, fval(TF depth), fval(M depth)]
         
         Sol(i,1:6,j) = [x,y,fval_x,fval_y];
@@ -87,10 +151,33 @@ for j = 1 : k
     
 end
 
-save  Sol_Co_le_small Sol
+switch par
+    case 1
+        save  Sol_bfm_co Sol
+    case 2
+        save  Sol_le_co Sol
+    case 3
+        save  Sol_H_co Sol
+    case 4
+        save  Sol_Qf_co Sol
+    case 5
+        save  Sol_bfm_r Sol
+    case 6
+        save  Sol_le_r Sol
+    case 7
+        save  Sol_Co_r Sol
+    case 8
+        save  Sol_Cf_r Sol
+    case 9
+        save  Sol_r Sol
+            case 10
+        save  Sol_rho Sol
+end
 
 %-------------- Plot Results
 % go to plot_nondimensional
+
+end
 
 %======================= Nested Function =========================
     function G = Fun_BoxModel_SS_depth (x)

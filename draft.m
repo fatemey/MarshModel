@@ -44,6 +44,14 @@ end
 
 %----------------------------------------------------------------------
 % linear solve for independent variables need for nondimensionla analysis
-A=[0 0 1;1 2 -3;-1 0 0];
-B=[1 0  -1]';
+%       [alpha
+% A *   beta      = B
+%         gamma]
+A=[ 1 0 0 ;... % each row corresponds to 1 variable/main dimension
+       -3 3 1 ;...
+      0 0 -1 ];
+B=[ 0 ;...
+       3 ;...
+      -1 ];
+format rat
 linsolve(A,B)

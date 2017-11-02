@@ -1,24 +1,18 @@
-function BoxModel_SS_2eq() % Co & bfm
+function Sol = BoxModel_SS_2eq(Co,Cf,LE,Qf,R_)
+% function BoxModel_SS_2eq
 % BoxModel_SS_2eq: Models 0d marsh and tidal flat time
 % evolution by reducing 3 equations to 2, at equilibrium conditions.
 %
-% Last Update: 10/18/2017
+% Last Update: 10/30/2017
 %
 %--------------------------------------------------------------------------------------------------
 format compact
 format longG
-clear
-
-for par =5 : 8
-    
-%-------------- Set up shared variables with main functions
-% par = 1; % 1 : 8
-par_v = [1/2, 1, 2, 4, 6];
 
 %-------------- Sediment input constants
-C_o = 20 *10^-3;    % ocean concertation (kg/m3)
-C_f = 15 *10^-3;    % river concentration (kg/m3)
-Q_f = 20;         % river water discharge (m3/s)
+C_o = Co;    % ocean concertation (kg/m3)
+C_f = Cf;    % river concentration (kg/m3)
+Q_f = Qf;         % river water discharge (m3/s)
 
 %-------------- Erosion constants
 k_0 = 1 *10^-3; % roughness (m)
@@ -35,9 +29,9 @@ B_max = 1;      % maximum biomass density (kg/m2)
 k_B = 2*10^-3 /365/24/60/60;    % vegetation characteristics (m3/s/kg)
 
 %-------------- Basin properties
-b_fm = 5 *10^3; % total basin width (both sides of the channel) (m)
-L_E = 5 *10^3; % basin length (m)
-R = 2 *10^-3/365/24/60/60;   % sea level rise (m/s)
+b_fm = 1 *10^3; % total basin width (both sides of the channel) (m)
+L_E = LE; % basin length (m)
+R = R_;   % sea level rise (m/s)
 b_r = 0; % river width (m)
 
 %-------------- Tide Characteristics
@@ -54,116 +48,20 @@ gamma = 9800;   % water specific weight (N/m3 or kg/m2/s2)
 %-------------- Model assumptions
 Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
 
-switch par
-    case 1
-        Co_ = (5:5:95) *10^-3;
-        bfm_ = b_fm * par_v;
-    case 2
-        Co_ = (5:5:95) *10^-3;
-        LE_ = L_E * par_v;
-    case 3
-        Co_ = (5:5:95) *10^-3;
-        H_ = H * par_v;
-    case 4
-        Co_ = (5:5:95) *10^-3;
-        Qf_ = Q_f ./ par_v;
-    case 5
-        R_ = (1:8) *10^-3/365/24/60/60;
-        bfm_ = b_fm ./ par_v;
-    case 6
-        R_ = (1:8) *10^-3/365/24/60/60;
-        LE_ = L_E ./ par_v;
-    case 7
-        R_ = (1:8) *10^-3/365/24/60/60;
-        Co_ = C_o ./ par_v;
-    case 8
-        R_ = (1:8) *10^-3/365/24/60/60;
-        Cf_ = C_f * par_v;        
-end
+%-------------- Initial conditions
+x0 = 100;
+y0(1) = H+0.3;        % tidal flat depth (m)
+y0(2) = H-0.3;         % marsh depth (m)
 
-n = length(R_);
-k = length (par_v);
-Sol = zeros(n,6,k);
+%-------------- Solve the system
+fun_width = @(x) Fun_BoxModel_SS_width(x);
+options_width = optimoptions('fsolve','Display','off','FunctionTolerance',1e-30, 'MaxFunctionEvaluations', 1000,'MaxIterations',1000);%,'Algorithm','trust-region-dogleg','FunctionTolerance',1e-18));
+[x,fval_x] = fsolve(fun_width,x0,options_width); % =[TF width, fval(width)]
+fun_depth = @(y) Fun_BoxModel_SS_depth ([x,y]);
+[y,fval_y] = fsolve(fun_depth,y0,options_width); % =[TF depth, M depth, fval(TF depth), fval(M depth)]
 
-for j = 1 : k
-    
-    j
-    
-    for i = 1 : n
-        
-        %             i
-        switch par
-            case 1
-                C_o = Co_(i);
-                b_fm = bfm_(j);
-            case 2
-                C_o = Co_(i);
-                L_E = LE_(j);
-            case 3
-                C_o = Co_(i);
-                H = H_(j);
-            case 4
-                C_o = Co_(i);
-                Q_f = Qf_(j);
-            case 5
-                R = R_(i);
-                b_fm = bfm_(j);
-            case 6
-                R = R_(i);
-                L_E = LE_(j);
-            case 7
-                R = R_(i);
-                C_o = Co_(j);
-            case 8
-                R = R_(i);
-                C_f = Cf_(j);
-        end
-        
-        %-------------- Initial conditions
-        if i == 1 % TF width (m)
-            x0 = 100;
-        else
-            x0 = Sol(i-1,1,j);
-        end
-        y0(1) = H+0.3;        % tidal flat depth (m)
-        y0(2) = H-0.3;         % marsh depth (m)
-        
-        %-------------- Solve the system
-        fun_width = @(x) Fun_BoxModel_SS_width(x);
-        options_width = optimoptions('fsolve','Display','off','FunctionTolerance',1e-30, 'MaxFunctionEvaluations', 100000,'MaxIterations',100000);%,'Algorithm','trust-region-dogleg','FunctionTolerance',1e-18));
-        [x,fval_x] = fsolve(fun_width,x0,options_width); % =[TF width, fval(width)]
-        fun_depth = @(y) Fun_BoxModel_SS_depth ([x,y]);
-        [y,fval_y] = fsolve(fun_depth,y0,options_width); % =[TF depth, M depth, fval(TF depth), fval(M depth)]
-        
-        Sol(i,1:6,j) = [x,y,fval_x,fval_y];
-        
-    end
-    
-end
-
-switch par
-    case 1
-        save  Sol_Co_bfm Sol
-    case 2
-        save  Sol_Co_le Sol
-    case 3
-        save  Sol_Co_H Sol
-    case 4
-        save  Sol_Co_Qf Sol
-    case 5
-        save  Sol_R_bfm Sol
-    case 6
-        save  Sol_R_le Sol
-    case 7
-        save  Sol_R_Co Sol
-    case 8
-        save  Sol_R_Cf Sol
-end
-
-%-------------- Plot Results
-% go to plot_nondimensional
-
-end
+% Sol = [x,y,fval_x,fval_y];
+Sol = [x,y];
 
 %======================= Nested Function =========================
     function G = Fun_BoxModel_SS_depth (x)
