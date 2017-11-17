@@ -1,5 +1,6 @@
 % function [t, y] = BoxModel(c,y1,y2,y3)
-function BoxModel
+function [t, y] = BoxModel
+% function BoxModel
 % BoxModel: Models 0d marsh and tidal flat time
 % evolution using Matlab ode23tb function.
 %
@@ -13,7 +14,7 @@ function BoxModel
 %               rising sea level. This model is solved using 4 equations and 4
 %               unknowns.
 %
-% Last Update: 4/11/2017
+% Last Update: 11/17/2017
 %
 %--------------------------------------------------------------------------------------------------
 format compact
@@ -28,7 +29,7 @@ dt = 12*60*60; % time step in (s)
 tspan = 0:dt:ts;
 
 %-------------- Sediment input constants
-C_o = 70 *10^-3;    % ocean concertation (kg/m3)
+C_o = 20 *10^-3;    % ocean concertation (kg/m3)
 C_f = 15 *10^-3;    % river concentration (kg/m3)
 Q_f = 20;         % river water discharge (m3/s)
 
@@ -47,9 +48,9 @@ B_max = 1;      % maximum biomass density (kg/m2)
 k_B = 2*10^-3 /365/24/60/60;    % vegetation characteristics (m3/s/kg)
 
 %-------------- Basin properties
-b_fm = 10 *10^3; % total basin width (both sides of the channel) (m)
-L_E = 10 *10^3; % basin length (m)
-R = 2 *10^-3/365/24/60/60;   % sea level rise (m/s)
+b_fm = 5 *10^3; % total basin width (both sides of the channel) (m)
+L_E = 5 *10^3; % basin length (m)
+R = 7 *10^-3/365/24/60/60;   % sea level rise (m/s)
 b_r = 0; % river width (m)
 
 %-------------- Tide Characteristics
@@ -68,7 +69,7 @@ Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal 
 % b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
 
 %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u (=C_r*(b_f*d_f+b_m*d_m))]
-y0(1) =[1540];%y1;%b_fm/2;      % tidal flat width (m)
+y0(1) =[450];%y1;%b_fm/2;      % tidal flat width (m)
 y0(2) = H+0.3;        % tidal flat depth (m)
 y0(3) = H-0.3;         % marsh depth (m)
 y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
@@ -106,7 +107,7 @@ end
 %-------------- Plot Results
 plot_BoxModel(t,y)
 % BoxModel_parameters(t,y,C_o)
-plot_BoxModel_pars(t,y,C_o)
+plot_BoxModel_pars(t,y)
 
 % h_fig=gcf;
 % set(h_fig,'PaperOrientation','portrait')
@@ -274,9 +275,7 @@ plot_BoxModel_pars(t,y,C_o)
         %-------------- Compute external sediment input (kg/s)
         Vol = (local_df*local_bf+local_dm*b_m)*L_E; % availble volume in the system to be filled with water
         Q_T = max(Vol/T_T-Q_f,0);
-        if Q_T==0
-            Q_f = Vol/T_T;
-        end
+        Q_f (Q_T==0) = Vol/T_T;
         
         ocean_in = Q_T*C_o;
         river_in = Q_f*C_f;

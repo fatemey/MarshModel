@@ -2,7 +2,7 @@ function BoxModel_SS_opt()
 % BoxModel_SS_opt: Models 0d marsh and tidal flat time
 % evolution using optimization at equilibrium conditions.
 %
-% Last Update: 10/16/2017
+% Last Update: 11/17/2017
 %
 %--------------------------------------------------------------------------------------------------
 format compact
@@ -300,10 +300,9 @@ box on
         end
         
         %-------------- Compute external sediment input (kg/s)
-        Q_T = (d_f*b_f+d_m*b_m)*L_E/T_T-Q_f;
-        if Q_T<0
-            Q_T = 0;
-        end
+        Vol = (d_f*b_f+d_m*b_m)*L_E; % availble volume in the system to be filled with water
+        Q_T = max(Vol/T_T-Q_f,0);
+        Q_f (Q_T==0) = Vol/T_T;
         
         ocean_in = Q_T*C_o;
         river_in = Q_f*C_f;

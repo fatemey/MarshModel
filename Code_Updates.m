@@ -30,3 +30,6 @@
 %         alpha = 0.38 * C_r;
 %         TF_accretion = alpha*dt*(y(2)/H); % based on D'Alpaos et al 2011 approach during one time step
 %         TF_deposition = alpha*dt*(y(2)/H)*local*L_E*rho_s;
+
+% 11/17/17
+% Correct Q_T and Q_f calculations

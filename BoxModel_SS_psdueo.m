@@ -2,7 +2,7 @@ function BoxModel_SS_psdueo()
 % BoxModel_SS_psdueo: Models 0d marsh and tidal flat time
 % evolution by reducing 3 equations to 2, at equilibrium conditions.
 %
-% Last Update: 10/16/2017
+% Last Update: 11/17/2017
 %
 %--------------------------------------------------------------------------------------------------
 format compact
@@ -12,7 +12,7 @@ clear
 %-------------- Set up shared variables with main functions
 
 %-------------- Sediment input constants
-C_o = .005;    % ocean concertation (kg/m3)
+C_o = 20 *10^-3;    % ocean concertation (kg/m3)
 C_f = 15 *10^-3;    % river concentration (kg/m3)
 Q_f = 20;         % river water discharge (m3/s)
 
@@ -31,9 +31,9 @@ B_max = 1;      % maximum biomass density (kg/m2)
 k_B = 2*10^-3 /365/24/60/60;    % vegetation characteristics (m3/s/kg)
 
 %-------------- Basin properties
-b_fm = 1 *10^3; % total basin width (both sides of the channel) (m)
-L_E = 1 *10^3; % basin length (m)
-R = 8 *10^-3/365/24/60/60;   % sea level rise (m/s)
+b_fm = 5 *10^3; % total basin width (both sides of the channel) (m)
+L_E = 5 *10^3; % basin length (m)
+R = 0 *10^-3/365/24/60/60;   % sea level rise (m/s)
 b_r = 0; % river width (m)
 
 %-------------- Tide Characteristics
@@ -56,7 +56,7 @@ x0(2) = H-0.3;         % marsh depth (m)
 
 %-------------- Solve the system
 k = 1;
-for j = 1 : 1 : b_fm
+for j = 1 : 10 : b_fm
     
     j
     
@@ -68,11 +68,11 @@ for j = 1 : 1 : b_fm
     Sol(k,1:2+length(x)+length(fval)) = [j,x,y,fval];
     k = k+1;
     
-    if y > 0
-        disp('Tidal flat width is:')
-        disp(j)
-        break
-    end
+%     if y > 0
+%         disp('Tidal flat width is:')
+%         disp(j)
+%         break
+%     end
     
 end
 
@@ -222,10 +222,9 @@ box on
         end
         
         %-------------- Compute external sediment input (kg/s)
-        Q_T = (d_f*b_f+d_m*b_m)*L_E/T_T-Q_f;
-        if Q_T<0
-            Q_T = 0;
-        end
+        Vol = (d_f*b_f+d_m*b_m)*L_E; % availble volume in the system to be filled with water
+        Q_T = max(Vol/T_T-Q_f,0);
+        Q_f (Q_T==0) = Vol/T_T;
         
         ocean_in = Q_T*C_o;
         river_in = Q_f*C_f;
@@ -251,7 +250,7 @@ box on
         Feq(2) = bed_erosion + ocean_in + river_in - TF_deposition - M_deposition - export;   % (kg/s)
         Feq(2) = Feq(2)/rho_s/L_E/b_fm;   % (m/s)
         
-        Feq = Feq *1000*60*60*24*365; %(mm/s)
+        Feq = Feq *1000*60*60*24*365; %(mm/yr)
         
     end
 

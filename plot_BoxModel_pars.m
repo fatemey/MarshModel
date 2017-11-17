@@ -1,4 +1,4 @@
-function [a, b] = plot_BoxModel_pars(t,y,c)
+function [a, b] = plot_BoxModel_pars(t,y)
 % plot_BoxModel_pars: plots different parameters
 %
 % Input
@@ -12,12 +12,12 @@ function [a, b] = plot_BoxModel_pars(t,y,c)
 %           a : vector of x-axis data of interset for plotting purposes
 %           b : vector of y-axis data of interset for plotting purposes
 %
-% Last Update: 8/2/2017
+% Last Update: 11/17/2017
 %
 %--------------------------------------------------------------------------------------------------
 
 %-------------- Sediment input constants
-C_o = c *10^-3;    % ocean concertation (kg/m3)
+C_o = 20 *10^-3;    % ocean concertation (kg/m3)
 C_f = 15 *10^-3;   % river concentration (kg/m3)
 Q_f = 20;          % river water discharge (m3/s)
 
@@ -29,8 +29,8 @@ v_w = 6;        % reference wind speed (m/s)
 k_a = 2;        % margin accretion coefficient
 
 %-------------- Basin properties
-b_fm = 1 *10^3; % total basin width (both sides of the channel) (m)
-L_E = 1 *10^3; % basin length (m)
+b_fm = 5 *10^3; % total basin width (both sides of the channel) (m)
+L_E = 5 *10^3; % basin length (m)
 
 %-------------- Tide Characteristics
 T_T = 12 *60*60;   % tidal period (s) (= 12 hours)
@@ -53,8 +53,8 @@ d_f = y(:,2);
 d_m = y(:,3);
 C_r = y(:,4);
 b_m = b_fm-b_f; % marsh width
-Q_T = (d_f.*b_f+d_m.*b_m)*L_E/T_T-Q_f;
-Q_T(Q_T<0)=0;
+Vol = (d_f.*b_f+d_m.*b_m)*L_E; % availble volume in the system to be filled with water
+Q_T = max(Vol/T_T-Q_f,0);
 M_ocean2river = Q_T*C_o/Q_f/C_f; % Ocean Sediment Input (kg/s)
 V_ocean2river = Q_T/Q_f; % Ocean Sediment Input (kg/s)
 chi = b_f*2; % fetch (m)
@@ -104,6 +104,7 @@ subplot(n,m,5)
 plot(t,tau,'linewidth',2)
 xlabel('Year')
 ylabel('\tau (PA)')
+title('Shear Stress')
 
 subplot(n,m,6)
 plot(t,W,'linewidth',2)

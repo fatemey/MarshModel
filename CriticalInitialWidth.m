@@ -15,7 +15,7 @@ function data = CriticalInitialWidth
 %
 % To plot the results, use the function plot_initialwidth.
 %
-% Last Update: 8/2/2017
+% Last Update: 11/17/2017
 %
 %--------------------------------------------------------------------------------------------------
 format compact
@@ -444,9 +444,7 @@ fclose(fileID);
         %-------------- Compute external sediment input (kg/s)
         Vol = (local_df*local_bf+local_dm*b_m)*L_E; % availble volume in the system to be filled with water
         Q_T = max(Vol/T_T-Q_f,0);
-        if Q_T==0
-            Q_f = Vol/T_T;
-        end
+        Q_f (Q_T==0) = Vol/T_T;
         
         ocean_in = Q_T*C_o;
         river_in = Q_f*C_f;

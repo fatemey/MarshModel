@@ -3,7 +3,7 @@ function Sol = BoxModel_SS()
 % evolution at equilibrium conditions.
 %
 %
-% Last Update: 10/16/2017
+% Last Update: 11/17/2017
 %
 %--------------------------------------------------------------------------------------------------
 format compact
@@ -58,7 +58,7 @@ for i = 1 : length(C_o_V)
     Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
     
     %-------------- Initial conditions, x0=[b_f, d_f, d_m]
-    x0(1) = bf_0(i);%b_fm/2;      % tidal flat width (m)
+    x0(1) = bf_0(i)+200;%b_fm/2;      % tidal flat width (m)
     x0(2) = H+0.3;        % tidal flat depth (m)
     x0(3) = H-0.3;         % marsh depth (m)
     
@@ -253,10 +253,9 @@ box on
         end
         
         %-------------- Compute external sediment input (kg/s)
-        Q_T = (local_df*local_bf+local_dm*b_m)*L_E/T_T-Q_f;
-        if Q_T<0
-            Q_T = 0;
-        end
+        Vol = (local_df*local_bf+local_dm*b_m)*L_E; % availble volume in the system to be filled with water
+        Q_T = max(Vol/T_T-Q_f,0);
+        Q_f (Q_T==0) = Vol/T_T;
         
         ocean_in = Q_T*C_o;
         river_in = Q_f*C_f;

@@ -1,9 +1,9 @@
-function Sol = BoxModel_SS_2eq(Co,Cf,LE,Qf,R_)
+function Sol = BoxModel_SS_2eq(Co,Cf,LE,Qf,R_,H_,T_,bfm,vw)
 % function BoxModel_SS_2eq
 % BoxModel_SS_2eq: Models 0d marsh and tidal flat time
 % evolution by reducing 3 equations to 2, at equilibrium conditions.
 %
-% Last Update: 10/30/2017
+% Last Update: 11/17/2017
 %
 %--------------------------------------------------------------------------------------------------
 format compact
@@ -19,7 +19,7 @@ k_0 = 1 *10^-3; % roughness (m)
 tau_c = 0.3;  % critical shear stress (Pa)
 E_0 = 10^-4;    % bed erosion coefficient (kg/m2/s)
 k_e = 0.16 /365/24/60/60;  % margin erodibility coefficient (m2/s/W)
-v_w = 6;        % reference wind speed (m/s)
+v_w = vw;        % reference wind speed (m/s)
 
 % -------------- Accretion constants
 k_a = 2;        % margin accretion coefficient
@@ -29,14 +29,14 @@ B_max = 1;      % maximum biomass density (kg/m2)
 k_B = 2*10^-3 /365/24/60/60;    % vegetation characteristics (m3/s/kg)
 
 %-------------- Basin properties
-b_fm = 1 *10^3; % total basin width (both sides of the channel) (m)
+b_fm = bfm; % total basin width (both sides of the channel) (m)
 L_E = LE; % basin length (m)
 R = R_;   % sea level rise (m/s)
 b_r = 0; % river width (m)
 
 %-------------- Tide Characteristics
-T_T = 12 *60*60;   % tidal period (s) (= 12 hours)
-H = 1.4/2;          % tidal amplitude (range/2) (m)
+T_T = T_;   % tidal period (s) (= 12 hours)
+H = H_;          % tidal amplitude (range/2) (m)
 
 %-------------- Sediment properties
 rho_s = 1000;   % sediment bulk density (kg/m3)
@@ -60,8 +60,8 @@ options_width = optimoptions('fsolve','Display','off','FunctionTolerance',1e-30,
 fun_depth = @(y) Fun_BoxModel_SS_depth ([x,y]);
 [y,fval_y] = fsolve(fun_depth,y0,options_width); % =[TF depth, M depth, fval(TF depth), fval(M depth)]
 
-% Sol = [x,y,fval_x,fval_y];
-Sol = [x,y];
+Sol = [x,y,fval_x,fval_y];
+% Sol = [x,y];
 
 %======================= Nested Function =========================
     function G = Fun_BoxModel_SS_depth (x)
@@ -167,9 +167,7 @@ Sol = [x,y];
         %-------------- Compute external sediment input (kg/s)
         Vol = (d_f*b_f+d_m*b_m)*L_E; % availble volume in the system to be filled with water
         Q_T = max(Vol/T_T-Q_f,0);
-        if Q_T==0
-            Q_f = Vol/T_T;
-        end
+        Q_f (Q_T==0) = Vol/T_T;
         
         ocean_in = Q_T*C_o;
         river_in = Q_f*C_f;
@@ -195,7 +193,7 @@ Sol = [x,y];
         G(2) = bed_erosion + ocean_in + river_in - TF_deposition - M_deposition - export;   % (kg/s)
         G(2) = G(2)/rho_s/L_E/b_fm;   % (m/s)
         
-        G = G *1000*60*60*24*365; %(mm/s)
+        G = G *1000*60*60*24*365; %(mm/yr)
         
     end
 

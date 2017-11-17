@@ -19,7 +19,7 @@ function [a, b] = BoxModel_parameters(t, y,c)
 %           a : vector of x-axis data of interset for plotting purposes
 %           b : vector of y-axis data of interset for plotting purposes
 %
-% Last Update: 8/2/2017
+% Last Update: 11/17/2017
 %
 %--------------------------------------------------------------------------------------------------
 
