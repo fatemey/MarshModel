@@ -1,3 +1,4 @@
+function plot_fetch_SS
 % plots fetch vs other variables
 %--------------------------------------------------------------------------------------------------
 format compact
@@ -205,3 +206,5 @@ tit='fetchvs9v_2';
 print(tit,'-dtiff','-r400')
 movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\24 - Final Results')
 close all
+
+end

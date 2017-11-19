@@ -14,7 +14,7 @@ Co = (20) *10^-3;
 Cf = (15) *10^-3;
 LE = (5) *1000;
 Qf = 20;
-R = (1:.5:10) *10^-3/365/24/60/60;
+R = (1:10) *10^-3/365/24/60/60;
 T = ([12]) *60*60;
 H = (1.4) /2;
 bfm =  (5) *1000;
@@ -43,6 +43,9 @@ for i1 =1 : k1
                                 for i9 = 1 : k9
                                     Sol = BoxModel_SS_2eq(Co(i1),Cf(i2),LE(i3),Qf(i4),R(i5),H(i6),T(i7),bfm(i8),vw(i9)); % Sol = [x,y,fval_x,fval_y]
                                     dat(n,1) = min(Sol(1),bfm(i8)); % b_f
+%                                     if Sol(3) > H(i6)
+%                                         dat(n,1) = 0;
+%                                     end
                                     dat(n,2:3) = Sol(2:3); % d_f and d_m
                                     dat(n,4:12) = [Co(i1),Cf(i2),LE(i3),Qf(i4),R(i5),H(i6),T(i7),bfm(i8),vw(i9)];
                                     dat(n,13:15) = Sol(4:6); % fval_bf,fval_df, fval_d in: mm/yr

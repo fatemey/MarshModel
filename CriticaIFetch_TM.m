@@ -1,5 +1,5 @@
-function data = CriticalInitialWidth
-% Function CriticalInitialWidth looks for a critical fetch value based on
+function data = CriticaIFetch_TM
+% Function CriticaIFetch_TM looks for a critical fetch value based on
 % different system chracteristics using the same method as BoxModel.m.
 % Output:
 %           8 saved data matrices related to 8 parameters, containing:
@@ -24,11 +24,12 @@ clear
 % clf
 
 fileID = fopen('C:\Users\fy23\Dropbox\Res_PC.txt','w');
-fprintf(fileID,'%12s %12s %12s %12s %12s %12s %12s %12s \n','C_o','b_f','d_f','d_m','eqtf','eqm','conv','bound');
+fprintf(fileID,'%12s %12s %12s %12s %12s %12s %12s %12s \n','par','b_f','d_f','d_m','eqtf','eqm','conv','bound');
 
-par_temp = 1 : 8;
+% par_temp = 1 : 9;
+par_temp = [3,4,9];
 
-for k = 1 : 1
+for k = 1 : length(par_temp)
     
     k
     %-------------- Set the time span
@@ -57,8 +58,8 @@ for k = 1 : 1
     k_B = 2*10^-3 /365/24/60/60;    % vegetation characteristics (m3/s/kg)
     
     %-------------- Basin properties
-    b_fm = 2 *10^3; % total basin width (both sides of the channel) (m)
-    L_E = 1 *10^3; % basin length (m)
+    b_fm = 5 *10^3; % total basin width (both sides of the channel) (m)
+    L_E = 5 *10^3; % basin length (m)
     R = 2 *10^-3/365/24/60/60;   % sea level rise (m/s)
     b_r = 0; % river width (m)
     
@@ -83,52 +84,73 @@ for k = 1 : 1
     switch par
         case 1
             par_v = 5 *10^-3 : 5 *10^-3 : 100 *10^-3; % for C_o
-            TF_width = 5 : 5 : b_fm-5;
+            %             TF_width = 5 : 5 : b_fm-5;
+            TF_width_0 = 10;
         case 2
             par_v = 0 *10^-3: 50 *10^-3 : 1000 *10^-3; % for C_f
-            TF_width = 5 : 5 : b_fm-5;
+            %             TF_width = 5 : 5 : b_fm-5;
+            TF_width_0 = 10;
         case 3
-            par_v = 0 : 100  : 1000; % for Q_f
-            TF_width = 5 : 5 : b_fm-5;
+            par_v = 10 : 20  : 150; % for Q_f
+            %             TF_width = 5 : 5 : b_fm-5;
+            TF_width_0 = 4990;
         case 4
-            par_v = 1 *10^3 : 2 *10^3 : 20 *10^3; % for L_E
-            TF_width = 1 : 1 : b_fm-1;
+            par_v = 1 *10^3 : .5 *10^3 : 5 *10^3; % for L_E
+            %             TF_width = 1 : 1 : b_fm-1;
+            TF_width_0 = 10;
         case 5
-            par_v = 1 *10^3 : 2 *10^3 : 20 *10^3; % for b_fm
+            par_v = 1 *10^3 : .5 *10^3 : 5 *10^3; % for b_fm
+            TF_width_0 = 10;
         case 6
-            par_v = 0 : 2 : 20; % for v_w
-            TF_width = 10 : 10 : b_fm-10;
+            par_v = 0 : 1 *10^-3/365/24/60/60 : 10 *10^-3/365/24/60/60; % for R
+            %             TF_width = 5 : 5 : b_fm-5;
+            TF_width_0 = 4990;
         case 7
-            par_v = 0 : 2 *10^-3/365/24/60/60 : 30 *10^-3/365/24/60/60; % for R
-            TF_width = 5 : 5 : b_fm-5;
-        case 8
             par_v = (1 : 1 : 10)/2; % for H
-            TF_width = 5 : 5 : b_fm-5;
+            %             TF_width = 5 : 5 : b_fm-5;
+            TF_width_0 = 10;
+        case 8
+            par_v = [12,24] *60*60; % for T
+            %             TF_width = 5 : 5 : b_fm-5;
+            TF_width_0 = 4990;
+        case 9
+            par_v = 0 : 1 : 15; % for v_w
+            %             TF_width = 10 : 10 : b_fm-10;
+            TF_width_0 = 4990;
     end
     
-    TF_width_0 = 10;
     for j = 1 : length(par_v)
         
         j
         switch par
             case 1
                 C_o = par_v(j);
-%                 TF_width = TF_width_0 : 10 : b_fm-10;
+                TF_width = TF_width_0-5 : 5 : b_fm-5;
             case 2
                 C_f = par_v(j);
+                TF_width = TF_width_0-5 : 5 : b_fm-5;
             case 3
                 Q_f = par_v(j)/2;
+                TF_width = TF_width_0+1 : -1 : 1;
             case 4
                 L_E = par_v(j);
+                TF_width = TF_width_0-.5 : .5 : b_fm-.5;
             case 5
                 b_fm = par_v(j);
-                TF_width = 1 : 1 : b_fm-1;
+                TF_width = TF_width_0-1 : 1 : b_fm-1;
+                %                 TF_width = 1 : 1 : b_fm-1;
             case 6
-                v_w = par_v(j);
-            case 7
                 R = par_v(j);
-            case 8
+                TF_width = TF_width_0+5 : -5 : 5;
+            case 7
                 H = par_v(j);
+                TF_width = TF_width_0-5 : 5 : b_fm-5;
+            case 8
+                T_T = par_v(j);
+                TF_width = TF_width_0+5 : -5 : 5;
+            case 9
+                v_w = par_v(j);
+                TF_width = TF_width_0+5 : -5 : 5;
         end
         
         clear y t
@@ -136,7 +158,7 @@ for k = 1 : 1
         depth = zeros(length(TF_width),1);
         if j == 1
             data = zeros(length(par_v),7);
-        end   
+        end
         
         for i = 1 : length(TF_width)
             
@@ -214,7 +236,7 @@ for k = 1 : 1
                 end
                 
                 TF_width_0 = data(j,1);
-
+                
                 data(j,2) = y(end,2); % recording tidal flat depth
                 data(j,3) = y(end,3); % recording marsh depth
                 
@@ -263,7 +285,7 @@ for k = 1 : 1
     
     switch par
         case 1
-            save('co_data_bfmx2_smallbasin.mat','dat')
+            save('co_data.mat','dat')
         case 2
             save('cf_data.mat','dat')
         case 3
@@ -273,11 +295,13 @@ for k = 1 : 1
         case 5
             save('bfm_data.mat','dat')
         case 6
-            save('vw_data.mat','dat')
-        case 7
             save('R_data.mat','dat')
-        case 8
+        case 7
             save('H_data.mat','dat')
+        case 8
+            save('T_data.mat','dat')
+        case 9
+            save('vw_data.mat','dat')
     end
     
     clear data dat
@@ -287,7 +311,7 @@ end
 fclose(fileID);
 
 %======================= Nested Function =========================
-    function dy = ode4marshtidalflat (t,y) 
+    function dy = ode4marshtidalflat (t,y)
         %  y1=b_f, y2=d_f, y3=d_m, y4=u (=C_r*(b_f*d_f+b_m*d_m, why solving u instead of C_r? u is the variable on the left hand side of mass conservation equation.)
         % solves the ODE system of equations
         
