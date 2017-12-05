@@ -1,9 +1,8 @@
-function Sol = BoxModel_SS_2eq(Co,Cf,LE,Qf,R_,a,T_,bfm,vw,bf0)
-% function BoxModel_SS_2eq
-% BoxModel_SS_2eq: Models 0d marsh and tidal flat time
+function Sol = CriticaIFetchSS(Co,Cf,Qf,LE,bfm,a,R_,vw,bf0)
+% function CriticaIFetchSS models 0d marsh and tidal flat time
 % evolution by reducing 3 equations to 2, at equilibrium conditions.
 %
-% Last Update: 11/17/2017
+% Last Update: 11/25/2017
 %
 %--------------------------------------------------------------------------------------------------
 format compact
@@ -35,7 +34,7 @@ R = R_;   % sea level rise (m/s)
 b_r = 0; % river width (m)
 
 %-------------- Tide Characteristics
-T_T = T_;   % tidal period (s) (= 12 hours)
+T_T = 12 *60*60;   % tidal period (s) (= 12 hours)
 H = a/2;          % tidal amplitude (range/2) (m)
 
 %-------------- Sediment properties

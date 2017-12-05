@@ -1,27 +1,12 @@
-% function [t, y] = BoxModel(c,y1,y2,y3)
-% function [t, y] = BoxModel
-function BoxModel
-% function BoxModel
-% BoxModel: Models 0d marsh and tidal flat time
-% evolution using Matlab ode23tb function.
+function Sol = CriticaIFetchTM(Co,Cf,Qf,LE,bfm,a,R_,vw,bf0,delta)
+% Function CriticaIFetchTM looks for a critical fetch value based on the
+% same method as BoxModel.m).
 %
-% Output
-%           t : vector of time data in yr
-%           y : matrix of data. 1st vertical vector: tidal flat width (m),
-%           2nd vector: tidal flat depth (m), 3rd vector: marsh depth (m),
-%           and 4th vector: C_r (g/m3).
-%
-% Purpose: Determining marsh and tidal flat depths and widths changes with
-%               rising sea level. This model is solved using 4 equations and 4
-%               unknowns.
-%
-% Last Update: 11/17/2017
+% Last Update: 11/25/2017
 %
 %--------------------------------------------------------------------------------------------------
 format compact
 format longG
-% clear
-% clf
 
 %-------------- Set the time span
 tyr = 1000;  % solve for time tyr (years)
@@ -30,16 +15,16 @@ dt = 12*60*60; % time step in (s)
 tspan = 0:dt:ts;
 
 %-------------- Sediment input constants
-C_o = 5 *10^-3;    % ocean concertation (kg/m3)
-C_f = 15 *10^-3;    % river concentration (kg/m3)
-Q_f = 20;         % river water discharge (m3/s)
+C_o =Co;    % ocean concertation (kg/m3)
+C_f = Cf;    % river concentration (kg/m3)
+Q_f = Qf;         % river water discharge (m3/s)
 
 %-------------- Erosion constants
 k_0 = 1 *10^-3; % roughness (m)
 tau_c = 0.3;  % critical shear stress (Pa)
 E_0 = 10^-4;    % bed erosion coefficient (kg/m2/s)
 k_e = 0.16 /365/24/60/60;  % margin erodibility coefficient (m2/s/W)
-v_w = 6;        % reference wind speed (m/s)
+v_w = vw;        % reference wind speed (m/s)
 
 % -------------- Accretion constants
 k_a = 2;        % margin accretion coefficient
@@ -49,78 +34,116 @@ B_max = 1;      % maximum biomass density (kg/m2)
 k_B = 2*10^-3 /365/24/60/60;    % vegetation characteristics (m3/s/kg)
 
 %-------------- Basin properties
-b_fm = 5 *10^3; % total basin width (both sides of the channel) (m)
-L_E = 5 *10^3; % basin length (m)
-R = 11 *10^-3/365/24/60/60;   % sea level rise (m/s)
+b_fm = bfm; % total basin width (both sides of the channel) (m)
+L_E = LE; % basin length (m)
+R = R_;   % sea level rise (m/s)
 b_r = 0; % river width (m)
 
 %-------------- Tide Characteristics
 T_T = 12 *60*60;   % tidal period (s) (= 12 hours)
-a = 1.4;            % tidal range (m)
-H = a /2;          % tidal amplitude (m)
+H =a/2;          % tidal amplitude (range/2) (m)
 
 %-------------- Sediment properties
 rho_s = 1000;   % sediment bulk density (kg/m3)
 omega_s = 0.5 *10^-3;   % settling velocity (m/s)
 
 %-------------- Model constants
-gamma = 9800;   % water specific weight (N/m3 or kg/m2/s2)
+gamma = 9800;   % water specific weight (N/m3)
 
 %-------------- Model assumptions
-Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
-% b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
+Q_f0 = Q_f/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
+Q_f = Q_f0;
 
-%-------------- Initial conditions, y0=[ b_f, d_f, d_m,u (=C_r*(b_f*d_f+b_m*d_m))]
-y0(1) =[275];%y1;%b_fm/2;      % tidal flat width (m)
-y0(2) = H+0.3;        % tidal flat depth (m)
-y0(3) = H-0.3;         % marsh depth (m)
-y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
+TF_width = bf0 : delta : b_fm-1;
 
-%-------------- Solve the system of differential equations
-[t, y] = ode15s(@ode4marshtidalflat,tspan,y0); % or use ode15s/ode23s/ode23tb
-t = t /365/24/60/60; % convert time unit from s to yr for plotting purposes
-y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the equation used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
+width_diff = zeros(length(TF_width),1);
 
-%-------------- Removing data corresponding to platform conversion and reaching to basin boundary limits
-% ind = find(y(:,3)>H); % marsh conversion to tidal flat
-% if ~isempty(ind) && length(ind)>1
-%     y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new tidal flat now
-%     t(ind(2):end,:)=[];
-% end
-
-ind = find(y(:,2)<=H); % tidal flat conversion to marsh
-if ~isempty(ind) && length(ind)>1
-    y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new marsh now
-    t(ind(2):end,:)=[];
+for i = 1 : length(TF_width)
+    
+    i
+    
+    Q_f = Q_f0; % reset the value of Q_f that might have changed during the prevoius iteration
+    
+    %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u(=C_r*(b_f*d_f+b_m*d_m))]
+    y0(1) = TF_width(i);
+    y0(2) = H+0.3;         % tidal flat depth (m)
+    y0(3) = H-0.3;         % marsh depth (m)
+    y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
+    
+    %-------------- Solve the system of differential equations
+    [t, y] = ode15s(@ode4marshtidalflat,tspan,y0); % or use ode15s/ode23s/ode23tb
+    t = t /365/24/60/60; % convert time unit from s to yr for plotting purposes
+    y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the equation used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
+    
+    %-------------- Removing data corresponding to platform conversion and reaching to basin boundary limits
+    %             ind = find(y(:,3)>H); % marsh conversion to tidal flat
+    %             if ~isempty(ind) && length(ind)>1
+    %                 y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new tidal flat now
+    %                 t(ind(2):end,:)=[];
+    %             end
+    
+    ind = find(y(:,2)<=H); % tidal flat conversion to marsh
+    if ~isempty(ind) && length(ind)>1
+        y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new marsh now
+        t(ind(2):end,:)=[];
+    end
+    
+    ind = find(y(:,1)>=b_fm); % tidal flat filling the basin
+    if ~isempty(ind) && length(ind)>1
+        y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new marsh now
+        t(ind(2):end,:)=[];
+    end
+    
+    ind = find(y(:,1)<=0); % marsh filling the basin
+    if ~isempty(ind) && length(ind)>1
+        y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new marsh now
+        t(ind(2):end,:)=[];
+    end
+    
+    %-------------- Check tidal flat contraction/expansion
+    width = y(:,1); % tidal falt width solution
+    n = length(width);
+    
+    width_diff(i) = sign(width(n)-width(floor(n/2))); % -1 corresponds to tidal flat contraction (or fully marsh) and +1 accounts for expansion (or fully tidal flat)
+    
+    %-------------- Check platform conversion
+    if y(end,2) <= H % check whether if tidal flat has emerged above MSL
+        width_diff(i) = -1;
+    end
+    
+    if y(end,3) > H % check whether if marsh has been drowned
+        width_diff(i) = 1;
+    end
+    
+    %-------------- Evaluate the solutions
+    n_width_diff = length(unique(width_diff));
+    
+    if ~ (n_width_diff == 2 && ismember(0,width_diff))
+        
+        if n_width_diff == 2 || n_width_diff == 3 % recording critical fetch width
+            Sol(1) = width(1);
+        elseif unique(width_diff) == 1
+            Sol(1) = TF_width(1);
+        elseif unique(width_diff) == -1
+            Sol(1) = TF_width(end);
+        end
+        
+        if y(end,3)>H ||  ( y(end,1)<=0 && y(end,3)>y(1,3) ) % check if the marsh is drowned
+            Sol(1) = 0;
+        end
+        
+        Sol(2) = y(end,2); % recording tidal flat depth
+        Sol(3) = y(end,3); % recording marsh depth
+        
+        break
+        
+    end
+    
 end
 
-ind = find(y(:,1)>=b_fm); % tidal flat filling the basin
-if ~isempty(ind) && length(ind)>1
-    y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new marsh now
-    t(ind(2):end,:)=[];
-end
-
-ind = find(y(:,1)<=0); % marsh filling the basin
-if ~isempty(ind) && length(ind)>1
-    y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new marsh now
-    t(ind(2):end,:)=[];
-end
-
-%-------------- Plot Results
-% plot_BoxModel(t,y)
-% BoxModel_parameters(t,y,C_o)
-plot_BoxModel_pars(t,y) % make sure to check the inside parameter values 
-
-% h_fig=gcf;
-% set(h_fig,'PaperOrientation','portrait')
-% set(h_fig,'PaperPosition', [0 0 14 6]) % [... ... max_width=7.5 max_height=9]
-% tit = 'Co_20_SSSolution_fixedwidth';
-% print(tit,'-dtiff','-r400')
-% movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\20 - Unstable Equlibrium Results through Optimization of Steady State')
-% close all
 
 %======================= Nested Function =========================
-    function dy = ode4marshtidalflat (t,y) 
+    function dy = ode4marshtidalflat (t,y)
         %  y1=b_f, y2=d_f, y3=d_m, y4=u (=C_r*(b_f*d_f+b_m*d_m, why solving u instead of C_r? u is the variable on the left hand side of mass conservation equation.)
         % solves the ODE system of equations
         

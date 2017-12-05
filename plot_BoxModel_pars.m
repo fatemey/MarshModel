@@ -136,6 +136,12 @@ xlabel('Year')
 ylabel('Accretion Rate (m/yr)')
 title('Margin Accretion Rate')
 
+subplot(n,m,11)
+plot(t,d_f-d_m,'linewidth',2)
+xlabel('Year')
+ylabel('Bed Level Difference (m)')
+title('Marsh And TF Bed Level Difference')
+
 % h_fig=gcf;
 % set(h_fig,'PaperOrientation','portrait')
 % set(h_fig,'PaperPosition', [0 0 14 6]) % [... ... max_width=7.5 max_height=9]

@@ -1,6 +1,6 @@
-function data = CriticaIFetch_TM
-% Function CriticaIFetch_TM looks for a critical fetch value based on
-% different system chracteristics using time marching approach (the 
+function data = CriticaIFetch_TM_SA
+% Function CriticaIFetch_TM_SA looks for a critical fetch value based on
+% different system chracteristics using time marching approach (the
 % same method as BoxModel.m).
 % Output:
 %           8 saved data matrices related to 8 parameters, containing:
@@ -16,7 +16,7 @@ function data = CriticaIFetch_TM
 %
 % To plot the results, use the function plot_fetch_TM.
 %
-% Last Update: 11/17/2017
+% Last Update: 11/25/2017
 %
 %--------------------------------------------------------------------------------------------------
 format compact
@@ -25,10 +25,11 @@ clear
 % clf
 
 fileID = fopen('C:\Users\fy23\Dropbox\Res_PC.txt','w');
-fprintf(fileID,'%12s %12s %12s %12s %12s %12s %12s %12s \n','par','b_f','d_f','d_m','eqtf','eqm','conv','bound');
+fprintf(fileID,'%12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s \n','b_f','d_f','d_m','Co','Cf','Qf','bfm','LE','H','R','VW');
 
-par_temp =9;% 1 : 9;
-% par_temp =[6,9];
+par_temp =1:8;
+data = zeros(17,11);
+jj = 1;
 
 for k = 1 : length(par_temp)
     
@@ -40,9 +41,9 @@ for k = 1 : length(par_temp)
     tspan = 0:dt:ts;
     
     %-------------- Sediment input constants
-    C_o = 20 *10^-3;    % ocean concertation (kg/m3)
-    C_f = 15 *10^-3;    % river concentration (kg/m3)
-    Q_f = 20;         % river water discharge (m3/s)
+    C_o = 50 *10^-3;    % ocean concertation (kg/m3)
+    C_f = 50 *10^-3;    % river concentration (kg/m3)
+    Q_f = 50;         % river water discharge (m3/s)
     
     %-------------- Erosion constants
     k_0 = 1 *10^-3; % roughness (m)
@@ -61,12 +62,12 @@ for k = 1 : length(par_temp)
     %-------------- Basin properties
     b_fm = 5 *10^3; % total basin width (both sides of the channel) (m)
     L_E = 5 *10^3; % basin length (m)
-    R = 2 *10^-3/365/24/60/60;   % sea level rise (m/s)
+    R = 7 *10^-3/365/24/60/60;   % sea level rise (m/s)
     b_r = 0; % river width (m)
     
     %-------------- Tide Characteristics
     T_T = 12 *60*60;   % tidal period (s) (= 12 hours)
-    H = 1.4 /2;          % tidal amplitude (range/2) (m)
+    H = 2 /2;          % tidal amplitude (range/2) (m)
     
     %-------------- Sediment properties
     rho_s = 1000;   % sediment bulk density (kg/m3)
@@ -78,48 +79,34 @@ for k = 1 : length(par_temp)
     %-------------- Model assumptions
     Q_f0 = Q_f/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
     Q_f = Q_f0;
-    % b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
-  
     
     %-------------- Start the loop for each run
     par = par_temp(k);
     
     switch par
         case 1
-            par_v = 5 *10^-3 : 5 *10^-3 : 95 *10^-3; % for C_o
-            %             TF_width = 5 : 5 : b_fm-5;
-            TF_width_0 = 20;
+            par_v = [10,50,100] *10^-3; % for C_o
+            TF_width = 5 : 5 : b_fm-5;
         case 2
-            par_v = 0 *10^-3: 10 *10^-3 : 250 *10^-3; % for C_f
-            %             TF_width = 5 : 5 : b_fm-5;
-            TF_width_0 = 3;
+            par_v = [5,100] *10^-3;  % for C_f
+            TF_width = 5 : 5 : b_fm-5;
         case 3
-            par_v = 0 : 10  : 250; % for Q_f
-            %             TF_width = 5 : 5 : b_fm-5;
-            TF_width_0 = 4997;
+            par_v = [5,100]; % for Q_f
+            TF_width = 5 : 5 : b_fm-5;
         case 4
-            par_v = 1 *10^3 : .5 *10^3 : 5 *10^3; % for L_E
-            %             TF_width = 1 : 1 : b_fm-1;
-            TF_width_0 = 1;
+            par_v = [1,10] *10^3; % for L_E
+            TF_width = 5 : 5 : b_fm-5;
         case 5
-            par_v = 1 *10^3 : .5 *10^3 : 5 *10^3; % for b_fm
-            TF_width_0 = 3;
+            par_v = [1,10] *10^3; % for b_fm
         case 6
-            par_v = 1 *10^-3/365/24/60/60 : .5 *10^-3/365/24/60/60 : 20 *10^-3/365/24/60/60; % for R
-            %             TF_width = 5 : 5 : b_fm-5;
-            TF_width_0 = 1000;
+            par_v = [1,15] *10^3 *10^-3/365/24/60/60; % for R
+            TF_width = 5 : 5 : b_fm-5;
         case 7
-            par_v = (1 : 1 : 10)/2; % for H
-            %             TF_width = 5 : 5 : b_fm-5;
-            TF_width_0 = 15;
+            par_v = [1,3]/2; % for H
+            TF_width = 5 : 5 : b_fm-5;
         case 8
-            par_v = [12,24] *60*60; % for T
-            %             TF_width = 5 : 5 : b_fm-5;
-            TF_width_0 = 4980;
-        case 9
-            par_v = 0 : 1 : 15; % for v_w
-            %             TF_width = 10 : 10 : b_fm-10;
-            TF_width_0 = 4980;
+            par_v = [4,8]; % for v_w
+            TF_width = 5 : 5 : b_fm-5;
     end
     
     for j = 1 : length(par_v)
@@ -128,41 +115,27 @@ for k = 1 : length(par_temp)
         switch par
             case 1
                 C_o = par_v(j);
-                TF_width = TF_width_0-10 : 5 : b_fm-5;
             case 2
                 C_f = par_v(j);
-                TF_width = TF_width_0-2 : 1 : b_fm-1;
             case 3
                 Q_f0 = par_v(j)/2;
                 Q_f = Q_f0;
-                TF_width = TF_width_0+2 : -1 : 1;
             case 4
                 L_E = par_v(j);
-                TF_width = TF_width_0-.2 : .1 : b_fm-.1;
             case 5
                 b_fm = par_v(j);
-                TF_width = TF_width_0-2 : 1 : b_fm-1;
-                %                 TF_width = 1 : 1 : b_fm-1;
+                TF_width = 5 : 5 : b_fm-5;
             case 6
                 R = par_v(j);
-                TF_width = TF_width_0+10 : -5 : 5;
             case 7
                 H = par_v(j);
-                TF_width = TF_width_0-10 : 5 : b_fm-5;
             case 8
-                T_T = par_v(j);
-                TF_width = TF_width_0+10 : -5 : 5;
-            case 9
                 v_w = par_v(j);
-                TF_width = TF_width_0+10 : -5 : 5;
         end
         
         clear y t
         width_diff = zeros(length(TF_width),1);
         depth = zeros(length(TF_width),1);
-        if j == 1
-            data = zeros(length(par_v),7);
-        end
         
         for i = 1 : length(TF_width)
             
@@ -180,13 +153,13 @@ for k = 1 : length(par_temp)
             [t, y] = ode15s(@ode4marshtidalflat,tspan,y0); % or use ode15s/ode23s/ode23tb
             t = t /365/24/60/60; % convert time unit from s to yr for plotting purposes
             y(:,4) = y(:,4)./(y(:,1).*y(:,2)+y(:,3).*(b_fm-y(:,1))); % convert y(:,4) to C_r from the equation used before: y4=u (=C_r*(b_f*d_f+b_m*d_m)
-
+            
             %-------------- Removing data corresponding to platform conversion and reaching to basin boundary limits
-%             ind = find(y(:,3)>H); % marsh conversion to tidal flat
-%             if ~isempty(ind) && length(ind)>1
-%                 y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new tidal flat now
-%                 t(ind(2):end,:)=[];
-%             end
+            %             ind = find(y(:,3)>H); % marsh conversion to tidal flat
+            %             if ~isempty(ind) && length(ind)>1
+            %                 y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new tidal flat now
+            %                 t(ind(2):end,:)=[];
+            %             end
             
             ind = find(y(:,2)<=H); % tidal flat conversion to marsh
             if ~isempty(ind) && length(ind)>1
@@ -195,22 +168,19 @@ for k = 1 : length(par_temp)
             end
             
             ind = find(y(:,1)>=b_fm); % tidal flat filling the basin
-            flag_boundary = 0;    % flag for basin boundary limits
             if ~isempty(ind) && length(ind)>1
                 y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new marsh now
                 t(ind(2):end,:)=[];
-                flag_boundary = 1; % corresponding to a fully tidal flat basin (reaching to upper boundary limit)
             end
             
             ind = find(y(:,1)<=0); % marsh filling the basin
             if ~isempty(ind) && length(ind)>1
                 y(ind(2):end,:)=[]; % retain only one value after conversion to remember it is a new marsh now
                 t(ind(2):end,:)=[];
-                flag_boundary = 2; % corresponding to a fully marsh basin (reaching to lower boundary limit)
             end
             
-%             plot_BoxModel(t,y)
-                        
+            %             plot_BoxModel(t,y)
+            
             %-------------- Check tidal flat contraction/expansion
             width = y(:,1); % tidal falt width solution
             n = length(width);
@@ -228,70 +198,36 @@ for k = 1 : length(par_temp)
             
             %-------------- Evaluate the solutions
             n_width_diff = length(unique(width_diff));
-            tidalflatd = y(floor(9*n/10):n,2);
-            marshd = y(floor(9*n/10):n,3);
             depth(i,1:2) = [y(end,2),y(end,3)];
             
             if ~ (n_width_diff == 2 && ismember(0,width_diff))
-                                
+                
                 if n_width_diff == 2 || n_width_diff == 3 % recording critical fetch width
-                    data(j,1) = width(1);
-                else
-                    if unique(width_diff) == 1
-                        if width_diff(1)>width_diff(2)
-                            data(j,1) = TF_width(1);
-                        else
-                            data(j,1) = TF_width(end);
-                        end
-                    elseif unique(width_diff) == -1
-                        if width_diff(1)>width_diff(2)
-                            data(j,1) = TF_width(end);
-                        else
-                            data(j,1) = TF_width(1);
-                        end
-                    end
+                    data(jj,1) = width(1);
+                elseif unique(width_diff) == 1
+                    data(jj,1) = TF_width(1);
+                elseif unique(width_diff) == -1
+                    data(jj,1) = TF_width(end);
                 end
-
+                
                 if y(end,3)>H ||  ( y(end,1)<=0 && y(end,3)>y(1,3) ) % check if the marsh is drowned
-                    data(j,1) = 0;
+                    data(jj,1) = 0;
                 end
                 
-                TF_width_0 = min(4980,data(j,1));
+                data(jj,2) = y(end,2); % recording tidal flat depth
+                data(jj,3) = y(end,3); % recording marsh depth
+                data(jj,4) = C_o;
+                data(jj,5) = C_f;
+                data(jj,6) = Q_f;
+                data(jj,7) = b_fm;
+                data(jj,8) = L_E;
+                data(jj,9) = H;
+                data(jj,10) = R;
+                data(jj,11) = v_w;
                 
-                data(j,2) = y(end,2); % recording tidal flat depth
-                data(j,3) = y(end,3); % recording marsh depth
+                fprintf(fileID,'%12f %12f %12f %12f %12f %12d %12d %12d %12d %12f %12d \n',[data(jj,:)]);
                 
-                if abs(max(tidalflatd)-min(tidalflatd)) < 1e-5
-                    data(j,4) = 1; % tidal flat reached to an equilibrium depth
-                end
-                
-                if abs(max(marshd)-min(marshd)) < 1e-5
-                    data(j,5) = 1;  % marsh reached to an equilibrium depth
-                end
-                
-                if depth(i-1,1) <= H % tidal flat emergence
-                    if width_diff(i) == 1
-                        data(j,6) = 1; % tidal flat emergence & expansion
-                    elseif width_diff(i) == -1
-                        data(j,6) = 2; % tidal flat emergence & contraction
-                    end
-                end
-                
-                if depth(i,2) >= H % marsh drowning
-                    if width_diff(i) == -1 % marsh drowning & expansion
-                        data(j,6) = 3;
-                    elseif width_diff(i) == 1 % marsh drowning & contraction
-                        data(j,6) = 4;
-                    end
-                end
-                
-                if flag_boundary == 1 % hitting the upper boundary limit (fully tidal flat)
-                    data(j,7) = 1;
-                elseif flag_boundary == 2 % hitting the lower boundary limit (fully marsh)
-                    data(j,7) = 2;
-                end
-                
-                fprintf(fileID,'%12f %12d %12f %12f %12d %12d %12d %12d \n',[par_v(j), data(j,:)]);
+                jj = jj +1;
                 
                 break
                 
@@ -302,30 +238,8 @@ for k = 1 : length(par_temp)
     end
     
     %-------------- Save the results
-    dat = [par_v', data];
-    
-    switch par
-        case 1
-            save('co_data.mat','dat')
-        case 2
-            save('cf_data.mat','dat')
-        case 3
-            save('qf_data.mat','dat')
-        case 4
-            save('le_data.mat','dat')
-        case 5
-            save('bfm_data.mat','dat')
-        case 6
-            save('R_data.mat','dat')
-        case 7
-            save('H_data.mat','dat')
-        case 8
-            save('T_data.mat','dat')
-        case 9
-            save('vw_data.mat','dat')
-    end
-    
-    clear data dat
+    dat = data;
+    save('Data_TM_SA.mat','dat')
     
 end
 
