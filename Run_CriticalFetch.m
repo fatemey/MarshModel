@@ -7,10 +7,11 @@ format compact
 format longG
 
 % fileID = fopen('C:\Users\fy23\Dropbox\Res_PC.txt','a');
-fileID = fopen('/Users/Callisto/Dropbox/Res.txt','a');
+% fileID = fopen('/Users/Callisto/Dropbox/Res.txt','a');
+fileID = 1;
 fprintf(fileID,'%6s %6s %6s %6s %6s %6s %6s %6s %6s %6s %6s %6s %6s %6s \n','n','b_f','d_f','d_m','Co','Cf','Qf','LE','bfm','a','R','T','VW','time');
 
-width_inc = 300; % tidal flat width increment for time marching approach
+width_inc = 10; % tidal flat width increment for time marching approach
 
 Co = ([1,5,10,15]) *10^-3;
 Cf = ([1,10,20,30,40,50]) *10^-3;
@@ -20,7 +21,7 @@ bfm = ([1:2:9]) *1000;
 a = (1:1:5);
 R = ([2,4,6,8,10,15]) *10^-3/365/24/60/60;
 T = 12 *60*60;
-vw = [0:2:8];
+vw = [2:2:10];
 
 k1 = length(Co);
 k2 = length(Cf);
