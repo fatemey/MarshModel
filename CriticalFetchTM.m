@@ -71,8 +71,8 @@ for i = 1 : length(TF_width)
     
     %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u(=C_r*(b_f*d_f+b_m*d_m))]
     y0(1) = TF_width(i);
-    y0(2) = H+0.3;         % tidal flat depth (m)
-    y0(3) = H-0.3;         % marsh depth (m)
+    y0(2) = H+H/2;         % tidal flat depth (m)
+    y0(3) = H-H/2;         % marsh depth (m)
     y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
     
     %-------------- Solve the system of differential equations

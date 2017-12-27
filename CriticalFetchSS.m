@@ -49,8 +49,8 @@ gamma = 9800;   % water specific weight (N/m3 or kg/m2/s2)
 
 %-------------- Initial conditions
 x0 = bf0;
-y0(1) = H+0.3;        % tidal flat depth (m)
-y0(2) = H-0.3;        % marsh depth (m)
+y0(1) = H+H/2;        % tidal flat depth (m)
+y0(2) = H-H/2;        % marsh depth (m)
 
 %-------------- Solve the system
 fun_width = @(x) Fun_BoxModel_SS_width(x);
