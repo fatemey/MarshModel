@@ -15,7 +15,7 @@ width_inc = 10; % tidal flat width increment for time marching approach
 
 Co = ([1,5,10,15]) *10^-3;
 Cf = ([1,10,20,30,40,50]) *10^-3;
-Qf = [10:20:90];
+Qf = [5,10:20:70];
 LE = ([1:2:9]) * 1000;
 bfm = ([1:2:9]) *1000;
 a = (1:1:5);
@@ -78,7 +78,7 @@ for i9 =1 : k9
                                     
                                     t = datetime;
                                     time = datevec(t);
-                                    fprintf(fileID,'%6d %6.2f %6.2f %6.2f %6.2f %6.2f %6d %6d %6d %6.1f %6.1f %6d %6d %6d%2d%2d%2d%2d%2.1f\n',[n,dat(n,:),time]);
+                                    fprintf(fileID,'%6d %6.2f %6.2f %6.2f %6.3f %6.3f %6d %6d %6d %6.1f %6.1f %6d %6d %6d%2d%2d%2d%2d%2.1f\n',[n,dat(n,:),time]);
                                     n = n + 1;
                                     flag = 1;
                                     
