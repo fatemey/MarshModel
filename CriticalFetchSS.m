@@ -1,5 +1,5 @@
-function Sol = CriticaIFetchSS(Co,Cf,Qf,LE,bfm,a,R_,vw,bf0)
-% function CriticaIFetchSS models 0d marsh and tidal flat time
+function Sol = CriticalFetchSS(Co,Cf,Qf,LE,bfm,a,R_,T,vw,bf0)
+% function CriticalFetchSS models 0d marsh and tidal flat time
 % evolution by reducing 3 equations to 2, at equilibrium conditions.
 %
 % Last Update: 11/25/2017
@@ -34,7 +34,7 @@ R = R_;   % sea level rise (m/s)
 b_r = 0; % river width (m)
 
 %-------------- Tide Characteristics
-T_T = 12 *60*60;   % tidal period (s) (= 12 hours)
+T_T = T;   % tidal period (s) (= 12 hours)
 H = a/2;          % tidal amplitude (range/2) (m)
 
 %-------------- Sediment properties
@@ -45,12 +45,12 @@ omega_s = 0.5 *10^-3;   % settling velocity (m/s)
 gamma = 9800;   % water specific weight (N/m3 or kg/m2/s2)
 
 %-------------- Model assumptions
-Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
+% Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
 
 %-------------- Initial conditions
 x0 = bf0;
 y0(1) = H+0.3;        % tidal flat depth (m)
-y0(2) = H-0.3;         % marsh depth (m)
+y0(2) = H-0.3;        % marsh depth (m)
 
 %-------------- Solve the system
 fun_width = @(x) Fun_BoxModel_SS_width(x);
@@ -77,18 +77,18 @@ Sol = [x,y,fval_x,fval_y];
         %         end
         
         %-------------- Imposing a condition for tidal flat conversion to marsh in case of presence of new vegetation when tidal flat is above MSL
-        flag_f2m = 0;     % showing that tidal flat is below MSL
+%         flag_f2m = 0;     % showing that tidal flat is below MSL
         %         if d_f <= H
         %             flag_f2m = 1; % showing that tidal flat is above MSL
         %         end
         
         %-------------- Model assumptions
         b_m = b_fm-b_f; % marsh width
-        if flag_f2m == 0
+%         if flag_f2m == 0
             chi = 2*b_f+b_r;    % fetch
-        elseif flag_f2m == 1
-            chi = b_r;
-        end
+%         elseif flag_f2m == 1
+%             chi = b_r;
+%         end
         
         %-------------- Compute organice matter production (m/s)
         z = H-d_m;       % elevation of marsh platform
@@ -112,7 +112,8 @@ Sol = [x,y,fval_x,fval_y];
         %-------------- Compute margin erosion (m/s)
         h = (d_f+max(0,d_f-2*H))/2;     % reference water depth
         
-        if  flag_f2m==1 || chi<=b_r || v_w==0 % condition for no bed and margin erosion in case of a filled mudflat or no wind
+%         if  flag_f2m==1 || chi<=b_r || v_w==0 % condition for no bed and margin erosion in case of a filled mudflat or no wind
+        if   chi<=b_r || v_w==0 % condition for no bed and margin erosion in case of a filled mudflat or no wind
             tau = 0; % bed shear stress
         else
             [ H_w, T_w ] = WaveProps ( h, v_w, chi );   % compute significant height and peak period
@@ -121,7 +122,7 @@ Sol = [x,y,fval_x,fval_y];
         
         
         %--------------------------------- Tidal flat depth equation -------------------------------
-        if flag_f2m == 0
+%         if flag_f2m == 0
             
             %-------------- Compute submerged time when the tidal flat is covered with water
             if d_f < 2*H
@@ -139,22 +140,22 @@ Sol = [x,y,fval_x,fval_y];
             %-------------- Compute the rate of organic matter production in tidal flat (m/s)
             SOM = 0;
             
-        elseif flag_f2m == 1
-            
-            %-------------- Compute the rate of bed erosion (m/s)
-            TF_erosion = 0;
-            
-            %-------------- Compute the rate of sediment accretion (m/s)
-            TF_accretion = C_r*d_f/T_T/rho_s;
-            
-            %-------------- Compute the rate of organic matter production in the new marsh (m/s)
-            z_new = H-d_f;       % elevation of marsh platform
-            r_new = -0.5*z_new/H+1;     % reproduction rate
-            m_new = 0.5*z_new/H;         % mortality rate
-            B_new = B_max*(1-m_new/r_new);  % steady state solution for biomass (kg/m2)
-            SOM = k_B*B_new;        % organic matter production rate
-            
-        end
+%         elseif flag_f2m == 1
+%             
+%             %-------------- Compute the rate of bed erosion (m/s)
+%             TF_erosion = 0;
+%             
+%             %-------------- Compute the rate of sediment accretion (m/s)
+%             TF_accretion = C_r*d_f/T_T/rho_s;
+%             
+%             %-------------- Compute the rate of organic matter production in the new marsh (m/s)
+%             z_new = H-d_f;       % elevation of marsh platform
+%             r_new = -0.5*z_new/H+1;     % reproduction rate
+%             m_new = 0.5*z_new/H;         % mortality rate
+%             B_new = B_max*(1-m_new/r_new);  % steady state solution for biomass (kg/m2)
+%             SOM = k_B*B_new;        % organic matter production rate
+%             
+%         end
         
         %-------------- Describe the equation for d_f (m/s)
         G(1) = TF_erosion - TF_accretion - SOM + R;
@@ -163,11 +164,11 @@ Sol = [x,y,fval_x,fval_y];
         %-------------------------------- Mass conservation equation ------------------------------
         
         %-------------- Compute tidal flat bed erosion (kg/s)
-        if flag_f2m == 0
+%         if flag_f2m == 0
             bed_erosion = max(0,t_s*E_0*(tau-tau_c)/tau_c*b_f*L_E);
-        else
-            bed_erosion = 0;
-        end
+%         else
+%             bed_erosion = 0;
+%         end
         
         %-------------- Compute external sediment input (kg/s)
         Vol = (d_f*b_f+d_m*b_m)*L_E; % availble volume in the system to be filled with water
@@ -178,21 +179,21 @@ Sol = [x,y,fval_x,fval_y];
         river_in = Q_f*C_f;
         
         %-------------- Compute deposition on tidal flat (kg/s)
-        if flag_f2m == 0
+%         if flag_f2m == 0
             TF_deposition = min(t_s*C_r*b_f*omega_s*L_E, C_r*b_f*d_f*L_E/T_T);
-        else
-            TF_deposition = C_r*b_f*d_f*L_E/T_T;
-        end
+%         else
+%             TF_deposition = C_r*b_f*d_f*L_E/T_T;
+%         end
         
         %-------------- Compute deposition on marsh (kg/s)
         M_deposition = C_r*b_m*d_m*L_E/T_T;
         
         %-------------- Compute export sediment to the ocean (kg/s)
-        if flag_f2m == 0
+%         if flag_f2m == 0
             export = C_r*b_f*min(d_f,2*H)*L_E/T_T;
-        else
-            export = 0;
-        end
+%         else
+%             export = 0;
+%         end
         
         %-------------- Describe the equation for C_r (kg/s)
         G(2) = bed_erosion + ocean_in + river_in - TF_deposition - M_deposition - export;   % (kg/s)
@@ -216,17 +217,17 @@ Sol = [x,y,fval_x,fval_y];
         d_m = z(2);
         
         %-------------- Imposing a condition for tidal flat conversion to marsh in case of presence of new vegetation when tidal flat is above MSL
-        flag_f2m = 0;     % showing that tidal flat is below MSL
+%         flag_f2m = 0;     % showing that tidal flat is below MSL
         %         if d_f <= H
         %             flag_f2m = 1; % showing that tidal flat is above MSL
         %         end
         
         %-------------- Model assumptions
-        if flag_f2m == 0
+%         if flag_f2m == 0
             chi = 2*b_f+b_r;    % fetch
-        elseif flag_f2m == 1
-            chi = b_r;
-        end
+%         elseif flag_f2m == 1
+%             chi = b_r;
+%         end
         
         %-------------- Compute organice matter production (m/s)
         z = H-d_m;       % elevation of marsh platform
@@ -250,7 +251,8 @@ Sol = [x,y,fval_x,fval_y];
         %-------------- Compute margin erosion (m/s)
         h = (d_f+max(0,d_f-2*H))/2;     % reference water depth
         
-        if  flag_f2m==1 || chi<=b_r || v_w==0 % condition for no bed and margin erosion in case of a filled mudflat or no wind
+%         if  flag_f2m==1 || chi<=b_r || v_w==0 % condition for no bed and margin erosion in case of a filled mudflat or no wind
+        if  chi<=b_r || v_w==0 % condition for no bed and margin erosion in case of a filled mudflat or no wind
             W = 0;   % wave power density
         else
             [ H_w, T_w ] = WaveProps ( h, v_w, chi );   % compute significant height and peak period
@@ -262,11 +264,11 @@ Sol = [x,y,fval_x,fval_y];
         B_e = k_e*W;    % margin erosion
         
         %-------------- Compute margin accretion (m/s)
-        if flag_f2m == 0
+%         if flag_f2m == 0
             B_a = k_a*omega_s*C_r/rho_s;  % margin accretion
-        else
-            B_a = 0;
-        end
+%         else
+%             B_a = 0;
+%         end
         
         %-------------- Describe the equation for b_f (m/s)
         F = B_e - B_a;

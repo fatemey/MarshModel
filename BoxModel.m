@@ -49,9 +49,9 @@ B_max = 1;      % maximum biomass density (kg/m2)
 k_B = 2*10^-3 /365/24/60/60;    % vegetation characteristics (m3/s/kg)
 
 %-------------- Basin properties
-b_fm = 5 *10^3; % total basin width (both sides of the channel) (m)
+b_fm = 1 *10^3; % total basin width (both sides of the channel) (m)
 L_E = 5 *10^3; % basin length (m)
-R = 11 *10^-3/365/24/60/60;   % sea level rise (m/s)
+R = 20 *10^-3/365/24/60/60;   % sea level rise (m/s)
 b_r = 0; % river width (m)
 
 %-------------- Tide Characteristics
@@ -71,7 +71,7 @@ Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal 
 % b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
 
 %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u (=C_r*(b_f*d_f+b_m*d_m))]
-y0(1) =[275];%y1;%b_fm/2;      % tidal flat width (m)
+y0(1) =[.1];%y1;%b_fm/2;      % tidal flat width (m)
 y0(2) = H+0.3;        % tidal flat depth (m)
 y0(3) = H-0.3;         % marsh depth (m)
 y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
@@ -107,9 +107,9 @@ if ~isempty(ind) && length(ind)>1
 end
 
 %-------------- Plot Results
-% plot_BoxModel(t,y)
+plot_BoxModel(t,y)
 % BoxModel_parameters(t,y,C_o)
-plot_BoxModel_pars(t,y) % make sure to check the inside parameter values 
+% plot_BoxModel_pars(t,y) % make sure to check the inside parameter values 
 
 % h_fig=gcf;
 % set(h_fig,'PaperOrientation','portrait')

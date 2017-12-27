@@ -1,5 +1,5 @@
-function Sol = CriticaIFetchTM(Co,Cf,Qf,LE,bfm,a,R_,vw,bf0,delta)
-% Function CriticaIFetchTM looks for a critical fetch value based on the
+function Sol = CriticalFetchTM(Co,Cf,Qf,LE,bfm,a,R_,T,vw,bf0,delta)
+% Function CriticalFetchTM looks for a critical fetch value based on the
 % same method as BoxModel.m).
 %
 % Last Update: 11/25/2017
@@ -15,9 +15,9 @@ dt = 12*60*60; % time step in (s)
 tspan = 0:dt:ts;
 
 %-------------- Sediment input constants
-C_o =Co;    % ocean concertation (kg/m3)
+C_o =Co;     % ocean concertation (kg/m3)
 C_f = Cf;    % river concentration (kg/m3)
-Q_f = Qf;         % river water discharge (m3/s)
+Q_f0 = Qf;   % river water discharge (m3/s)
 
 %-------------- Erosion constants
 k_0 = 1 *10^-3; % roughness (m)
@@ -40,7 +40,7 @@ R = R_;   % sea level rise (m/s)
 b_r = 0; % river width (m)
 
 %-------------- Tide Characteristics
-T_T = 12 *60*60;   % tidal period (s) (= 12 hours)
+T_T = T;   % tidal period (s) (= 12 hours)
 H =a/2;          % tidal amplitude (range/2) (m)
 
 %-------------- Sediment properties
@@ -51,10 +51,15 @@ omega_s = 0.5 *10^-3;   % settling velocity (m/s)
 gamma = 9800;   % water specific weight (N/m3)
 
 %-------------- Model assumptions
-Q_f0 = Q_f/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
-Q_f = Q_f0;
+% Q_f0 = Q_f/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
+% Q_f = Q_f0;
 
-TF_width = bf0 : delta : b_fm-1;
+
+% if delta>0
+    TF_width = bf0 : delta : b_fm-1;
+% else
+%     TF_width = bf0 : delta : 1;
+% end
 
 width_diff = zeros(length(TF_width),1);
 
