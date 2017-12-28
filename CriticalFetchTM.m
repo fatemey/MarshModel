@@ -65,7 +65,7 @@ width_diff = zeros(length(TF_width),1);
 
 for i = 1 : length(TF_width)
     
-    i
+%     i
     
     Q_f = Q_f0; % reset the value of Q_f that might have changed during the prevoius iteration
     
