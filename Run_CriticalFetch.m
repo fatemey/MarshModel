@@ -6,12 +6,7 @@ function Run_CriticalFetch
 format compact
 format longG
 
-% fileID = fopen('C:\Users\fy23\Dropbox\Res_PC.txt','a');
-% fileID = fopen('/Users/Callisto/Dropbox/Res.txt','a');
-fileID = 1;
-fprintf(fileID,'%6s %6s %7s %6s %6s %7s %6s %6s %6s %6s %6s %6s %6s %6s %6s %6s %6s %6s \n','i','i1','b_f','d_f','d_m','bfs','dfs','dms','Co','Cf','Qf','LE','bfm','a','R','T','VW','time');
-
-width_inc = 100; % tidal flat width increment for time marching approach
+width_inc = 10; % tidal flat width increment for time marching approach
 
 Co = ([5,10,15]) *10^-3;
 Cf = ([10,30,50]) *10^-3;
@@ -58,7 +53,8 @@ end
 
 output = zeros(m,15*k1);
 
-parpool(4)
+
+%%parpool(2)
 
 parfor i = 1 : m
     
@@ -109,7 +105,14 @@ parfor i = 1 : m
         
         t = datetime;
         time = datevec(t);
-        fprintf(fileID,'%6d %6d %7.2f %6.2f %6.2f %7.2f %6.2f %6.2f %6.3f %6.3f %6d %6d %6d %6.1f %6.1f %6d %6d %6d%2d%2d%2d%2d%2.1f\n',[i,i1,dat_temp(i1,:),time]);
+        
+        % fileID = fopen('C:\Users\fy23\Dropbox\Res_PC.txt','a');
+        fileID = fopen('/Users/Callisto/Dropbox/Res.txt','a');
+        % fileID = 1;
+        % fprintf(fileID,'%6s %6s %7s %6s %6s %7s %6s %6s %6s %6s %6s %6s %6s %6s %6s %6s %6s %6s \n','i','i1','b_f','d_f','d_m','bfs','dfs','dms','Co','Cf','Qf','LE','bfm','a','R','T','VW','time');
+        fprintf(fileID,'%6d %6d %7.2f %6.2f %6.2f %7.2f %6.2f %6.2f %6.3f %6.3f %6d %6d %6d %6.1f %6.1f %6d %6d %6d%2d%2d%2d%2d%2.0f\n',[i,i1,dat_temp(i1,:),time]);
+%         fcolse(fileID)
+
         flag = 1;
         
     end
