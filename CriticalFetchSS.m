@@ -206,8 +206,8 @@ Sol = [x,y,fval_x,fval_y];
     function F = Fun_BoxModel_SS_width (x)
         % function of width equation at equilibrium
         
-        z0(1) = H+0.3;        % tidal flat depth (m)
-        z0(2) = H-0.3;         % marsh depth (m)
+        z0(1) = H+H/2;        % tidal flat depth (m)
+        z0(2) = H-H/2;         % marsh depth (m)
         fun = @(z) Fun_BoxModel_SS_depth([x,z]);
         options = optimoptions('fsolve','Display','off','FunctionTolerance',1e-30, 'MaxFunctionEvaluations', 100000,'MaxIterations',100000);%,'Algorithm','trust-region-dogleg','FunctionTolerance',1e-18));
         [z,fval] = fsolve(fun,z0,options);
