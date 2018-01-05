@@ -4,7 +4,7 @@
 #SBATCH --time=24:00:00 # 20 min, shorter time, quicker start, max run time
 #SBATCH --cpus-per-task=24
 #SBATCH --workdir=/home/ss3526/MarshModel # your work directory
-#SBATCH --mem=24000
+#SBATCH --mem=15000
 
 module load matlab
 matlab -nodisplay -nodesktop -r "run /home/ss3526/MarshModel/Run_CriticalFetch3.m"
