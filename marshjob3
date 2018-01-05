@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=marshmodel # the name of your job
+#SBATCH --job-name=marshmod3 # the name of your job
 #SBATCH --output=/home/ss3526/MarshModel/out3.txt # this is the file your output and errors go to
 #SBATCH --time=24:00:00 # 20 min, shorter time, quicker start, max run time
 #SBATCH --cpus-per-task=24
