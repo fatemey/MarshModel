@@ -1,17 +1,17 @@
-function Run_CriticalFetch
+function Run_CriticalFetch3
 % Runs BoxModel_SS_2eq.
 %
-% Last Update: 1/4/2018
+% Last Update: 1/5/2018
 %--------------------------------------------------------------------------------------------------
 format compact
 format longG
 
 width_inc = 10; % tidal flat width increment for time marching approach
 bf0SS = 100;
-[input,Co,k1,m] = InputMaker;
+[input,Co,k1,m] = InputMaker3;
 output = zeros(m,15*k1);
 
-parpool(4)
+parpool(24)
 
 parfor i = 1 : m
     

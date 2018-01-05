@@ -30,16 +30,16 @@ dt = 12*60*60; % time step in (s)
 tspan = 0:dt:ts;
 
 %-------------- Sediment input constants
-C_o = 1 *10^-3;    % ocean concertation (kg/m3)
-C_f = 1 *10^-3;    % river concentration (kg/m3)
-Q_f = 5;         % river water discharge (m3/s)
+C_o = 5 *10^-3;    % ocean concertation (kg/m3)
+C_f = 40 *10^-3;    % river concentration (kg/m3)
+Q_f = 100;         % river water discharge (m3/s)
 
 %-------------- Erosion constants
 k_0 = 1 *10^-3; % roughness (m)
 tau_c = 0.3;  % critical shear stress (Pa)
 E_0 = 10^-4;    % bed erosion coefficient (kg/m2/s)
 k_e = 0.16 /365/24/60/60;  % margin erodibility coefficient (m2/s/W)
-v_w = 2;        % reference wind speed (m/s)
+v_w = 6;        % reference wind speed (m/s)
 
 % -------------- Accretion constants
 k_a = 2;        % margin accretion coefficient
@@ -50,13 +50,13 @@ k_B = 2*10^-3 /365/24/60/60;    % vegetation characteristics (m3/s/kg)
 
 %-------------- Basin properties
 b_fm = 1 *10^3; % total basin width (both sides of the channel) (m)
-L_E = 1 *10^3; % basin length (m)
+L_E = 9 *10^3; % basin length (m)
 R = 2 *10^-3/365/24/60/60;   % sea level rise (m/s)
 b_r = 0; % river width (m)
 
 %-------------- Tide Characteristics
 T_T = 12 *60*60;   % tidal period (s) (= 12 hours)
-a = 1;            % tidal range (m)
+a = 2;            % tidal range (m)
 H = a /2;          % tidal amplitude (m)
 
 %-------------- Sediment properties
@@ -71,7 +71,7 @@ gamma = 9800;   % water specific weight (N/m3 or kg/m2/s2)
 % b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
 
 %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u (=C_r*(b_f*d_f+b_m*d_m))]
-y0(1) =[21];%y1;%b_fm/2;      % tidal flat width (m)
+y0(1) =[880];%y1;%b_fm/2;      % tidal flat width (m)
 y0(2) = H+H/2;        % tidal flat depth (m)
 y0(3) = H-H/2;         % marsh depth (m)
 y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
