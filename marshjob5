@@ -1,0 +1,10 @@
+#!/bin/bash
+#SBATCH --job-name=marshmod5 # the name of your job
+#SBATCH --output=/home/ss3526/new/MarshModel/out5.txt # this is the file your output and errors go to
+#SBATCH --time=03:00:00 # 20 min, shorter time, quicker start, max run time
+#SBATCH --cpus-per-task=24
+#SBATCH --workdir=/home/ss3526/new/MarshModel # your work directory
+#SBATCH --mem=15000
+
+module load matlab
+matlab -nodisplay -nodesktop -r "run /home/ss3526/new/MarshModel/Run_CriticalFetch5.m"

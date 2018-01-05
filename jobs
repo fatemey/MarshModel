@@ -1,0 +1,9 @@
+sbatch marshjob1
+sbatch marshjob2
+sbatch marshjob3
+sbatch marshjob4
+sbatch marshjob5
+sbatch marshjob6
+sbatch marshjob7
+sbatch marshjob8
+sbatch marshjob9
