@@ -1,11 +1,11 @@
 #!/bin/bash
 PWD=/dscrhome/fy23
 #SBATCH --job-name=marshmod # the name of your job
-#SBATCH --output=$(PWD)/MarshModel/out.txt # this is the file your output and errors go to
+#SBATCH --output=/dscrhome/fy23/MarshModel/out.txt # this is the file your output and errors go to
 #SBATCH --time=00:10:00 # 20 min, shorter time, quicker start, max run time
 #SBATCH --cpus-per-task=8
-#SBATCH --workdir=$(PWD)/MarshModel # your work directory
+#SBATCH --workdir=/dscrhome/fy23/MarshModel # your work directory
 #SBATCH --mem=8000
 
 module load matlab
-matlab -nodisplay -nodesktop -r "run $(PWD)/MarshModel/Run_CriticalFetch.m"
+matlab -nodisplay -nodesktop -r "run /dscrhome/fy23/MarshModel/Run_CriticalFetch.m"
