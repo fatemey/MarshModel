@@ -5,7 +5,7 @@ PWD=/dscrhome/fy23
 #SBATCH --time=00:10:00 # 20 min, shorter time, quicker start, max run time
 #SBATCH --cpus-per-task=8
 #SBATCH --workdir=/dscrhome/fy23/MarshModel # your work directory
-#SBATCH --mem=8000
+#SBATCH --mem=8G
+#SBATCH ?J matlab
 
-module load matlab
-matlab -nodisplay -nodesktop -r "run /dscrhome/fy23/MarshModel/Run_CriticalFetch.m"
+/opt/apps/matlabR2016a/bin/matlab -nodisplay -nodesktop -r "run /dscrhome/fy23/MarshModel/Run_CriticalFetch.m"
