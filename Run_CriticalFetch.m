@@ -11,7 +11,7 @@ bf0SS = 100;
 [input,Co,k1,m] = InputMaker;
 output = zeros(m,15*k1);
 
-parpool(24)
+parpool(8)
 
 parfor i = 1 : m
     
