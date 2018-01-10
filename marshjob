@@ -8,4 +8,4 @@ PWD=/dscrhome/fy23
 #SBATCH --mem=8G
 #SBATCH ?J matlab
 
-/opt/apps/matlabR2016a/bin/matlab -nodisplay -nodesktop -r "run /dscrhome/fy23/MarshModel/Run_CriticalFetch.m"
+/opt/apps/matlabR2016a/bin/matlab -nojvm -nodesktop ?singleCompThread -r "run /dscrhome/fy23/MarshModel/Run_CriticalFetch.m"

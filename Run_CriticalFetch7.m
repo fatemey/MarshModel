@@ -1,7 +1,8 @@
 function Run_CriticalFetch7
-% Runs BoxModel_SS_2eq.
+% Runs CriticalFetchTM and CriticalFetchSS for a method using both steady
+% state and time marching approaches.
 %
-% Last Update: 1/5/2018
+% Last Update: 1/9/2018
 %--------------------------------------------------------------------------------------------------
 format compact
 format longG
@@ -9,9 +10,11 @@ format longG
 width_inc = 10; % tidal flat width increment for time marching approach
 bf0SS = 100;
 [input,Co,k1,m] = InputMaker7;
-output = zeros(m,15*k1);
+% output = zeros(m,15*k1);
 
-parpool(24)
+parpool()
+
+fprintf('%6s, %6s, %7s, %6s, %6s, %7s, %6s, %6s, %6s, %6s, %6s, %6s, %6s, %6s, %6s, %6s, %6s, %6s, %6s, %6s, %6s, %4s, %4s\n','i','iCo','bf','df','dm','bfss','dfss','dmss','Co','Cf','Qf','LE','bfm','a','R','T','VW','Yr','MM','DD','Hr','Min','Sec');
 
 parfor i = 1 : m
     
@@ -27,12 +30,7 @@ parfor i = 1 : m
             
             dat_temp(i1,4:6) = SolSS(1:3);
             
-            if  SolSS(3)>input(i,5)/2 % if marsh is drowned
-                dat_temp(i1,1) = 0; % b_f
-                dat_temp(i1,2:3) = SolSS(2:3);% d_f and d_m
-                dat_temp(i1,4) = 0; % b_f
-                
-            elseif SolSS(1)>=input(i,4) % if b_f hits the upper boundary
+            if SolSS(1) >= input(i,4) % if b_f hits the upper boundary
                 dat_temp(i1,1) = input(i,4); %b_f
                 dat_temp(i1,2:3) = SolSS(2:3);% d_f and d_m
                 dat_temp(i1,4) = input(i,4); % b_f
@@ -41,12 +39,16 @@ parfor i = 1 : m
                 if flag == 0 % if this is the first run for Co loop
                     bf0TM = max(SolSS(1)-5*width_inc,1);
                     SolTM = CriticalFetchTM(Co(i1),input(i,1),input(i,2),input(i,3),input(i,4),input(i,5),input(i,6),input(i,7),input(i,8),bf0TM,width_inc);
-                    dat_temp(i1,1:3) =SolTM(1:3); % b_f, d_f and d_m
+                    dat_temp(i1,1:3) = SolTM(1:3); % b_f, d_f and d_m
                     
                 else % if this is not the first run for Co loop
-                    bf0TM = max(dat_temp(i1-1,1)-1,1);
-                    SolTM = CriticalFetchTM(Co(i1),input(i,1),input(i,2),input(i,3),input(i,4),input(i,5),input(i,6),input(i,7),input(i,8),bf0TM,width_inc);
-                    dat_temp(i1,1:3) =SolTM(1:3); % b_f, d_f and d_m
+                    if input(i,4)-dat_temp(i1-1,1) <= width_inc
+                        dat_temp(i1,1:6) = dat_temp(i1-1,1:6);
+                    else
+                        bf0TM = max(dat_temp(i1-1,1)-1,1);
+                        SolTM = CriticalFetchTM(Co(i1),input(i,1),input(i,2),input(i,3),input(i,4),input(i,5),input(i,6),input(i,7),input(i,8),bf0TM,width_inc);
+                        dat_temp(i1,1:3) =SolTM(1:3); % b_f, d_f and d_m
+                    end
                     
                 end
                 
@@ -78,19 +80,17 @@ parfor i = 1 : m
         
         % fileID = fopen('C:\Users\fy23\Dropbox\Res_PC_2.txt','a');
         % fileID = fopen('/Users/Callisto/Dropbox/Res.txt','a');
-        fileID = 1;
-        % fprintf(fileID,'%6s %6s %7s %6s %6s %7s %6s %6s %6s %6s %6s %6s %6s %6s %6s %6s %6s %6s \n','i','i1','b_f','d_f','d_m','bfs','dfs','dms','Co','Cf','Qf','LE','bfm','a','R','T','VW','time');
-        fprintf(fileID,'%6d %6d %7.2f %6.2f %6.2f %7.2f %6.2f %6.2f %6.3f %6.3f %6d %6d %6d %6.1f %6.1f %6d %6d %6d%2d%2d%2d%2d%2.0f\n',[i,i1,dat_temp(i1,:),time]);
+        fprintf('%6d, %6d, %7.2f, %6.2f, %6.2f, %7.2f, %6.2f, %6.2f, %6.3f, %6.3f, %6d, %6d, %6d, %6.1f, %6.1f, %6d, %6d, %6d, %6d, %6d, %6d, %4d, %4.0f\n',[i,i1,dat_temp(i1,:),time]);
         % fcolse(fileID)
         
     end
     
-    output(i,:) = reshape(dat_temp',1,[]);
+    %     output(i,:) = reshape(dat_temp',1,[]);
     
 end
 
-dat = reshape(output',15,[])';
+% dat = reshape(output',15,[])';
 
-save SA_data_nau dat
+% save SA_data_nau dat
 
 end

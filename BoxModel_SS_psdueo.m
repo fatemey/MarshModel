@@ -12,16 +12,16 @@ clear
 %-------------- Set up shared variables with main functions
 
 %-------------- Sediment input constants
-C_o = 20 *10^-3;    % ocean concertation (kg/m3)
-C_f = 15 *10^-3;    % river concentration (kg/m3)
-Q_f = 20;         % river water discharge (m3/s)
+C_o = 5 *10^-3;    % ocean concertation (kg/m3)
+C_f = 90 *10^-3;    % river concentration (kg/m3)
+Q_f = 50;         % river water discharge (m3/s)
 
 %-------------- Erosion constants
 k_0 = 1 *10^-3; % roughness (m)
 tau_c = 0.3;  % critical shear stress (Pa)
 E_0 = 10^-4;    % bed erosion coefficient (kg/m2/s)
 k_e = 0.16 /365/24/60/60;  % margin erodibility coefficient (m2/s/W)
-v_w = 6;        % reference wind speed (m/s)
+v_w = 2;        % reference wind speed (m/s)
 
 % -------------- Accretion constants
 k_a = 2;        % margin accretion coefficient
@@ -31,14 +31,15 @@ B_max = 1;      % maximum biomass density (kg/m2)
 k_B = 2*10^-3 /365/24/60/60;    % vegetation characteristics (m3/s/kg)
 
 %-------------- Basin properties
-b_fm = 5 *10^3; % total basin width (both sides of the channel) (m)
-L_E = 5 *10^3; % basin length (m)
-R = 0 *10^-3/365/24/60/60;   % sea level rise (m/s)
+b_fm = 1 *10^3; % total basin width (both sides of the channel) (m)
+L_E = 4 *10^3; % basin length (m)
+R = 2 *10^-3/365/24/60/60;   % sea level rise (m/s)
 b_r = 0; % river width (m)
 
 %-------------- Tide Characteristics
 T_T = 12 *60*60;   % tidal period (s) (= 12 hours)
-H = 1.4/2;          % tidal amplitude (range/2) (m)
+a = 2;            % tidal range (m)
+H = a/2;          % tidal amplitude (m)
 
 %-------------- Sediment properties
 rho_s = 1000;   % sediment bulk density (kg/m3)
@@ -48,11 +49,11 @@ omega_s = 0.5 *10^-3;   % settling velocity (m/s)
 gamma = 9800;   % water specific weight (N/m3 or kg/m2/s2)
 
 %-------------- Model assumptions
-Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
+% Q_f = Q_f/2;    % consider half of the discharge only for one side of the tidal platform (the same will be automatically considered below for Q_T)
 
 %-------------- Initial conditions, x0 = [d_f,d_m]
-x0(1) = H+0.3;        % tidal flat depth (m)
-x0(2) = H-0.3;         % marsh depth (m)
+x0(1) = H+H/2;        % tidal flat depth (m)
+x0(2) = H-H/2;         % marsh depth (m)
 
 %-------------- Solve the system
 k = 1;
