@@ -1,9 +1,0 @@
-sbatch --nodelist=dcc-chdm-01 marshjob1
-sbatch --nodelist=dcc-chdm-02 marshjob2
-sbatch --nodelist=dcc-chdm-03 marshjob3
-sbatch --nodelist=dcc-chdm-04 marshjob4
-sbatch --nodelist=dcc-chdm-05 marshjob5
-sbatch --nodelist=dcc-chdm-06 marshjob6
-sbatch --nodelist=dcc-chdm-07 marshjob7
-sbatch --nodelist=dcc-chdm-08 marshjob8
-sbatch --nodelist=dcc-chdm-09 marshjob9

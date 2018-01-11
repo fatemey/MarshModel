@@ -58,7 +58,8 @@ b_r = 0; % river width (m)
 T_T = 12 *60*60;   % tidal period (s) (= 12 hours)
 a = 2;            % tidal range (m)
 
-x=[0.005,  0.010,     50,   1000,   4000,    1.0,    6.0,     12,      2];
+x=[0.015,  0.010,     90,   4000,   1000,    3.0,   10.0,     12,      2];
+% x=[0.005,  0.010,     90,   4000,   1000,    3.0,   10.0,     12,      2];
 C_o=x(1);C_f=x(2);Q_f=x(3);L_E=x(4);b_fm=x(5);a=x(6);R=x(7)*10^-3/365/24/60/60;T_T=x(8)*60*60;v_w=x(9);
 
 H = a/2;          % tidal amplitude (m)
@@ -75,7 +76,7 @@ gamma = 9800;   % water specific weight (N/m3 or kg/m2/s2)
 % b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
 
 %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u (=C_r*(b_f*d_f+b_m*d_m))]
-y0(1) =[100];%y1;%b_fm/2;      % tidal flat width (m)
+y0(1) =[600];%y1;%b_fm/2;      % tidal flat width (m)
 y0(2) = H+H/2;        % tidal flat depth (m)
 y0(3) = H-H/2;         % marsh depth (m)
 y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u

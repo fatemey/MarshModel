@@ -41,7 +41,7 @@ b_r = 0; % river width (m)
 
 %-------------- Tide Characteristics
 T_T = T;   % tidal period (s) (= 12 hours)
-H =a/2;          % tidal amplitude (range/2) (m)
+H = a/2;          % tidal amplitude (range/2) (m)
 
 %-------------- Sediment properties
 rho_s = 1000;   % sediment bulk density (kg/m3)
@@ -62,6 +62,8 @@ gamma = 9800;   % water specific weight (N/m3)
 % end
 
 width_diff = zeros(length(TF_width),1);
+dm_pre = H-H/2;
+bf_pre = TF_width(1);
 
 for i = 1 : length(TF_width)
     
@@ -133,7 +135,7 @@ for i = 1 : length(TF_width)
             Sol(1) = TF_width(end);
         end
         
-        if y(end,3)>H ||  ( y(end,1)<=0 && y(end,3)>y(1,3) ) % check if the marsh is drowned
+        if ( y(end,3)>H && (dm_pre>H || (dm_pre<=H && bf_pre<=0)) ) ||  ( y(end,1)<=0 && y(end,3)>y(1,3) ) % check if the marsh is drowned while it was not drowned in the prevoius iteration, or the marsh is drowing
             Sol(1) = 0;
         end
         
@@ -144,6 +146,9 @@ for i = 1 : length(TF_width)
         
     end
     
+    dm_pre = y(end,3);
+    bf_pre = y(end,1);
+
 end
 
 

@@ -1,9 +1,0 @@
-sbatch --nodelist=dcc-chdm-01 job1
-sbatch --nodelist=dcc-chdm-02 job2
-sbatch --nodelist=dcc-chdm-03 job3
-sbatch --nodelist=dcc-chdm-04 job4
-sbatch --nodelist=dcc-chdm-05 job5
-sbatch --nodelist=dcc-chdm-06 job6
-sbatch --nodelist=dcc-chdm-07 job7
-sbatch --nodelist=dcc-chdm-08 job8
-sbatch --nodelist=dcc-chdm-09 job9

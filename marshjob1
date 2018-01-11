@@ -1,9 +1,0 @@
-#!/bin/bash
-
-#SBATCH -p scavenger
-#SBATCH --job-name=marsh
-#SBATCH --output=out1.txt
-#SBATCH --cpus-per-task=30
-#SBATCH --mem=20000
-module load Matlab/R2016a
-matlab -nodisplay -nodesktop -singleCompThread -r Run

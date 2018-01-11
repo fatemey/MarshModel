@@ -5,9 +5,7 @@ function [input,Co,k1,m] = InputMaker_tmp
 format compact
 format longG
 
-% x=[0.005  0.005     50   4000   1000    2.0    10.0     12      10];
-% x=[0.005  0.090     50   4000   1000    2.0    2.0     12      2];
-x=[0.005,  0.010,     50,   1000,   4000,    1.0,    6.0,     12,      2];
+x=[0.015,  0.010,     90,   4000,   1000,    3.0,   10.0,     12,      2];
 Co=[x(1)];Cf=x(2);Qf=x(3);LE=x(4);bfm=x(5);a=x(6);R=x(7)*10^-3/365/24/60/60;T=x(8)*60*60;vw=x(9);
 
 
@@ -23,6 +21,6 @@ k9 = length(vw);
 
 m = k2*k3*k4*k5*k6*k7*k8*k9;
 
-input = [Cf Qf LE bfm a R T vw];
+input = [Cf Qf LE bfm a R T vw 1];
 
 end
