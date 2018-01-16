@@ -1,8 +1,8 @@
-function Sol = CriticalFetchTM(Co,Cf,Qf,LE,bfm,a,R_,T,vw,bf0,delta)
+function Sol = CriticalFetchTM(Co,Cf,Qf,LE,bfm,a,R_,T,vw,bf0,df0,dm0,delta)
 % Function CriticalFetchTM looks for a critical fetch value based on the
 % same method as BoxModel.m).
 %
-% Last Update: 11/25/2017
+% Last Update: 1/16/2017
 %
 %--------------------------------------------------------------------------------------------------
 format compact
@@ -11,7 +11,7 @@ format longG
 %-------------- Set the time span
 tyr = 1000;  % solve for time tyr (years)
 ts = tyr *365*24*60*60; % tyr in (s)
-dt = 12*60*60; % time step in (s)
+dt = 24*1000*60*60; % time step in (s) (or 12 d)
 tspan = 0:dt:ts;
 
 %-------------- Sediment input constants
@@ -62,7 +62,7 @@ gamma = 9800;   % water specific weight (N/m3)
 % end
 
 width_diff = zeros(length(TF_width),1);
-dm_pre = H-H/2;
+dm_pre = dm0;
 bf_pre = TF_width(1);
 
 for i = 1 : length(TF_width)
@@ -73,8 +73,8 @@ for i = 1 : length(TF_width)
     
     %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u(=C_r*(b_f*d_f+b_m*d_m))]
     y0(1) = TF_width(i);
-    y0(2) = H+H/2;         % tidal flat depth (m)
-    y0(3) = H-H/2;         % marsh depth (m)
+    y0(2) = df0;  % tidal flat depth (m)
+    y0(3) = dm0;  % marsh depth (m)
     y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
     
     %-------------- Solve the system of differential equations

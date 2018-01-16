@@ -8,9 +8,13 @@ format compact
 format longG
 
 width_inc = 10; % tidal flat width increment for time marching approach
-bf0SS = 100;
-[inmat,Co] = Input;
-input = inmat(ind1:ind2,:);
+bf0SS_small = 100;
+bf0SS_large = 1000;
+% [inmat,Co] = Input;
+load data_cf_2
+input = inmat(ind1:ind2,:); 
+Co=Co;
+
 k = length(Co);
 m = ind2-ind1+1;
 
@@ -25,8 +29,25 @@ parfor i = 1 : m
     
     for i1 = 1 : k
         
-        SolSS = CriticalFetchSS(Co(i1),input(i,1),input(i,2),input(i,3),input(i,4),input(i,5),input(i,6),input(i,7),input(i,8),bf0SS); % Sol = [x,y,fval_x,fval_y]
-        err_SS = max(abs(SolSS(4:6)));
+        bf0SS = bf0SS_small;
+        SolSS1 = CriticalFetchSS(Co(i1),inmat(i,1),inmat(i,2),inmat(i,3),inmat(i,4),inmat(i,5),inmat(i,6),inmat(i,7),inmat(i,8),bf0SS); % Sol = [x,y,fval_x,fval_y]
+        err_SS1 = max(abs(SolSS1(4:6)));
+        
+        if err_SS1 < 10^-3 &&  SolSS1(3) > inmat(i,5)/2 % try a larger initial condition for width
+            bf0SS = bf0SS_large;
+            SolSS2 = CriticalFetchSS(Co(i1),inmat(i,1),inmat(i,2),inmat(i,3),inmat(i,4),inmat(i,5),inmat(i,6),inmat(i,7),inmat(i,8),bf0SS); % Sol = [x,y,fval_x,fval_y]
+            err_SS2 = max(abs(SolSS2(4:6)));
+            if err_SS2 < 10^-3 &&  SolSS2(3) <= inmat(i,5)/2
+                SolSS = SolSS2;
+                err_SS = err_SS2;
+            else
+                SolSS = SolSS1;
+                err_SS = err_SS1;
+            end
+        else
+            SolSS = SolSS1;
+            err_SS = err_SS1;
+        end
         
         if err_SS < 10^-3 % if SS solution is relible
             dat_temp(i1,4) = min(SolSS(1), input(i,4)); % b_f
