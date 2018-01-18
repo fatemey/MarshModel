@@ -107,6 +107,8 @@ for i = 1 : length(TF_width)
         t(ind(2):end,:)=[];
     end
     
+%     plot_BoxModel(t,y)
+
     %-------------- Check tidal flat contraction/expansion
     width = y(:,1); % tidal falt width solution
     n = length(width);

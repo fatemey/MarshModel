@@ -2,7 +2,7 @@ function Run(ind1,ind2)
 % Runs CriticalFetchTM and CriticalFetchSS for a method using both steady
 % state and time marching approaches.
 %
-% Last Update: 1/10/2018
+% Last Update: 1/16/2018
 %--------------------------------------------------------------------------------------------------
 format compact
 format longG
@@ -10,97 +10,73 @@ format longG
 width_inc = 10; % tidal flat width increment for time marching approach
 bf0SS_small = 100;
 bf0SS_large = 1000;
-% [inmat,Co] = Input;
-load data_cf_2
-input = inmat(ind1:ind2,:); 
-Co=Co;
-
-k = length(Co);
+input = Input4graphs;
+inmat = input(ind1:ind2,:);
 m = ind2-ind1+1;
 
 parpool()
 
-fprintf('%6s, %6s, %7s, %6s, %6s, %7s, %6s, %6s, %6s, %6s, %6s, %6s, %6s, %6s, %6s, %6s, %6s, %6s, %6s, %6s, %6s, %4s, %4s\n','n','iCo','bf','df','dm','bfss','dfss','dmss','Co','Cf','Qf','LE','bfm','a','R','T','VW','Yr','MM','DD','Hr','Min','Sec');
+fprintf('%6s, %7s, %6s, %6s, %7s, %6s, %6s, %6s, %6s, %6s, %6s, %6s, %6s, %6s, %6s, %6s, %6s, %6s, %6s, %6s, %4s, %4s\n','n','bf','df','dm','bfss','dfss','dmss','Co','Cf','Qf','LE','bfm','a','R','T','VW','Yr','MM','DD','Hr','Min','Sec');
 
 parfor i = 1 : m
     
-    flag = 0;
-    dat_temp = zeros(k,6);
+    outmat = zeros(1,6);
+    Co=inmat(i,1);Cf=inmat(i,2);Qf=inmat(i,3);LE=inmat(i,4);bfm=inmat(i,5);a=inmat(i,6);R=inmat(i,7);T=inmat(i,8);vw=inmat(i,9);
     
-    for i1 = 1 : k
-        
-        bf0SS = bf0SS_small;
-        SolSS1 = CriticalFetchSS(Co(i1),inmat(i,1),inmat(i,2),inmat(i,3),inmat(i,4),inmat(i,5),inmat(i,6),inmat(i,7),inmat(i,8),bf0SS); % Sol = [x,y,fval_x,fval_y]
-        err_SS1 = max(abs(SolSS1(4:6)));
-        
-        if err_SS1 < 10^-3 &&  SolSS1(3) > inmat(i,5)/2 % try a larger initial condition for width
-            bf0SS = bf0SS_large;
-            SolSS2 = CriticalFetchSS(Co(i1),inmat(i,1),inmat(i,2),inmat(i,3),inmat(i,4),inmat(i,5),inmat(i,6),inmat(i,7),inmat(i,8),bf0SS); % Sol = [x,y,fval_x,fval_y]
-            err_SS2 = max(abs(SolSS2(4:6)));
-            if err_SS2 < 10^-3 &&  SolSS2(3) <= inmat(i,5)/2
-                SolSS = SolSS2;
-                err_SS = err_SS2;
-            else
-                SolSS = SolSS1;
-                err_SS = err_SS1;
-            end
-        else
-            SolSS = SolSS1;
-            err_SS = err_SS1;
+    bf0SS = bf0SS_small;
+    SolSS = CriticalFetchSS(Co,Cf,Qf,LE,bfm,a,R,T,vw,bf0SS); % Sol = [x,y,fval_x,fval_y]
+    err_SS = max(abs(SolSS(4:6)));
+    
+    if err_SS < 10^-3 &&  SolSS(3) > a/2 % try a larger initial condition for width if needed
+        bf0SS = bf0SS_large;
+        SolSS_temp = CriticalFetchSS(Co,Cf,Qf,LE,bfm,a,R,T,vw,bf0SS); % Sol = [x,y,fval_x,fval_y]
+        err_SS_temp = max(abs(SolSS_temp(4:6)));
+        if err_SS_temp < 10^-3 &&  SolSS_temp(3) <= a/2
+            SolSS = SolSS_temp;
+            err_SS = err_SS_temp;
         end
+    end
+    
+    if err_SS < 10^-3 && SolSS(3) <= a/2 && SolSS(2) > a/2 % set the initial depth conditions
+        df0 = SolSS(2);
+        dm0 = SolSS(3);
+    else
+        df0 = 3*a/4;
+        dm0 = a/4;
+    end
+    
+    if err_SS < 10^-3 % if SS solution is relible; setting the output
+        outmat(4) = min(SolSS(1), bfm); % b_f
+        outmat(5:6) = SolSS(2:3); % d_f and d_m
+    else
+        outmat(4:6) = [-1,-1,-1]; % showing that SS was not relible
+    end
+    
+    if err_SS >= 10^-3 || SolSS(3) > a/2 % if the solution is not relible or marsh is drowned
+        bf0TM = 1;
+        SolTM = CriticalFetchTM(Co,Cf,Qf,LE,bfm,a,R,T,vw,bf0TM,df0,dm0,width_inc);
+        outmat(1:3) = SolTM(1:3); % b_f, d_f and d_m
         
-        if err_SS < 10^-3 % if SS solution is relible
-            dat_temp(i1,4) = min(SolSS(1), input(i,4)); % b_f
-            dat_temp(i1,5:6) = SolSS(2:3); % d_f and d_m
-        else
-            dat_temp(i1,4:6) = [-1,-1,-1]; % showing that SS was not relible
-        end
+    elseif err_SS < 10^-3 && SolSS(1) >= bfm % if the solution is relible and b_f hits the upper boundary
+        outmat(1) = bfm; % b_f
+        outmat(2:3) = SolSS(2:3); % d_f and d_m
         
-        if flag == 0 % if this is the first run for Co loop
-            
-            if err_SS >= 10^-3 || SolSS(3) > input(i,5)/2 % if the solution is not relible or marsh is drowned
-                bf0TM = 1;
-                SolTM = CriticalFetchTM(Co(i1),input(i,1),input(i,2),input(i,3),input(i,4),input(i,5),input(i,6),input(i,7),input(i,8),bf0TM,width_inc);
-                dat_temp(i1,1:3) = SolTM(1:3); % b_f, d_f and d_m
-                
-            elseif err_SS < 10^-3 && SolSS(1) >= input(i,4) % if the solution is relible and b_f hits the upper boundary
-                dat_temp(i1,1) = input(i,4); % b_f
-                dat_temp(i1,2:3) = SolSS(2:3); % d_f and d_m
-                
-            else % if the solution is relible
-                bf0TM = max(SolSS(1) - 5*width_inc, 1);
-                SolTM = CriticalFetchTM(Co(i1),input(i,1),input(i,2),input(i,3),input(i,4),input(i,5),input(i,6),input(i,7),input(i,8),bf0TM,width_inc);
-                dat_temp(i1,1:3) = SolTM(1:3); % b_f, d_f and d_m
-                
-            end
-            
-        else % if this is not the first run for Co loop
-            
-            if input(i,4) - dat_temp(i1-1,1) <= width_inc % if the width was close enough to the upper limit in the prevoius iteration
-                dat_temp(i1,1:3) = dat_temp(i1-1,1:3);
-                
-            elseif err_SS < 10^-3 && SolSS(3) <= input(i,5)/2 % if the solution is relible and marsh is not drowned
-                bf0TM = max(max(dat_temp(i1-1,1) - 1, 1), min(SolSS(1), input(i,4) - 1));
-                SolTM = CriticalFetchTM(Co(i1),input(i,1),input(i,2),input(i,3),input(i,4),input(i,5),input(i,6),input(i,7),input(i,8),bf0TM,width_inc);
-                dat_temp(i1,1:3) = SolTM(1:3); % b_f, d_f and d_m
-                
-            else
-                bf0TM = max(dat_temp(i1-1,1) - 1, 1);
-                SolTM = CriticalFetchTM(Co(i1),input(i,1),input(i,2),input(i,3),input(i,4),input(i,5),input(i,6),input(i,7),input(i,8),bf0TM,width_inc);
-                dat_temp(i1,1:3) = SolTM(1:3); % b_f, d_f and d_m
-                
-            end
-            
-        end
-
-        flag = 1;
-        input_data = [Co(i1),input(i,1),input(i,2),input(i,3),input(i,4),input(i,5),input(i,6)*10^3*365*24*60*60,input(i,7)/60/60,input(i,8)];
-        t = datetime;
-        time = datevec(t);
-        
-        fprintf('%6d, %6d, %7.2f, %6.2f, %6.2f, %7.2f, %6.2f, %6.2f, %6.3f, %6.3f, %6d, %6d, %6d, %6.1f, %6.1f, %6d, %6d, %6d, %6d, %6d, %6d, %4d, %4.0f\n',[input(i,9),i1,dat_temp(i1,:),input_data,time]);
+    else % if the solution is relible
+        bf0TM = max(SolSS(1) - 5*width_inc, 1);
+        SolTM = CriticalFetchTM(Co,Cf,Qf,LE,bfm,a,R,T,vw,bf0TM,df0,dm0,width_inc);
+        outmat(1:3) = SolTM(1:3); % b_f, d_f and d_m
         
     end
+    
+    if outmat(1) == 0
+        outmat(4) = 0;
+    end
+    
+    input_data = [Co,Cf,Qf,LE,bfm,a,R*10^3*365*24*60*60,T/60/60,vw];
+    t = datetime;
+    time = datevec(t);
+    
+    fprintf('%6d, %7.2f, %6.2f, %6.2f, %7.2f, %6.2f, %6.2f, %6.3f, %6.3f, %6d, %6d, %6d, %6.1f, %6.1f, %6d, %6d, %6d, %6d, %6d, %6d, %4d, %4.0f\n',[inmat(i,10),outmat,input_data,time]);
     
 end
 

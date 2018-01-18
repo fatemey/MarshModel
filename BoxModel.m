@@ -1,9 +1,6 @@
-% function [t, y] = BoxModel(c,y1,y2,y3)
-% function [t, y] = BoxModel
 function BoxModel
-% function BoxModel
 % BoxModel: Models 0d marsh and tidal flat time
-% evolution using Matlab ode23tb function.
+% evolution using Matlab ode15s function.
 %
 % Output
 %           t : vector of time data in yr
@@ -15,7 +12,7 @@ function BoxModel
 %               rising sea level. This model is solved using 4 equations and 4
 %               unknowns.
 %
-% Last Update: 11/17/2017
+% Last Update: 1/17/2018
 %
 %--------------------------------------------------------------------------------------------------
 format compact
@@ -26,13 +23,13 @@ format longG
 %-------------- Set the time span
 tyr = 1000;  % solve for time tyr (years)
 ts = tyr *365*24*60*60; % tyr in (s)
-dt = 12*60*60; % time step in (s)
+dt = 24*1000*60*60; % time step in (s)
 tspan = 0:dt:ts;
 
 %-------------- Sediment input constants
 C_o = 5 *10^-3;    % ocean concertation (kg/m3)
-C_f = 90 *10^-3;    % river concentration (kg/m3)
-Q_f = 50;         % river water discharge (m3/s)
+C_f = 35 *10^-3;    % river concentration (kg/m3)
+Q_f = 5;         % river water discharge (m3/s)
 
 %-------------- Erosion constants
 k_0 = 1 *10^-3; % roughness (m)
@@ -58,9 +55,21 @@ b_r = 0; % river width (m)
 T_T = 12 *60*60;   % tidal period (s) (= 12 hours)
 a = 2;            % tidal range (m)
 
-x=[ 0.01,  0.14,     100,   5000,   5000,    1.4,   6.0,     12,      6];
-C_o=x(1);C_f=x(2);Q_f=x(3);L_E=x(4);b_fm=x(5);a=x(6);R=x(7)*10^-3/365/24/60/60;T_T=x(8)*60*60;v_w=x(9);
+%**************************************************************************
+% x=[ 0.01,  0.14,     100,   5000,   5000,    1.4,   6.0,     12,      6];
+% C_o=x(1);C_f=x(2);Q_f=x(3);L_E=x(4);b_fm=x(5);a=x(6);R=x(7)*10^-3/365/24/60/60;T_T=x(8)*60*60;v_w=x(9);
 
+C_o = 10*10^-3; % (0:5:100)*10^-3 , 10*10^-3
+C_f = (62)*10^-3; % (0:5:100)*10^-3 , [5 50]*10^-3
+Q_f = [ 5]; % (0:5:100), [5 50]
+L_E = 5*1000;
+b_fm = 5*1000;
+a = 1.4; % [.5, 1:20] , 1.4
+R = [6] *10^-3/365/24/60/60; % [0,2:4:18]
+T_T = 12*60*60;
+v_w = 6;
+
+%**************************************************************************
 H = a/2;          % tidal amplitude (m)
 
 %-------------- Sediment properties
@@ -75,7 +84,7 @@ gamma = 9800;   % water specific weight (N/m3 or kg/m2/s2)
 % b_fm = b_fm/2;  % consider half of the basin only for one side of the tidal platform
 
 %-------------- Initial conditions, y0=[ b_f, d_f, d_m,u (=C_r*(b_f*d_f+b_m*d_m))]
-y0(1) =[1460];%y1;%b_fm/2;      % tidal flat width (m)
+y0(1) =[147];%y1;%b_fm/2;      % tidal flat width (m)
 y0(2) = H+H/2;        % tidal flat depth (m)
 y0(3) = H-H/2;         % marsh depth (m)
 y0(4) =C_o*(y0(1)*y0(2)+(b_fm-y0(1))*y0(3)); % u
@@ -111,17 +120,8 @@ if ~isempty(ind) && length(ind)>1
 end
 
 %-------------- Plot Results
-plot_BoxModel(t,y)
-% BoxModel_parameters(t,y,C_o)
-% plot_BoxModel_pars(t,y) % make sure to check the inside parameter values 
-
-% h_fig=gcf;
-% set(h_fig,'PaperOrientation','portrait')
-% set(h_fig,'PaperPosition', [0 0 14 6]) % [... ... max_width=7.5 max_height=9]
-% tit = 'Co_20_SSSolution_fixedwidth';
-% print(tit,'-dtiff','-r400')
-% movefile([tit,'.tif'],'C:\Users\fy23\Fateme\Projects\Marsh Model\Results\20 - Unstable Equlibrium Results through Optimization of Steady State')
-% close all
+% plot_BoxModel(t,y)
+plot_BoxModel_pars(t,y,C_o,C_f,Q_f,L_E,b_fm,a,T_T,v_w)
 
 %======================= Nested Function =========================
     function dy = ode4marshtidalflat (t,y) 
